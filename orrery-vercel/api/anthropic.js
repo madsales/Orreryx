@@ -1,49 +1,55 @@
+export const config = {
+  api: { bodyParser: true, responseLimit: false, externalResolver: true },
+};
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   if (req.method === 'OPTIONS') return res.status(200).end();
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
+  if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
-  // Get API key from environment variable (set in Vercel dashboard)
   const apiKey = process.env.ANTHROPIC_API_KEY;
-  if (!apiKey) {
-    return res.status(500).json({ error: 'ANTHROPIC_API_KEY not configured' });
-  }
+  if (!apiKey) return res.status(500).json({ error: 'ANTHROPIC_API_KEY env var not set' });
+
+  let body = req.body;
+  if (typeof body === 'string') { try { body = JSON.parse(body); } catch(_){} }
+
+  // Force valid model
+  body.model = 'claude-haiku-4-5-20251001';
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const upstream = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
+        'anthropic-version': '2023-06-01',
       },
-      body: JSON.stringify(req.body)
+      body: JSON.stringify(body),
     });
 
-    // Stream support — forward all headers and status
-    res.status(response.status);
-    res.setHeader('Content-Type', response.headers.get('content-type') || 'application/json');
-    res.setHeader('Access-Control-Allow-Origin', '*');
+    // If error, return the full Anthropic error message
+    if (!upstream.ok) {
+      const errBody = await upstream.text();
+      console.error('Anthropic error:', upstream.status, errBody);
+      return res.status(upstream.status).send(errBody);
+    }
 
-    // Stream the response body directly to client
-    const reader = response.body.getReader();
-    const pump = async () => {
+    res.status(200);
+    res.setHeader('Content-Type', upstream.headers.get('content-type') || 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+
+    const reader = upstream.body.getReader();
+    while (true) {
       const { done, value } = await reader.read();
-      if (done) { res.end(); return; }
+      if (done) break;
       res.write(Buffer.from(value));
-      await pump();
-    };
-    await pump();
+    }
+    res.end();
 
   } catch (err) {
-    res.status(500).json({ error: err.message });
+    console.error('Proxy error:', err);
+    if (!res.headersSent) res.status(500).json({ error: err.message });
   }
 }
-
-export const config = {
-  api: { bodyParser: true, responseLimit: false }
-};
