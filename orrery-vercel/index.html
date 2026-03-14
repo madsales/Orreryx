@@ -718,7 +718,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
 /* ── STATE ── */
 let PLAN = 's'; // s=starter a=analyst c=command
 let AI_KEY = '';
-let FEED_KEY = '';
+let FEED_KEY = 'c7c83175511045fca48277940e4a6a3a';
 let liveFeed = null;
 let appBooted = false;
 let selPlanId = 's';
@@ -1148,8 +1148,7 @@ function wizGo(step) {
     // AI key handled server-side via proxy — skip step 2
     AI_KEY = '__proxy__';
     setAiDot('grn', can('c')?'Priority AI Active':'AI Intel Active');
-    if(can('liveData')) wizStep(3);
-    else launch();
+    launch();
   } else if(step===3) {
     const v = document.getElementById('feed-key').value.trim();
     const err = document.getElementById('feed-key-err');
@@ -1180,7 +1179,7 @@ function doPlanUpgrade(p) {
   applyPlan();
   closeM('plan-modal');
   toast((p==='s'?'Starter':p==='a'?'Analyst':'Command')+' plan activated');
-  if(can('liveData') && !FEED_KEY) setTimeout(()=>showFeedModal(),500);
+  // feed key hardcoded
   const ap=document.querySelector('.page.active');
   if(ap) goPage(ap.id.replace('pg-',''));
 }
@@ -1189,7 +1188,7 @@ function upgradeTo(p) {
   PLAN=p; applyPlan(); closeM('plan-modal');
   toast((p==='a'?'Analyst':'Command')+' plan — map unlocked!');
   goPage('map');
-  if(can('liveData')&&!FEED_KEY) setTimeout(()=>showFeedModal(),500);
+  // feed key hardcoded
 }
 
 /* ── FEED MODAL ── */
