@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Orrery — Geopolitical Market Intelligence</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,600;0,700;1,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -160,7 +161,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
 .mtt{position:absolute;display:none;background:var(--bg2);border:1px solid var(--brd2);border-radius:5px;padding:10px 12px;pointer-events:none;z-index:50;width:220px;box-shadow:0 8px 20px rgba(0,0,0,.6)}
 .mtt-hint{font:400 7.5px/1 var(--mono);color:var(--txt3);margin-top:6px;padding-top:6px;border-top:1px solid var(--brd)}
 /* map lock */
-.map-lock{position:absolute;inset:0;background:rgba(9,9,11,.8);backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;z-index:15;display:none}
+.map-lock{position:absolute;inset:0;background:rgba(9,9,11,.8);backdrop-filter:blur(8px);align-items:center;justify-content:center;z-index:15;display:none}
 .map-lock-box{text-align:center;max-width:380px;padding:30px;background:var(--bg2);border:1px solid var(--brd2);border-radius:8px}
 /* intel page */
 .intel-layout{flex:1;display:grid;grid-template-columns:1fr 340px;overflow:hidden}
@@ -208,7 +209,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
 .rgn-hdr td{font:700 7.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);padding:8px 10px 4px;border-bottom:1px solid var(--brd);background:var(--bg3)}
 /* stocks grid */
 .stocks-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:11px}
-.sc{background:var(--bg2);border:1px solid var(--brd);border-radius:5px;padding:13px 14px;transition:border-color .15s}
+.sc{position:relative;background:var(--bg2);border:1px solid var(--brd);border-radius:5px;padding:13px 14px;transition:border-color .15s;cursor:pointer}
 .sc:hover{border-color:var(--brd2)}
 .sc-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px}
 .sc-sym{font:700 15px/1 var(--mono);color:var(--txt)}
@@ -322,6 +323,143 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
 .empty-sub{font:400 12px/1.55 var(--sans);color:var(--txt4);max-width:260px}
 /* active filter */
 .fil-active{background:var(--bg4)!important;border-color:var(--txt3)!important;color:var(--txt)!important}
+
+/* Stock chart modal */
+.stk-modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;display:none;align-items:center;justify-content:center}
+.stk-modal-ov.open{display:flex}
+.stk-modal{background:var(--bg2);border:1px solid var(--brd2);border-radius:8px;width:680px;max-width:95vw;padding:0;overflow:hidden}
+.stk-modal-hd{padding:14px 18px;border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between}
+.stk-modal-sym{font:700 18px/1 var(--mono);color:var(--txt)}
+.stk-modal-name{font:400 11px/1 var(--sans);color:var(--txt3);margin-top:3px}
+.stk-modal-price{font:700 22px/1 var(--mono);text-align:right}
+.stk-modal-chg{font:600 11px/1 var(--mono);text-align:right;margin-top:3px}
+.stk-modal-x{background:none;border:none;color:var(--txt3);font-size:18px;cursor:pointer;padding:4px 8px}
+.stk-modal-x:hover{color:var(--txt)}
+.stk-chart-wrap{padding:14px 18px;background:var(--bg3)}
+#stk-detail-canvas{width:100%;height:200px;display:block}
+.stk-modal-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border-top:1px solid var(--brd)}
+.stk-meta-item{padding:10px 16px;border-right:1px solid var(--brd)}
+.stk-meta-item:last-child{border-right:none}
+.stk-meta-lbl{font:700 7px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);margin-bottom:4px}
+.stk-meta-val{font:600 13px/1 var(--mono);color:var(--txt)}
+.stk-modal-reason{padding:12px 18px;font:400 12px/1.6 var(--sans);color:var(--txt2);border-top:1px solid var(--brd)}
+.stk-country-wrap{padding:14px 18px;border-top:1px solid var(--brd)}
+.stk-country-title{font:700 7.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);margin-bottom:8px}
+.stk-country-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.stk-country-item{background:var(--bg3);border:1px solid var(--brd);border-radius:4px;padding:7px 9px;cursor:pointer;transition:background .1s}
+.stk-country-item:hover{background:var(--bg4)}
+.scc-flag{font-size:14px;margin-bottom:2px}
+.scc-name{font:600 8.5px/1 var(--mono);color:var(--txt);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.scc-chg{font:600 9px/1 var(--mono);margin-top:2px}
+
+/* ══ INVEST MODULE CSS ══ */
+.inv-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.inv-tab{font:700 8px/1 var(--mono);letter-spacing:.06em;padding:6px 13px;border-radius:3px;cursor:pointer;border:1px solid var(--brd2);color:var(--txt3);background:transparent;transition:all .15s}
+.inv-tab.on{background:var(--txt);color:var(--bg);border-color:var(--txt)}
+.inv-tab:hover:not(.on){border-color:var(--txt3);color:var(--txt)}
+/* Screener */
+.scr-filters{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.scr-filter{display:flex;flex-direction:column;gap:4px}
+.scr-lbl{font:700 7px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--txt3)}
+.scr-select{background:var(--bg3);border:1px solid var(--brd2);border-radius:3px;color:var(--txt);font:400 11px/1 var(--mono);padding:6px 8px;outline:none;cursor:pointer}
+.scr-select:focus{border-color:var(--txt3)}
+.scr-tbl{width:100%;border-collapse:collapse}
+.scr-tbl th{font:700 7.5px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--txt3);padding:8px 12px;border-bottom:1px solid var(--brd);text-align:left;background:var(--bg3);cursor:pointer;white-space:nowrap}
+.scr-tbl th:hover{color:var(--txt)}
+.scr-tbl td{padding:9px 12px;border-bottom:1px solid var(--brd);font:400 12px/1 var(--mono);color:var(--txt2);vertical-align:middle}
+.scr-tbl tr:hover td{background:var(--bg3)}
+.scr-tbl tr:hover td{cursor:pointer}
+.scr-sym{font:700 12px/1 var(--mono);color:var(--txt)}
+.scr-name{font:400 10px/1 var(--sans);color:var(--txt3);margin-top:2px}
+.scr-bar{height:4px;border-radius:2px;background:var(--bg4);margin-top:3px}
+.scr-bar-fill{height:100%;border-radius:2px}
+/* Portfolio */
+.port-add{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.port-inp{background:var(--bg3);border:1px solid var(--brd2);border-radius:3px;color:var(--txt);font:400 11px/1 var(--mono);padding:7px 10px;outline:none;flex:1;min-width:100px}
+.port-inp:focus{border-color:var(--txt3)}
+.port-inp::placeholder{color:var(--txt4)}
+.port-btn{background:var(--txt);border:none;border-radius:3px;color:var(--bg);font:700 8px/1 var(--mono);letter-spacing:.06em;padding:7px 14px;cursor:pointer;white-space:nowrap;transition:opacity .15s}
+.port-btn:hover{opacity:.85}
+.port-summary{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px}
+.port-stat{background:var(--bg2);border:1px solid var(--brd);border-radius:5px;padding:11px 13px}
+.port-stat-lbl{font:700 7px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);margin-bottom:5px}
+.port-stat-val{font:600 18px/1 var(--mono);color:var(--txt)}
+.port-item{background:var(--bg2);border:1px solid var(--brd);border-radius:5px;padding:12px 14px;display:grid;grid-template-columns:1fr auto auto auto;gap:10px;align-items:center;margin-bottom:6px}
+.port-del{background:none;border:none;color:var(--txt4);cursor:pointer;font-size:14px;padding:2px 6px;transition:color .12s}
+.port-del:hover{color:var(--red)}
+/* IPO */
+.ipo-card{background:var(--bg2);border:1px solid var(--brd);border-radius:6px;padding:16px 18px;margin-bottom:10px}
+.ipo-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:10px;gap:12px}
+.ipo-name{font:600 14px/1.2 var(--sans);color:var(--txt);margin-bottom:3px}
+.ipo-sector{font:400 10px/1 var(--mono);color:var(--txt3)}
+.ipo-badge{font:700 7px/1 var(--mono);letter-spacing:.08em;padding:3px 8px;border-radius:3px;white-space:nowrap}
+.ipo-upcoming{background:var(--grn2);color:var(--grn);border:1px solid rgba(58,184,96,.3)}
+.ipo-open{background:var(--gld2);color:var(--gld);border:1px solid rgba(212,168,67,.3)}
+.ipo-recent{background:var(--blu2);color:var(--blu);border:1px solid rgba(74,143,224,.3)}
+.ipo-meta{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.ipo-meta-item{display:flex;flex-direction:column;gap:2px}
+.ipo-meta-lbl{font:700 7px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--txt3)}
+.ipo-meta-val{font:600 12px/1 var(--mono);color:var(--txt)}
+/* Calculators */
+.calc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.calc-card{background:var(--bg2);border:1px solid var(--brd);border-radius:6px;padding:16px;cursor:pointer;transition:all .15s}
+.calc-card:hover,.calc-card.on{border-color:var(--brd2);background:var(--bg3)}
+.calc-card.on{border-color:var(--txt)}
+.calc-icon{font-size:24px;margin-bottom:8px}
+.calc-title{font:600 13px/1 var(--sans);color:var(--txt);margin-bottom:3px}
+.calc-desc{font:400 10px/1.5 var(--sans);color:var(--txt3)}
+.calc-body{background:var(--bg2);border:1px solid var(--brd);border-radius:6px;padding:20px;display:none}
+.calc-body.on{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.calc-fields{display:flex;flex-direction:column;gap:12px}
+.calc-field{display:flex;flex-direction:column;gap:5px}
+.calc-field label{font:700 7.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--txt3)}
+.calc-field input{background:var(--bg3);border:1px solid var(--brd2);border-radius:3px;color:var(--txt);font:400 13px/1 var(--mono);padding:8px 10px;outline:none}
+.calc-field input:focus{border-color:var(--txt3)}
+.calc-run{background:var(--txt);border:none;border-radius:3px;color:var(--bg);font:700 8px/1 var(--mono);letter-spacing:.06em;padding:10px;cursor:pointer;margin-top:4px;transition:opacity .15s;width:100%}
+.calc-run:hover{opacity:.85}
+.calc-result{display:flex;flex-direction:column;gap:10px;justify-content:center}
+.calc-res-item{background:var(--bg3);border:1px solid var(--brd);border-radius:4px;padding:12px 14px}
+.calc-res-lbl{font:700 7px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);margin-bottom:4px}
+.calc-res-val{font:700 20px/1 var(--mono);color:var(--grn)}
+/* Learn */
+.learn-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:20px}
+.learn-card{background:var(--bg2);border:1px solid var(--brd);border-radius:6px;padding:16px;cursor:pointer;transition:all .15s}
+.learn-card:hover{background:var(--bg3);border-color:var(--brd2)}
+.learn-icon{font-size:28px;margin-bottom:10px}
+.learn-title{font:600 13px/1.3 var(--sans);color:var(--txt);margin-bottom:5px}
+.learn-desc{font:400 10px/1.55 var(--sans);color:var(--txt3);margin-bottom:10px}
+.learn-level{font:700 6.5px/1 var(--mono);letter-spacing:.1em;padding:2px 6px;border-radius:2px}
+.lv-beg{background:var(--grn2);color:var(--grn)}
+.lv-int{background:var(--gld2);color:var(--gld)}
+.lv-adv{background:var(--red2);color:var(--red)}
+.learn-modal-body{font:400 13px/1.8 var(--sans);color:var(--txt2)}
+.learn-modal-body h3{font:600 15px/1.4 var(--sans);color:var(--txt);margin:16px 0 8px}
+.learn-modal-body h3:first-child{margin-top:0}
+.learn-modal-body ul{padding-left:18px;margin-bottom:10px}
+.learn-modal-body li{margin-bottom:4px}
+/* Brokers */
+.broker-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+.broker-card{background:var(--bg2);border:1px solid var(--brd);border-radius:6px;padding:16px}
+.broker-hd{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+.broker-logo{width:36px;height:36px;border-radius:4px;display:flex;align-items:center;justify-content:center;font:700 14px/1 var(--mono);flex-shrink:0}
+.broker-name{font:600 14px/1 var(--sans);color:var(--txt)}
+.broker-type{font:400 10px/1 var(--mono);color:var(--txt3);margin-top:2px}
+.broker-meta{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:10px}
+.bm-item{display:flex;flex-direction:column;gap:2px}
+.bm-lbl{font:700 6.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--txt3)}
+.bm-val{font:600 11px/1 var(--mono);color:var(--txt)}
+.broker-tags{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}
+.broker-tag{font:600 7px/1 var(--mono);padding:2px 6px;border-radius:2px;background:var(--bg4);color:var(--txt3)}
+.broker-btn{width:100%;background:transparent;border:1px solid var(--brd2);border-radius:3px;color:var(--txt3);font:700 7.5px/1 var(--mono);letter-spacing:.06em;padding:7px;cursor:pointer;transition:all .15s}
+.broker-btn:hover{background:var(--txt);color:var(--bg);border-color:var(--txt)}
+/* Learn modal */
+.learn-modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:200;display:none;align-items:center;justify-content:center}
+.learn-modal-ov.open{display:flex}
+.learn-modal-box{background:var(--bg2);border:1px solid var(--brd2);border-radius:8px;width:620px;max-width:95vw;max-height:80vh;overflow-y:auto;padding:24px 28px}
+.learn-modal-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px}
+.learn-modal-title{font:600 18px/1.3 var(--sans);color:var(--txt)}
+.learn-modal-x{background:none;border:none;color:var(--txt3);font-size:18px;cursor:pointer;padding:0 4px}
+
 </style>
 </head>
 <body>
@@ -366,18 +504,28 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
   <div class="sb-sec">
     <div class="sb-sec-lbl">Markets</div>
     <div class="sb-item" id="sb-markets" onclick="goPage('markets')"><span class="sb-icon">📊</span>Global Indices</div>
-    <div class="sb-item" id="sb-stocks" onclick="goPage('stocks')"><span class="sb-icon">⚔️</span>War Stocks</div>
+    <div class="sb-item" id="sb-stocks" onclick="goPage('stocks')"><span class="sb-icon">⚔️</span>Crisis Stocks</div>
+    <div class="sb-item" id="sb-stocks-country" onclick="goPage('country')"><span class="sb-icon">🌐</span>By Country</div>
     <div class="sb-item" id="sb-crypto" onclick="goPage('crypto')"><span class="sb-icon" style="color:var(--gld)">₿</span>Crypto<span class="sb-badge pro" id="sb-crypto-badge">CMD</span></div>
   </div>
   <div class="sb-sec">
     <div class="sb-sec-lbl">Intelligence</div>
-    <div class="sb-item" id="sb-intel" onclick="goPage('intel')"><span class="sb-icon">📡</span>War Intel Feed<span class="sb-badge" id="sb-intel-badge" style="background:var(--red2);color:var(--red)">0</span></div>
+    <div class="sb-item" id="sb-intel" onclick="goPage('intel')"><span class="sb-icon">📡</span>Crisis Intel Feed<span class="sb-badge" id="sb-intel-badge" style="background:var(--red2);color:var(--red)">0</span></div>
     <div class="sb-item" id="sb-history" onclick="goPage('history')"><span class="sb-icon">📋</span>History<span class="sb-badge lock" id="sb-hist-badge">LOCK</span></div>
+  </div>
+  <div class="sb-sec">
+    <div class="sb-sec-lbl">Invest</div>
+    <div class="sb-item" id="sb-screener" onclick="goPage('screener')"><span class="sb-icon">🔍</span>Stock Screener</div>
+    <div class="sb-item" id="sb-portfolio" onclick="goPage('portfolio')"><span class="sb-icon">💼</span>Portfolio</div>
+    <div class="sb-item" id="sb-ipo" onclick="goPage('ipo')"><span class="sb-icon">🚀</span>IPO Tracker</div>
+    <div class="sb-item" id="sb-calc" onclick="goPage('calc')"><span class="sb-icon">🧮</span>Calculators</div>
+    <div class="sb-item" id="sb-learn" onclick="goPage('learn')"><span class="sb-icon">📚</span>Learn</div>
+    <div class="sb-item" id="sb-brokers" onclick="goPage('brokers')"><span class="sb-icon">🏦</span>Brokers</div>
   </div>
   <div class="sb-foot">
     <div class="sb-plan-card">
       <div class="sb-plan-lbl">Current Plan</div>
-      <div class="sb-plan-name" id="sb-plan-name">Starter — $9/mo</div>
+      <div class="sb-plan-name" id="sb-plan-name">Starter — $0.99/mo</div>
       <button class="sb-upg" id="sb-upg" onclick="showPlanModal()">UPGRADE PLAN →</button>
     </div>
   </div>
@@ -466,7 +614,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
         <div class="map-lock-box">
           <div style="font-size:40px;margin-bottom:12px">🌍</div>
           <div style="font:700 14px/1 var(--mono);color:var(--txt);margin-bottom:8px">Live World Map</div>
-          <div style="font:400 13px/1.6 var(--sans);color:var(--txt2);margin-bottom:20px">20+ geolocated war events with real-time pulsing markers and click-to-brief AI analysis.<br><br>Available on <strong>Analyst ($49)</strong> and <strong>Command ($99)</strong>.</div>
+          <div style="font:400 13px/1.6 var(--sans);color:var(--txt2);margin-bottom:20px">20+ geolocated war events with real-time pulsing markers and click-to-brief AI analysis.<br><br>Available on <strong>Analyst ($14.99)</strong> and <strong>Command ($34.99)</strong>.</div>
           <div style="display:flex;gap:9px;justify-content:center;flex-wrap:wrap">
             <button class="btn btn-gld" onclick="upgradeTo('analyst')">ANALYST — $49/MO →</button>
             <button class="btn btn-solid" onclick="upgradeTo('command')">COMMAND — $99/MO →</button>
@@ -503,9 +651,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
 <div class="page" id="pg-stocks">
   <div class="ph">
     <div class="ph-left">
-      <div class="ph-eye">War Stocks</div>
+      <div class="ph-eye">Crisis Stocks</div>
       <div class="ph-title">18 War-Impacted Equities</div>
-      <div class="ph-sub">Defense, energy, airlines, shipping, and safe havens — all moving on the crisis.</div>
+      <div class="ph-sub">Defense, energy, airlines, shipping, and safe havens — all moving on the latest crisis.</div>
     </div>
     <div class="ph-right" id="stk-filters">
       <button class="btn btn-ghost fil-active" onclick="setStkFilter(this,'all')">All</button>
@@ -525,7 +673,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
     <div class="ph-left">
       <div class="ph-eye">Crypto Market</div>
       <div class="ph-title">War Correlation Analysis</div>
-      <div class="ph-sub">12 assets ranked by geopolitical conflict correlation. XMR and BTC leading as crisis safe-havens.</div>
+      <div class="ph-sub">12 assets ranked by geopolitical crisis correlation. XMR and BTC leading as crisis safe-havens.</div>
     </div>
     <div class="ph-right"><span class="sb-badge pro" style="font-size:9px;padding:4px 10px">COMMAND ONLY</span></div>
   </div>
@@ -537,7 +685,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
   <div class="ph">
     <div class="ph-left">
       <div class="ph-eye">Intelligence</div>
-      <div class="ph-title">War Intel Feed</div>
+      <div class="ph-title">Crisis Intel Feed</div>
       <div class="ph-sub">Fires every 60s. Click any event for AI analysis. Click source badge for full story.</div>
     </div>
     <div class="ph-right">
@@ -563,11 +711,31 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
           <div class="ai-chip" onclick="quickAsk('What is the DEFCON 2 market impact?')">DEFCON 2 impact</div>
         </div>
         <div class="ai-row">
-          <input class="ai-inp" id="ai-inp" placeholder="Ask the AI anything about this crisis..." onkeydown="if(event.key==='Enter')sendAsk()">
+          <input class="ai-inp" id="ai-inp" placeholder="Ask the AI anything about markets &amp; crises..." onkeydown="if(event.key==='Enter')sendAsk()">
           <button class="ai-send" id="ai-send" onclick="sendAsk()">ASK ▶</button>
         </div>
       </div>
     </div>
+  </div>
+</div>
+
+
+<!-- ── PAGE: BY COUNTRY ── -->
+<div class="page" id="pg-country">
+  <div class="ph">
+    <div class="ph-left">
+      <div class="ph-eye">Markets</div>
+      <div class="ph-title">Stocks by Country</div>
+      <div class="ph-sub">Browse top stocks from 13 countries. Click any country to see stocks and charts.</div>
+    </div>
+    <div class="ph-right">
+      <input id="country-search" placeholder="Search country..." onkeyup="filterCountries(this.value)"
+        style="background:var(--bg3);border:1px solid var(--brd2);border-radius:3px;color:var(--txt);font:400 11px/1 var(--mono);padding:7px 10px;outline:none;width:160px">
+    </div>
+  </div>
+  <div class="pb">
+    <div id="country-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px"></div>
+    <div id="country-detail" style="display:none"></div>
   </div>
 </div>
 
@@ -581,6 +749,217 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
     </div>
   </div>
   <div class="pb" id="hist-body"></div>
+</div>
+
+
+<!-- ══════════════════════════════════════════════
+     INVEST MODULE — 6 PAGES
+══════════════════════════════════════════════ -->
+
+<!-- ── PAGE: STOCK SCREENER ── -->
+<div class="page" id="pg-screener">
+  <div class="ph" style="flex-wrap:wrap;gap:10px">
+    <div class="ph-left">
+      <div class="ph-eye">Invest · Screener</div>
+      <div class="ph-title">Global Stock Screener</div>
+    </div>
+    <div class="ph-right" style="flex-wrap:wrap;gap:6px">
+      <select class="scr-select" id="scr-region" onchange="runScreener()" style="font-size:9px;padding:5px 7px">
+        <option value="">All Regions</option>
+        <option>North America</option><option>Europe</option><option>Asia Pacific</option>
+        <option>Middle East</option><option>Latin America</option><option>Africa</option>
+      </select>
+      <select class="scr-select" id="scr-sector" onchange="runScreener()" style="font-size:9px;padding:5px 7px">
+        <option value="">All Sectors</option>
+        <option>Technology</option><option>Finance</option><option>Energy</option>
+        <option>Healthcare</option><option>Consumer</option><option>Industrial</option>
+        <option>Materials</option><option>Defense</option>
+      </select>
+      <select class="scr-select" id="scr-mcap" onchange="runScreener()" style="font-size:9px;padding:5px 7px">
+        <option value="">Any Cap</option>
+        <option value="mega">Mega ($200B+)</option>
+        <option value="large">Large ($10B+)</option>
+        <option value="mid">Mid ($2B+)</option>
+        <option value="small">Small (&lt;$2B)</option>
+      </select>
+      <select class="scr-select" id="scr-pe" onchange="runScreener()" style="font-size:9px;padding:5px 7px">
+        <option value="">Any P/E</option>
+        <option value="low">Value (&lt;15)</option>
+        <option value="fair">Fair (15–25)</option>
+        <option value="high">Growth (25–50)</option>
+        <option value="very-high">High (50+)</option>
+      </select>
+      <select class="scr-select" id="scr-div" onchange="runScreener()" style="font-size:9px;padding:5px 7px">
+        <option value="">Any Div</option>
+        <option value="none">No Div</option>
+        <option value="low">1–2%</option>
+        <option value="mid">2–4%</option>
+        <option value="high">4%+</option>
+      </select>
+      <select class="scr-select" id="scr-perf" onchange="runScreener()" style="font-size:9px;padding:5px 7px">
+        <option value="">Any Perf</option>
+        <option value="top">Top (+20%+)</option>
+        <option value="pos">Positive</option>
+        <option value="neg">Negative</option>
+        <option value="crash">Crashed</option>
+      </select>
+      <select class="scr-select" id="scr-debt" onchange="runScreener()" style="font-size:9px;padding:5px 7px">
+        <option value="">Any D/E</option>
+        <option value="low">Low D/E</option>
+        <option value="mid">Mid D/E</option>
+        <option value="high">High D/E</option>
+      </select>
+      <select class="scr-select" id="scr-sort" onchange="runScreener()" style="font-size:9px;padding:5px 7px">
+        <option value="mcap">Sort: Mkt Cap</option>
+        <option value="perf">Sort: Perf</option>
+        <option value="pe">Sort: P/E</option>
+        <option value="div">Sort: Div</option>
+      </select>
+      <span style="font:700 8px/1 var(--mono);color:var(--txt3);align-self:center" id="scr-count">—</span>
+      <button class="btn btn-ghost" onclick="resetScreener()" style="font-size:7px;padding:5px 9px">Reset</button>
+    </div>
+  </div>
+  <div class="pb">
+    <div class="card card-np">
+      <table class="scr-tbl" id="scr-tbl">
+        <thead>
+          <tr>
+            <th>Symbol / Name</th><th>Region</th><th>Sector</th>
+            <th onclick="scrSort('mcap')">Mkt Cap ↕</th>
+            <th onclick="scrSort('price')">Price</th>
+            <th onclick="scrSort('perf')">YTD ↕</th>
+            <th onclick="scrSort('pe')">P/E ↕</th>
+            <th onclick="scrSort('div')">Div % ↕</th>
+            <th onclick="scrSort('debt')">D/E</th>
+            <th>AI Research</th>
+          </tr>
+        </thead>
+        <tbody id="scr-body"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- ── PAGE: PORTFOLIO TRACKER ── -->
+<div class="page" id="pg-portfolio">
+  <div class="ph">
+    <div class="ph-left">
+      <div class="ph-eye">Invest · Portfolio</div>
+      <div class="ph-title">Portfolio Tracker</div>
+      <div class="ph-sub">Track your holdings, cost basis, gains/losses and allocation across global stocks.</div>
+    </div>
+    <div class="ph-right">
+      <button class="btn btn-ghost" onclick="exportPortfolio()">Export CSV</button>
+    </div>
+  </div>
+  <div class="pb">
+    <div class="port-add">
+      <input class="port-inp" id="pt-sym" placeholder="Symbol (e.g. AAPL)" style="max-width:130px">
+      <input class="port-inp" id="pt-name" placeholder="Company name" style="max-width:180px">
+      <input class="port-inp" id="pt-qty" placeholder="Qty" type="number" style="max-width:80px">
+      <input class="port-inp" id="pt-cost" placeholder="Avg cost ($)" type="number" style="max-width:120px">
+      <input class="port-inp" id="pt-curr" placeholder="Current ($)" type="number" style="max-width:120px">
+      <button class="port-btn" onclick="addPortfolioItem()">+ ADD HOLDING</button>
+    </div>
+    <div class="port-summary" id="pt-summary">
+      <div class="port-stat"><div class="port-stat-lbl">Total Value</div><div class="port-stat-val" id="pt-total">$0</div></div>
+      <div class="port-stat"><div class="port-stat-lbl">Total Cost</div><div class="port-stat-val" id="pt-cost-total">$0</div></div>
+      <div class="port-stat"><div class="port-stat-lbl">Total P&amp;L</div><div class="port-stat-val" id="pt-pnl">$0</div></div>
+      <div class="port-stat"><div class="port-stat-lbl">Return %</div><div class="port-stat-val" id="pt-ret">0%</div></div>
+    </div>
+    <div id="pt-list"></div>
+    <div id="pt-empty" style="text-align:center;padding:40px;color:var(--txt3);font:400 13px/1.6 var(--sans)">
+      Add your first holding above to start tracking your portfolio.
+    </div>
+  </div>
+</div>
+
+<!-- ── PAGE: IPO TRACKER ── -->
+<div class="page" id="pg-ipo">
+  <div class="ph">
+    <div class="ph-left">
+      <div class="ph-eye">Invest · IPOs</div>
+      <div class="ph-title">Global IPO Tracker</div>
+      <div class="ph-sub">Upcoming, open, and recently listed IPOs across major global exchanges.</div>
+    </div>
+    <div class="ph-right">
+      <div class="inv-tabs" style="margin:0">
+        <button class="inv-tab on" id="ipo-tab-up" onclick="setIpoTab('upcoming',this)">Upcoming</button>
+        <button class="inv-tab" id="ipo-tab-open" onclick="setIpoTab('open',this)">Open Now</button>
+        <button class="inv-tab" id="ipo-tab-rec" onclick="setIpoTab('recent',this)">Recently Listed</button>
+      </div>
+    </div>
+  </div>
+  <div class="pb" id="ipo-body"></div>
+</div>
+
+<!-- ── PAGE: FINANCIAL CALCULATORS ── -->
+<div class="page" id="pg-calc">
+  <div class="ph">
+    <div class="ph-left">
+      <div class="ph-eye">Invest · Tools</div>
+      <div class="ph-title">Financial Calculators</div>
+      <div class="ph-sub">SIP, lumpsum, goal planner, CAGR, inflation, loan EMI and more.</div>
+    </div>
+  </div>
+  <div class="pb">
+    <div class="calc-grid">
+      <div class="calc-card on" id="cc-sip" onclick="openCalc('sip')"><div class="calc-icon">📈</div><div class="calc-title">SIP / DCA Calculator</div><div class="calc-desc">Monthly investment returns with compound growth</div></div>
+      <div class="calc-card" id="cc-lump" onclick="openCalc('lump')"><div class="calc-icon">💰</div><div class="calc-title">Lumpsum Returns</div><div class="calc-desc">One-time investment projected value over time</div></div>
+      <div class="calc-card" id="cc-goal" onclick="openCalc('goal')"><div class="calc-icon">🎯</div><div class="calc-title">Goal Planner</div><div class="calc-desc">How much to invest to reach your target amount</div></div>
+      <div class="calc-card" id="cc-cagr" onclick="openCalc('cagr')"><div class="calc-icon">📊</div><div class="calc-title">CAGR Calculator</div><div class="calc-desc">Compound Annual Growth Rate between two values</div></div>
+      <div class="calc-card" id="cc-inf" onclick="openCalc('inf')"><div class="calc-icon">💸</div><div class="calc-title">Inflation Calculator</div><div class="calc-desc">Real value of money after inflation over years</div></div>
+      <div class="calc-card" id="cc-emi" onclick="openCalc('emi')"><div class="calc-icon">🏠</div><div class="calc-title">Loan EMI Calculator</div><div class="calc-desc">Monthly payment for home, car or personal loan</div></div>
+    </div>
+    <div class="calc-body on" id="calc-panel"></div>
+  </div>
+</div>
+
+<!-- ── PAGE: LEARN ── -->
+<div class="page" id="pg-learn">
+  <div class="ph">
+    <div class="ph-left">
+      <div class="ph-eye">Invest · Education</div>
+      <div class="ph-title">Investment Learning Hub</div>
+      <div class="ph-sub">Master investing fundamentals, valuation, portfolio theory, macro economics and risk management.</div>
+    </div>
+    <div class="ph-right">
+      <div class="inv-tabs" style="margin:0">
+        <button class="inv-tab on" onclick="setLearnCat('all',this)">All</button>
+        <button class="inv-tab" onclick="setLearnCat('basics',this)">Basics</button>
+        <button class="inv-tab" onclick="setLearnCat('analysis',this)">Analysis</button>
+        <button class="inv-tab" onclick="setLearnCat('macro',this)">Macro</button>
+        <button class="inv-tab" onclick="setLearnCat('advanced',this)">Advanced</button>
+      </div>
+    </div>
+  </div>
+  <div class="pb">
+    <div class="learn-grid" id="learn-grid"></div>
+  </div>
+</div>
+
+<!-- ── PAGE: BROKER COMPARISON ── -->
+<div class="page" id="pg-brokers">
+  <div class="ph">
+    <div class="ph-left">
+      <div class="ph-eye">Invest · Brokers</div>
+      <div class="ph-title">Global Broker Comparison</div>
+      <div class="ph-sub">Compare fees, platforms, markets and features across 12 top international brokers.</div>
+    </div>
+    <div class="ph-right">
+      <div class="inv-tabs" style="margin:0">
+        <button class="inv-tab on" onclick="setBrokerFilter('all',this)">All</button>
+        <button class="inv-tab" onclick="setBrokerFilter('global',this)">Global</button>
+        <button class="inv-tab" onclick="setBrokerFilter('us',this)">US</button>
+        <button class="inv-tab" onclick="setBrokerFilter('eu',this)">Europe</button>
+        <button class="inv-tab" onclick="setBrokerFilter('asia',this)">Asia</button>
+        <button class="inv-tab" onclick="setBrokerFilter('africa',this)">Africa</button>
+      </div>
+    </div>
+  </div>
+  <div class="pb">
+    <div class="broker-grid" id="broker-grid"></div>
+  </div>
 </div>
 
 </main>
@@ -607,9 +986,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
       <div class="plan-cards">
         <div class="pc" id="pc-s" onclick="selPlan('s')">
           <div class="pc-name">Starter</div>
-          <div class="pc-price">$9<span>/mo</span></div>
+          <div class="pc-price">$0.99<span>/mo</span></div>
           <ul class="pc-feats">
-            <li><span class="y">✓</span>War Intel Feed</li>
+            <li><span class="y">✓</span>Crisis Intel Feed</li>
             <li><span class="y">✓</span>18 Indices + 18 Stocks</li>
             <li><span class="y">✓</span>AI Briefings</li>
             <li><span class="y">✓</span>Simulation mode</li>
@@ -621,7 +1000,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
         <div class="pc" id="pc-a" onclick="selPlan('a')" style="position:relative">
           <div class="pc-pop">POPULAR</div>
           <div class="pc-name">Analyst</div>
-          <div class="pc-price" style="color:var(--gld)">$49<span>/mo</span></div>
+          <div class="pc-price" style="color:var(--gld)">$14.99<span>/mo</span></div>
           <ul class="pc-feats">
             <li><span class="y">✓</span>Everything in Starter</li>
             <li><span class="y">✓</span><strong style="color:var(--txt)">🌍 Live World Map</strong></li>
@@ -632,7 +1011,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
         </div>
         <div class="pc" id="pc-c" onclick="selPlan('c')">
           <div class="pc-name">Command</div>
-          <div class="pc-price">$99<span>/mo</span></div>
+          <div class="pc-price">$34.99<span>/mo</span></div>
           <ul class="pc-feats">
             <li><span class="y">✓</span>Everything in Analyst</li>
             <li><span class="y">✓</span><strong style="color:var(--txt)">₿ Live Crypto</strong></li>
@@ -677,16 +1056,16 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
     <div class="modal-hd"><div><div class="modal-title">Change Plan</div></div><button class="modal-x" onclick="closeM('plan-modal')">✕</button></div>
     <div class="plan-cards">
       <div class="pc" id="pm-s" onclick="doPlanUpgrade('s')">
-        <div class="pc-name">Starter</div><div class="pc-price">$9<span>/mo</span></div>
-        <ul class="pc-feats"><li><span class="y">✓</span>War Intel + AI</li><li><span class="y">✓</span>18 Indices + Stocks</li><li><span class="n">✗</span><span>World Map</span></li><li><span class="n">✗</span><span>Live Data</span></li></ul>
+        <div class="pc-name">Starter</div><div class="pc-price">$0.99<span>/mo</span></div>
+        <ul class="pc-feats"><li><span class="y">✓</span>Crisis Intel + AI</li><li><span class="y">✓</span>18 Indices + Stocks</li><li><span class="n">✗</span><span>World Map</span></li><li><span class="n">✗</span><span>Live Data</span></li></ul>
       </div>
       <div class="pc" id="pm-a" onclick="doPlanUpgrade('a')" style="position:relative">
         <div class="pc-pop">POPULAR</div>
-        <div class="pc-name">Analyst</div><div class="pc-price" style="color:var(--gld)">$49<span>/mo</span></div>
+        <div class="pc-name">Analyst</div><div class="pc-price" style="color:var(--gld)">$14.99<span>/mo</span></div>
         <ul class="pc-feats"><li><span class="y">✓</span>🌍 Live World Map</li><li><span class="y">✓</span>Live Exchange Data</li><li><span class="y">✓</span>7-day history</li><li><span class="n">✗</span><span>Crypto</span></li></ul>
       </div>
       <div class="pc" id="pm-c" onclick="doPlanUpgrade('c')">
-        <div class="pc-name">Command</div><div class="pc-price">$99<span>/mo</span></div>
+        <div class="pc-name">Command</div><div class="pc-price">$34.99<span>/mo</span></div>
         <ul class="pc-feats"><li><span class="y">✓</span>₿ Live Crypto</li><li><span class="y">✓</span>Unlimited live data</li><li><span class="y">✓</span>30-day history</li><li><span class="y">✓</span>CSV export</li></ul>
       </div>
     </div>
@@ -733,6 +1112,138 @@ let timerInterval = null;
 let aiMsgs = [];
 const today = new Date().toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric'});
 
+/* ── WORLD CITIES ── */
+const WORLD_CITIES=[
+  {n:'New York',lon:-74.0,lat:40.7},{n:'Los Angeles',lon:-118.2,lat:34.1},{n:'Chicago',lon:-87.6,lat:41.9},{n:'Houston',lon:-95.4,lat:29.8},{n:'Miami',lon:-80.2,lat:25.8},{n:'San Francisco',lon:-122.4,lat:37.8},{n:'Seattle',lon:-122.3,lat:47.6},{n:'Washington DC',lon:-77.0,lat:38.9},{n:'Boston',lon:-71.1,lat:42.4},{n:'Atlanta',lon:-84.4,lat:33.7},{n:'Toronto',lon:-79.4,lat:43.7},{n:'Vancouver',lon:-123.1,lat:49.3},{n:'Mexico City',lon:-99.1,lat:19.4},
+  {n:'São Paulo',lon:-46.6,lat:-23.5},{n:'Rio de Janeiro',lon:-43.2,lat:-22.9},{n:'Buenos Aires',lon:-58.4,lat:-34.6},{n:'Lima',lon:-77.0,lat:-12.0},{n:'Bogotá',lon:-74.1,lat:4.7},{n:'Santiago',lon:-70.6,lat:-33.5},{n:'Caracas',lon:-66.9,lat:10.5},
+  {n:'London',lon:-0.1,lat:51.5},{n:'Paris',lon:2.3,lat:48.9},{n:'Berlin',lon:13.4,lat:52.5},{n:'Madrid',lon:-3.7,lat:40.4},{n:'Rome',lon:12.5,lat:41.9},{n:'Amsterdam',lon:4.9,lat:52.4},{n:'Brussels',lon:4.4,lat:50.8},{n:'Vienna',lon:16.4,lat:48.2},{n:'Warsaw',lon:21.0,lat:52.2},{n:'Stockholm',lon:18.1,lat:59.3},{n:'Oslo',lon:10.7,lat:59.9},{n:'Copenhagen',lon:12.6,lat:55.7},{n:'Helsinki',lon:25.0,lat:60.2},{n:'Zurich',lon:8.5,lat:47.4},{n:'Frankfurt',lon:8.7,lat:50.1},{n:'Kyiv',lon:30.5,lat:50.5},{n:'Athens',lon:23.7,lat:37.9},{n:'Lisbon',lon:-9.1,lat:38.7},{n:'Prague',lon:14.4,lat:50.1},{n:'Budapest',lon:19.0,lat:47.5},{n:'Bucharest',lon:26.1,lat:44.4},{n:'Belgrade',lon:20.5,lat:44.8},{n:'Sofia',lon:23.3,lat:42.7},{n:'Baku',lon:49.9,lat:40.4},{n:'Tbilisi',lon:44.8,lat:41.7},{n:'Yerevan',lon:44.5,lat:40.2},
+  {n:'Tehran',lon:51.4,lat:35.7},{n:'Riyadh',lon:46.7,lat:24.7},{n:'Dubai',lon:55.3,lat:25.2},{n:'Abu Dhabi',lon:54.4,lat:24.5},{n:'Istanbul',lon:28.9,lat:41.0},{n:'Ankara',lon:32.9,lat:39.9},{n:'Baghdad',lon:44.4,lat:33.3},{n:'Beirut',lon:35.5,lat:33.9},{n:'Damascus',lon:36.3,lat:33.5},{n:'Tel Aviv',lon:34.8,lat:32.1},{n:'Doha',lon:51.5,lat:25.3},{n:'Kuwait City',lon:47.9,lat:29.4},{n:'Muscat',lon:58.6,lat:23.6},{n:'Sanaa',lon:44.2,lat:15.4},{n:'Kabul',lon:69.2,lat:34.5},{n:'Islamabad',lon:73.1,lat:33.7},{n:'Karachi',lon:67.0,lat:24.9},{n:'Lahore',lon:74.3,lat:31.5},
+  {n:'Cairo',lon:31.2,lat:30.1},{n:'Lagos',lon:3.4,lat:6.5},{n:'Nairobi',lon:36.8,lat:-1.3},{n:'Johannesburg',lon:28.0,lat:-26.2},{n:'Cape Town',lon:18.4,lat:-33.9},{n:'Addis Ababa',lon:38.7,lat:9.0},{n:'Dar es Salaam',lon:39.3,lat:-6.8},{n:'Accra',lon:-0.2,lat:5.6},{n:'Dakar',lon:-17.4,lat:14.7},{n:'Casablanca',lon:-7.6,lat:33.6},{n:'Kampala',lon:32.6,lat:0.3},{n:'Kinshasa',lon:15.3,lat:-4.3},{n:'Luanda',lon:13.2,lat:-8.8},{n:'Khartoum',lon:32.5,lat:15.6},{n:'Tunis',lon:10.2,lat:36.8},{n:'Algiers',lon:3.1,lat:36.7},{n:'Tripoli',lon:13.2,lat:32.9},
+  {n:'Tokyo',lon:139.7,lat:35.7},{n:'Beijing',lon:116.4,lat:39.9},{n:'Shanghai',lon:121.5,lat:31.2},{n:'Hong Kong',lon:114.2,lat:22.3},{n:'Seoul',lon:126.9,lat:37.6},{n:'Singapore',lon:103.8,lat:1.4},{n:'Mumbai',lon:72.9,lat:19.1},{n:'Delhi',lon:77.2,lat:28.6},{n:'Bangalore',lon:77.6,lat:12.9},{n:'Kolkata',lon:88.4,lat:22.6},{n:'Sydney',lon:151.2,lat:-33.9},{n:'Melbourne',lon:145.0,lat:-37.8},{n:'Bangkok',lon:100.5,lat:13.8},{n:'Jakarta',lon:106.8,lat:-6.2},{n:'Kuala Lumpur',lon:101.7,lat:3.2},{n:'Manila',lon:120.9,lat:14.6},{n:'Hanoi',lon:105.8,lat:21.0},{n:'Ho Chi Minh',lon:106.7,lat:10.8},{n:'Dhaka',lon:90.4,lat:23.7},{n:'Colombo',lon:79.9,lat:6.9},{n:'Taipei',lon:121.6,lat:25.0},{n:'Osaka',lon:135.5,lat:34.7},{n:'Guangzhou',lon:113.3,lat:23.1},{n:'Shenzhen',lon:114.1,lat:22.5},{n:'Chengdu',lon:104.1,lat:30.7},{n:'Auckland',lon:174.8,lat:-36.9},
+  {n:'Moscow',lon:37.6,lat:55.8},{n:'St Petersburg',lon:30.3,lat:59.9},{n:'Novosibirsk',lon:82.9,lat:55.0},{n:'Vladivostok',lon:131.9,lat:43.1},
+];
+
+/* ── COUNTRY STOCKS ── */
+const COUNTRY_STOCKS={
+  US:[{sym:'AAPL',name:'Apple',p:189,chg:+1.2},{sym:'MSFT',name:'Microsoft',p:415,chg:-0.8},{sym:'NVDA',name:'NVIDIA',p:875,chg:+3.4},{sym:'AMZN',name:'Amazon',p:182,chg:+0.6},{sym:'GOOGL',name:'Alphabet',p:171,chg:-0.3},{sym:'META',name:'Meta',p:512,chg:+2.1},{sym:'TSLA',name:'Tesla',p:178,chg:-2.4},{sym:'JPM',name:'JPMorgan',p:196,chg:+0.9}],
+  GB:[{sym:'SHEL',name:'Shell',p:28.4,chg:+1.8},{sym:'AZN',name:'AstraZeneca',p:72.2,chg:+0.4},{sym:'HSBA',name:'HSBC',p:6.8,chg:-0.6},{sym:'BP',name:'BP',p:4.9,chg:+2.2},{sym:'RIO',name:'Rio Tinto',p:52.1,chg:-1.1},{sym:'VOD',name:'Vodafone',p:0.74,chg:-0.3}],
+  DE:[{sym:'SAP',name:'SAP SE',p:184,chg:+1.4},{sym:'SIE',name:'Siemens',p:175,chg:+0.8},{sym:'MBG',name:'Mercedes-Benz',p:62,chg:-1.2},{sym:'BAYN',name:'Bayer',p:28,chg:-2.1},{sym:'BMW',name:'BMW',p:88,chg:-0.7},{sym:'ALV',name:'Allianz',p:272,chg:+1.1}],
+  JP:[{sym:'7203',name:'Toyota',p:3210,chg:+0.9},{sym:'6758',name:'Sony',p:12800,chg:+1.8},{sym:'9984',name:'SoftBank',p:8900,chg:-1.4},{sym:'7974',name:'Nintendo',p:8100,chg:+0.6},{sym:'6861',name:'Keyence',p:58000,chg:+2.2}],
+  CN:[{sym:'0700',name:'Tencent',p:368,chg:+2.4},{sym:'BABA',name:'Alibaba',p:72,chg:-1.8},{sym:'0941',name:'China Mobile',p:85,chg:+0.3},{sym:'3690',name:'Meituan',p:148,chg:+3.1}],
+  IN:[{sym:'RELIANCE',name:'Reliance',p:2840,chg:+1.1},{sym:'TCS',name:'TCS',p:4120,chg:+0.7},{sym:'INFY',name:'Infosys',p:1920,chg:+1.4},{sym:'HDFC',name:'HDFC Bank',p:1680,chg:-0.5}],
+  AU:[{sym:'CBA',name:'CommBank',p:124,chg:+0.6},{sym:'BHP',name:'BHP Group',p:42,chg:-1.2},{sym:'CSL',name:'CSL Ltd',p:288,chg:+1.8},{sym:'NAB',name:'NAB',p:36,chg:+0.4}],
+  SA:[{sym:'2222',name:'Saudi Aramco',p:28.4,chg:+1.4},{sym:'1180',name:'Al Rajhi Bank',p:88,chg:+0.8},{sym:'2010',name:'SABIC',p:84,chg:-0.6}],
+  AE:[{sym:'EMAAR',name:'Emaar Properties',p:8.4,chg:+2.1},{sym:'FAB',name:'First Abu Dhabi',p:14.2,chg:+0.6},{sym:'DIB',name:'Dubai Islamic',p:7.8,chg:-0.4}],
+  BR:[{sym:'VALE3',name:'Vale SA',p:64,chg:-1.4},{sym:'PETR4',name:'Petrobras',p:38,chg:+2.8},{sym:'ITUB4',name:'Itaú Unibanco',p:29,chg:+0.7}],
+  KR:[{sym:'005930',name:'Samsung',p:74000,chg:-0.8},{sym:'000660',name:'SK Hynix',p:198000,chg:+2.4},{sym:'035420',name:'NAVER',p:214000,chg:+1.1}],
+  FR:[{sym:'LVMH',name:'LVMH',p:668,chg:+1.4},{sym:'TTE',name:'TotalEnergies',p:60,chg:+2.1},{sym:'SAN',name:'Sanofi',p:95,chg:+0.3}],
+  NG:[{sym:'DANGCEM',name:'Dangote Cement',p:680,chg:+1.8},{sym:'MTNN',name:'MTN Nigeria',p:220,chg:+0.6},{sym:'ZENITHBANK',name:'Zenith Bank',p:42,chg:-0.4}],
+};
+const MKT_TO_COUNTRY={sp500:'US',nasdaq:'US',dow:'US',tsx:'CA',bovespa:'BR',ftse:'GB',dax:'DE',cac:'FR',smi:'CH',ibex:'ES',nikkei:'JP',hangseng:'HK',shanghai:'CN',asx:'AU',sensex:'IN',kospi:'KR',tadawul:'SA',dfm:'AE'};
+const COUNTRY_META={US:{flag:'🇺🇸',name:'United States'},GB:{flag:'🇬🇧',name:'United Kingdom'},DE:{flag:'🇩🇪',name:'Germany'},JP:{flag:'🇯🇵',name:'Japan'},CN:{flag:'🇨🇳',name:'China'},IN:{flag:'🇮🇳',name:'India'},AU:{flag:'🇦🇺',name:'Australia'},SA:{flag:'🇸🇦',name:'Saudi Arabia'},AE:{flag:'🇦🇪',name:'UAE'},BR:{flag:'🇧🇷',name:'Brazil'},KR:{flag:'🇰🇷',name:'South Korea'},FR:{flag:'🇫🇷',name:'France'},NG:{flag:'🇳🇬',name:'Nigeria'},CA:{flag:'🇨🇦',name:'Canada'},HK:{flag:'🇭🇰',name:'Hong Kong'},CH:{flag:'🇨🇭',name:'Switzerland'},ES:{flag:'🇪🇸',name:'Spain'}};
+
+const SCREENER_STOCKS=[
+  {sym:'AAPL',name:'Apple Inc',region:'North America',sector:'Technology',mcap:3100,price:189,perf:12.4,pe:29,div:0.5,debt:1.8,country:'US'},
+  {sym:'MSFT',name:'Microsoft',region:'North America',sector:'Technology',mcap:3000,price:415,perf:18.2,pe:35,div:0.7,debt:0.4,country:'US'},
+  {sym:'NVDA',name:'NVIDIA',region:'North America',sector:'Technology',mcap:2200,price:875,perf:84.3,pe:68,div:0.0,debt:0.4,country:'US'},
+  {sym:'GOOGL',name:'Alphabet',region:'North America',sector:'Technology',mcap:2000,price:171,perf:9.8,pe:23,div:0.0,debt:0.1,country:'US'},
+  {sym:'META',name:'Meta Platforms',region:'North America',sector:'Technology',mcap:1400,price:512,perf:52.1,pe:27,div:0.4,debt:0.1,country:'US'},
+  {sym:'AMZN',name:'Amazon',region:'North America',sector:'Technology',mcap:1900,price:182,perf:21.3,pe:44,div:0.0,debt:0.6,country:'US'},
+  {sym:'TSLA',name:'Tesla',region:'North America',sector:'Consumer',mcap:580,price:178,perf:-18.4,pe:52,div:0.0,debt:0.2,country:'US'},
+  {sym:'JPM',name:'JPMorgan Chase',region:'North America',sector:'Finance',mcap:580,price:196,perf:24.8,pe:12,div:2.2,debt:1.2,country:'US'},
+  {sym:'JNJ',name:'Johnson & Johnson',region:'North America',sector:'Healthcare',mcap:380,price:158,perf:-4.2,pe:16,div:3.1,debt:0.5,country:'US'},
+  {sym:'XOM',name:'ExxonMobil',region:'North America',sector:'Energy',mcap:490,price:115,perf:8.4,pe:14,div:3.4,debt:0.2,country:'US'},
+  {sym:'LMT',name:'Lockheed Martin',region:'North America',sector:'Defense',mcap:100,price:476,perf:14.2,pe:17,div:2.8,debt:1.5,country:'US'},
+  {sym:'WMT',name:'Walmart',region:'North America',sector:'Consumer',mcap:620,price:78,perf:31.2,pe:28,div:1.2,debt:0.6,country:'US'},
+  {sym:'ASML',name:'ASML Holding',region:'Europe',sector:'Technology',mcap:340,price:840,perf:6.2,pe:38,div:0.9,debt:0.2,country:'NL'},
+  {sym:'LVMH',name:'LVMH',region:'Europe',sector:'Consumer',mcap:320,price:668,perf:-12.4,pe:22,div:1.8,debt:0.4,country:'FR'},
+  {sym:'SAP',name:'SAP SE',region:'Europe',sector:'Technology',mcap:240,price:194,perf:28.4,pe:42,div:0.8,debt:0.3,country:'DE'},
+  {sym:'SHEL',name:'Shell',region:'Europe',sector:'Energy',mcap:210,price:28.4,perf:4.8,pe:11,div:4.1,debt:0.5,country:'GB'},
+  {sym:'AZN',name:'AstraZeneca',region:'Europe',sector:'Healthcare',mcap:260,price:72,perf:16.2,pe:34,div:2.1,debt:0.8,country:'GB'},
+  {sym:'NESN',name:'Nestlé',region:'Europe',sector:'Consumer',mcap:260,price:92,perf:-18.4,pe:19,div:3.2,debt:0.6,country:'CH'},
+  {sym:'NOVO',name:'Novo Nordisk',region:'Europe',sector:'Healthcare',mcap:520,price:118,perf:22.1,pe:44,div:1.2,debt:0.2,country:'DK'},
+  {sym:'SIE',name:'Siemens',region:'Europe',sector:'Industrial',mcap:140,price:175,perf:14.4,pe:18,div:2.4,debt:0.9,country:'DE'},
+  {sym:'TTE',name:'TotalEnergies',region:'Europe',sector:'Energy',mcap:155,price:60,perf:2.1,pe:8,div:5.2,debt:0.4,country:'FR'},
+  {sym:'BNP',name:'BNP Paribas',region:'Europe',sector:'Finance',mcap:80,price:62,perf:18.2,pe:7,div:6.8,debt:3.2,country:'FR'},
+  {sym:'TSM',name:'TSMC',region:'Asia Pacific',sector:'Technology',mcap:880,price:148,perf:48.2,pe:24,div:1.4,debt:0.2,country:'TW'},
+  {sym:'TOYOTA',name:'Toyota Motor',region:'Asia Pacific',sector:'Consumer',mcap:280,price:3210,perf:28.4,pe:9,div:2.8,debt:1.1,country:'JP'},
+  {sym:'SBANK',name:'SoftBank Group',region:'Asia Pacific',sector:'Technology',mcap:88,price:8900,perf:32.1,pe:18,div:0.4,debt:2.8,country:'JP'},
+  {sym:'SMSNG',name:'Samsung Electronics',region:'Asia Pacific',sector:'Technology',mcap:380,price:74000,perf:-14.8,pe:14,div:2.4,debt:0.1,country:'KR'},
+  {sym:'RELIANCE',name:'Reliance Industries',region:'Asia Pacific',sector:'Energy',mcap:220,price:2840,perf:8.4,pe:24,div:0.4,debt:0.5,country:'IN'},
+  {sym:'TCS',name:'Tata Consultancy',region:'Asia Pacific',sector:'Technology',mcap:170,price:4120,perf:12.4,pe:28,div:1.8,debt:0.0,country:'IN'},
+  {sym:'BHP',name:'BHP Group',region:'Asia Pacific',sector:'Materials',mcap:200,price:42,perf:-8.4,pe:11,div:6.2,debt:0.4,country:'AU'},
+  {sym:'TENCENT',name:'Tencent Holdings',region:'Asia Pacific',sector:'Technology',mcap:410,price:368,perf:18.4,pe:18,div:0.5,debt:0.2,country:'HK'},
+  {sym:'BABA',name:'Alibaba Group',region:'Asia Pacific',sector:'Technology',mcap:190,price:72,perf:-22.4,pe:12,div:0.0,debt:0.2,country:'CN'},
+  {sym:'ARAMCO',name:'Saudi Aramco',region:'Middle East',sector:'Energy',mcap:1900,price:28.4,perf:2.4,pe:13,div:4.8,debt:0.1,country:'SA'},
+  {sym:'EMAAR',name:'Emaar Properties',region:'Middle East',sector:'Real Estate',mcap:12,price:8.4,perf:14.8,pe:8,div:3.2,debt:0.8,country:'AE'},
+  {sym:'ALRAJHI',name:'Al Rajhi Bank',region:'Middle East',sector:'Finance',mcap:88,price:88,perf:4.8,pe:16,div:2.8,debt:1.2,country:'SA'},
+  {sym:'VALE',name:'Vale SA',region:'Latin America',sector:'Materials',mcap:60,price:64,perf:-8.4,pe:7,div:8.4,debt:0.4,country:'BR'},
+  {sym:'PETR4',name:'Petrobras',region:'Latin America',sector:'Energy',mcap:92,price:38,perf:12.4,pe:6,div:12.4,debt:0.8,country:'BR'},
+  {sym:'ITUB4',name:'Itaú Unibanco',region:'Latin America',sector:'Finance',mcap:52,price:29,perf:18.4,pe:8,div:6.2,debt:3.8,country:'BR'},
+  {sym:'NASPERS',name:'Naspers',region:'Africa',sector:'Technology',mcap:42,price:3200,perf:18.4,pe:22,div:0.0,debt:0.2,country:'ZA'},
+  {sym:'MTN',name:'MTN Group',region:'Africa',sector:'Technology',mcap:8,price:88,perf:-14.8,pe:10,div:5.8,debt:1.8,country:'ZA'},
+  {sym:'DANGCEM',name:'Dangote Cement',region:'Africa',sector:'Materials',mcap:6,price:680,perf:8.4,pe:8,div:4.8,debt:0.4,country:'NG'},
+];
+const IPO_DATA={
+  upcoming:[
+    {name:'CoreWeave',sym:'CRWV',sector:'Technology',exchange:'NASDAQ',country:'US',flag:'🇺🇸',date:'Mar 28 2026',price:'$47–$55',size:'$2.7B',desc:'AI cloud infrastructure provider backed by NVIDIA. Pure-play AI compute.'},
+    {name:'Klarna',sym:'KLAR',sector:'Finance',exchange:'NYSE',country:'SE',flag:'🇸🇪',date:'Apr 8 2026',price:'$60–$70',size:'$15B',desc:'Swedish BNPL leader. 85M+ users. Profitable since 2023.'},
+    {name:'Shein',sym:'SHEIN',sector:'Consumer',exchange:'LSE',country:'SG',flag:'🇸🇬',date:'Q2 2026',price:'TBD',size:'$50B',desc:'Global fast fashion. 150+ countries. Regulatory scrutiny ongoing.'},
+    {name:'Waymo',sym:'WAYMO',sector:'Technology',exchange:'NASDAQ',country:'US',flag:'🇺🇸',date:'Q3 2026',price:'TBD',size:'$45B',desc:'Alphabet autonomous vehicle spinoff. First commercial robotaxi at scale.'},
+    {name:'Starlink',sym:'STLK',sector:'Technology',exchange:'NYSE',country:'US',flag:'🇺🇸',date:'2026',price:'TBD',size:'$150B+',desc:'SpaceX satellite internet. 3M+ subscribers. Potentially largest IPO ever.'},
+  ],
+  open:[
+    {name:'Reddit',sym:'RDDT',sector:'Technology',exchange:'NYSE',country:'US',flag:'🇺🇸',date:'Open now',price:'$34–$38',size:'$748M',desc:'Social media. 73M+ daily users. AI training data licensing.'},
+    {name:'Cerebras',sym:'CBRS',sector:'Technology',exchange:'NASDAQ',country:'US',flag:'🇺🇸',date:'Open now',price:'$31–$35',size:'$1.8B',desc:'AI chip maker. Wafer-scale engine 57x faster than A100 for inference.'},
+  ],
+  recent:[
+    {name:'Arm Holdings',sym:'ARM',sector:'Technology',exchange:'NASDAQ',country:'GB',flag:'🇬🇧',date:'Sep 2023',price:'IPO $51 → $148 now',size:'$52B',desc:'Chip architecture IP. Powers 99% of smartphones.'},
+    {name:'Birkenstock',sym:'BIRK',sector:'Consumer',exchange:'NYSE',country:'DE',flag:'🇩🇪',date:'Oct 2023',price:'IPO $46 → $52 now',size:'$8.6B',desc:'German footwear. 250yr history. Premium positioning.'},
+    {name:'Instacart',sym:'CART',sector:'Technology',exchange:'NASDAQ',country:'US',flag:'🇺🇸',date:'Sep 2023',price:'IPO $30 → $38 now',size:'$9.9B',desc:'Grocery delivery. Ad revenue growth driving profitability.'},
+    {name:'Kenvue',sym:'KVUE',sector:'Healthcare',exchange:'NYSE',country:'US',flag:'🇺🇸',date:'May 2023',price:'IPO $22 → $18 now',size:'$3.8B',desc:'JNJ consumer health spinoff. Tylenol, Neutrogena brands.'},
+  ]
+};
+const CALC_CONFIGS={
+  sip:{title:'SIP / Dollar-Cost Averaging',fields:[{id:'sip-amt',label:'Monthly Investment ($)',val:'500'},{id:'sip-rate',label:'Expected Annual Return (%)',val:'12'},{id:'sip-yrs',label:'Years',val:'10'}],
+    calc:f=>{const P=+f['sip-amt'],r=+f['sip-rate']/100/12,n=+f['sip-yrs']*12,fv=P*((Math.pow(1+r,n)-1)/r)*(1+r),inv=P*n;return [{l:'Invested',v:'$'+inv.toLocaleString(0,{maximumFractionDigits:0}),c:'var(--txt)'},{l:'Final Value',v:'$'+fv.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,','),c:'var(--grn)'},{l:'Wealth Gained',v:'$'+(fv-inv).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,','),c:'var(--grn)'},{l:'Multiple',v:(fv/inv).toFixed(2)+'x',c:'var(--gld)'}];}},
+  lump:{title:'Lumpsum Returns',fields:[{id:'l-amt',label:'Investment Amount ($)',val:'10000'},{id:'l-rate',label:'Annual Return (%)',val:'12'},{id:'l-yrs',label:'Years',val:'10'}],
+    calc:f=>{const P=+f['l-amt'],r=+f['l-rate']/100,n=+f['l-yrs'],fv=P*Math.pow(1+r,n);return [{l:'Invested',v:'$'+P.toLocaleString(),c:'var(--txt)'},{l:'Final Value',v:'$'+fv.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,','),c:'var(--grn)'},{l:'Profit',v:'$'+(fv-P).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,','),c:'var(--grn)'},{l:'CAGR',v:((Math.pow(fv/P,1/n)-1)*100).toFixed(2)+'%',c:'var(--gld)'}];}},
+  goal:{title:'Goal Planner',fields:[{id:'g-target',label:'Target Amount ($)',val:'100000'},{id:'g-rate',label:'Annual Return (%)',val:'12'},{id:'g-yrs',label:'Years',val:'10'}],
+    calc:f=>{const FV=+f['g-target'],r=+f['g-rate']/100/12,n=+f['g-yrs']*12,sip=FV*r/(Math.pow(1+r,n)-1)/(1+r),lump=FV/Math.pow(1+parseFloat(f['g-rate'])/100,+f['g-yrs']);return [{l:'Monthly SIP Needed',v:'$'+sip.toFixed(2),c:'var(--grn)'},{l:'Lumpsum Needed Today',v:'$'+lump.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,','),c:'var(--blu)'},{l:'Time Horizon',v:f['g-yrs']+' years',c:'var(--txt)'},{l:'Target',v:'$'+parseFloat(f['g-target']).toLocaleString(),c:'var(--gld)'}];}},
+  cagr:{title:'CAGR Calculator',fields:[{id:'c-start',label:'Initial Value ($)',val:'10000'},{id:'c-end',label:'Final Value ($)',val:'25000'},{id:'c-yrs',label:'Years',val:'8'}],
+    calc:f=>{const s=+f['c-start'],e=+f['c-end'],n=+f['c-yrs'],cagr=(Math.pow(e/s,1/n)-1)*100;return [{l:'CAGR',v:cagr.toFixed(2)+'%',c:cagr>=0?'var(--grn)':'var(--red)'},{l:'Total Return',v:((e-s)/s*100).toFixed(2)+'%',c:e>=s?'var(--grn)':'var(--red)'},{l:'Absolute Gain',v:'$'+(e-s).toLocaleString(),c:e>=s?'var(--grn)':'var(--red)'},{l:'Multiple',v:(e/s).toFixed(2)+'x',c:'var(--gld)'}];}},
+  inf:{title:'Inflation Calculator',fields:[{id:'i-amt',label:'Current Value ($)',val:'100000'},{id:'i-rate',label:'Annual Inflation (%)',val:'6'},{id:'i-yrs',label:'Years',val:'20'}],
+    calc:f=>{const P=+f['i-amt'],r=+f['i-rate']/100,n=+f['i-yrs'],fut=P*Math.pow(1+r,n),real=P/Math.pow(1+r,n);return [{l:'Future Cost',v:'$'+fut.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,','),c:'var(--red)'},{l:'Real Value Today',v:'$'+real.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,','),c:'var(--txt)'},{l:'Purchasing Power Lost',v:((1-real/P)*100).toFixed(1)+'%',c:'var(--red)'},{l:'Return Needed to Beat',v:(r*100+2).toFixed(1)+'%/yr',c:'var(--grn)'}];}},
+  emi:{title:'Loan EMI Calculator',fields:[{id:'e-amt',label:'Loan Amount ($)',val:'200000'},{id:'e-rate',label:'Annual Interest (%)',val:'8'},{id:'e-yrs',label:'Tenure (years)',val:'20'}],
+    calc:f=>{const P=+f['e-amt'],r=+f['e-rate']/100/12,n=+f['e-yrs']*12,emi=P*r*Math.pow(1+r,n)/(Math.pow(1+r,n)-1),tot=emi*n;return [{l:'Monthly EMI',v:'$'+emi.toFixed(2),c:'var(--grn)'},{l:'Total Paid',v:'$'+tot.toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,','),c:'var(--txt)'},{l:'Total Interest',v:'$'+(tot-P).toFixed(0).replace(/\B(?=(\d{3})+(?!\d))/g,','),c:'var(--red)'},{l:'Interest %',v:((tot-P)/P*100).toFixed(1)+'%',c:'var(--amb)'}];}},
+};
+const LEARN_TOPICS=[
+  {id:'b1',cat:'basics',icon:'📈',title:'How Stock Markets Work',level:'beg',desc:'What stocks are, how exchanges operate, market participants and price discovery.',content:'<h3>What is a Stock?</h3><p>A stock represents ownership in a company. Buy a share of Apple = own a tiny fraction of Apple Inc.</p><h3>How Prices Are Set</h3><p>Prices change based on supply and demand. More buyers than sellers = price goes up. Stock exchanges match buyers and sellers.</p><h3>Major Global Exchanges</h3><ul><li>NYSE & NASDAQ (USA) — world largest by market cap</li><li>Shanghai & Shenzhen (China) — $10T+ combined</li><li>Tokyo, London, Euronext (Europe)</li><li>BSE & NSE (India), SGX (Singapore), ASX (Australia)</li></ul>'},
+  {id:'b2',cat:'basics',icon:'💡',title:'Value vs Growth Investing',level:'beg',desc:'The two main investment philosophies and when each works best.',content:'<h3>Value Investing</h3><p>Find stocks trading below intrinsic worth. Like buying a $100 bill for $70. Key metrics: low P/E, low P/B, high dividend yield. Championed by Warren Buffett and Benjamin Graham.</p><h3>Growth Investing</h3><p>Pay premium for fast-growing companies. Accept high P/E if growth justifies it. Champions: Peter Lynch, Cathie Wood.</p><h3>When Each Works</h3><ul><li>Value: bear markets, recessions, rising rates</li><li>Growth: bull markets, low rates, tech booms</li><li>Best portfolios blend both</li></ul>'},
+  {id:'b3',cat:'basics',icon:'🥧',title:'Asset Allocation & Diversification',level:'beg',desc:'How to spread risk across asset classes, geographies and sectors.',content:'<h3>Asset Classes</h3><ul><li><strong>Equities</strong> — highest long-term returns, highest volatility</li><li><strong>Bonds</strong> — stable income, lower returns</li><li><strong>Real Estate/REITs</strong> — inflation hedge, income</li><li><strong>Commodities</strong> — gold, oil as crisis hedge</li></ul><h3>Classic Models</h3><ul><li>60/40 — 60% stocks, 40% bonds</li><li>All-Weather — Ray Dalio: stocks, bonds, gold, commodities</li></ul>'},
+  {id:'a1',cat:'analysis',icon:'🔬',title:'Fundamental Analysis',level:'int',desc:'Reading financial statements, calculating key ratios and valuing companies.',content:'<h3>Key Valuation Ratios</h3><ul><li><strong>P/E</strong> — Price/Earnings. Lower = cheaper.</li><li><strong>P/B</strong> — Price/Book. Below 1 = trading below assets.</li><li><strong>EV/EBITDA</strong> — preferred by professionals.</li><li><strong>PEG</strong> — P/E / Growth Rate. Below 1 = undervalued growth.</li></ul><h3>Quality Metrics</h3><ul><li>ROE above 15% is good</li><li>ROIC above WACC = value creation</li><li>High FCF yield = better value</li></ul>'},
+  {id:'a2',cat:'analysis',icon:'📉',title:'Technical Analysis',level:'int',desc:'Chart patterns, indicators, support/resistance and trend following.',content:'<h3>Key Concepts</h3><ul><li><strong>Support</strong> — price floor where buyers step in</li><li><strong>Resistance</strong> — price ceiling where sellers dominate</li><li><strong>Volume</strong> — confirms moves. High volume breakout = strong signal.</li></ul><h3>Popular Indicators</h3><ul><li>Moving Averages — 50-day, 200-day. Golden cross = bullish.</li><li>RSI — Above 70 overbought, below 30 oversold.</li><li>MACD — momentum and trend changes</li><li>Bollinger Bands — volatility measurement</li></ul>'},
+  {id:'m1',cat:'macro',icon:'🌍',title:'Macro Economics for Investors',level:'int',desc:'How GDP, inflation, interest rates and central banks drive markets.',content:'<h3>Key Indicators</h3><ul><li>GDP — economy expanding or contracting</li><li>Inflation (CPI/PCE) — rising prices erode purchasing power</li><li>Interest Rates — central banks control this, drives all asset prices</li><li>Unemployment — full employment = strong economy</li></ul><h3>Rate-Market Relationship</h3><ul><li>Rising rates → growth stocks fall, banks gain</li><li>Falling rates → growth stocks boom, real estate gains</li><li>High inflation → commodities win, bonds lose</li></ul>'},
+  {id:'m2',cat:'macro',icon:'💱',title:'Currency & Forex Markets',level:'int',desc:'How exchange rates affect investments and how to hedge currency risk.',content:'<h3>Why Currencies Matter</h3><p>If you invest in Japanese stocks and the yen falls 10%, your USD returns drop 10% even if stocks rose. Currency risk is real.</p><h3>Safe Haven Currencies</h3><p>USD, JPY, and CHF strengthen during crises. Emerging market currencies (TRY, ZAR, BRL) often weaken during global stress.</p>'},
+  {id:'v1',cat:'advanced',icon:'⚡',title:'Options & Derivatives',level:'adv',desc:'Calls, puts, hedging strategies and how professionals manage risk.',content:'<h3>Options Basics</h3><p>Options give you the right (not obligation) to buy or sell a stock at a set price before expiry.</p><h3>Common Strategies</h3><ul><li><strong>Covered Call</strong> — own stock + sell call. Income generation.</li><li><strong>Protective Put</strong> — own stock + buy put. Insurance against crash.</li><li><strong>Long Straddle</strong> — profit from big move either direction.</li></ul>'},
+  {id:'v2',cat:'advanced',icon:'🏗️',title:'Portfolio Construction & Risk',level:'adv',desc:'Modern portfolio theory, Sharpe ratio, beta, correlation and factor investing.',content:'<h3>Key Risk Metrics</h3><ul><li><strong>Beta</strong> — market sensitivity. Beta 1.5 = moves 1.5x market.</li><li><strong>Sharpe Ratio</strong> — return per unit of risk. Above 1 is good.</li><li><strong>Max Drawdown</strong> — biggest peak-to-trough loss.</li><li><strong>Correlation</strong> — how assets move together.</li></ul><h3>Factor Investing</h3><p>Value, Momentum, Quality, Low Volatility, Small Cap factors proven to generate excess returns.</p>'},
+  {id:'v3',cat:'advanced',icon:'🌐',title:'Global Investing Frameworks',level:'adv',desc:'Emerging vs developed markets, geopolitical risk premiums and country analysis.',content:'<h3>Developed vs Emerging</h3><ul><li><strong>Developed</strong> — US, Europe, Japan. Stable, liquid.</li><li><strong>Emerging</strong> — China, India, Brazil, Africa. Higher growth, higher risk.</li><li><strong>Frontier</strong> — Vietnam, Nigeria, Kenya. Early growth stories.</li></ul><h3>Geopolitical Risk Premiums</h3><p>War, sanctions, trade disputes add risk premiums. Crisis events often overshoot to the downside — creating entry opportunities for patient investors.</p>'},
+];
+const BROKERS=[
+  {name:'Interactive Brokers',type:'Global Multi-Asset',region:'global',logo:'IB',color:'#e03836',commission:'$0–$0.005/share',minDeposit:'$0',markets:'135+ countries',features:['Stocks','ETFs','Options','Futures','Forex','Bonds'],url:'https://www.interactivebrokers.com',pros:'Best for professionals. Lowest margin rates. True global.',cons:'Complex interface. Not beginner-friendly.'},
+  {name:'Charles Schwab',type:'US Full-Service',region:'us',logo:'CS',color:'#0078d4',commission:'$0 stocks/ETFs',minDeposit:'$0',markets:'US + International',features:['Stocks','ETFs','Options','Mutual Funds','Bonds'],url:'https://www.schwab.com',pros:'Excellent research & customer service. No minimums.',cons:'Limited international access.'},
+  {name:'Fidelity',type:'US Full-Service',region:'us',logo:'FI',color:'#00853e',commission:'$0 stocks/ETFs',minDeposit:'$0',markets:'US + 25 countries',features:['Stocks','ETFs','Options','Mutual Funds','Crypto'],url:'https://www.fidelity.com',pros:'Best mutual fund selection. Great tools.',cons:'Options fees slightly higher.'},
+  {name:'eToro',type:'Social Trading',region:'global',logo:'ET',color:'#3ab860',commission:'$0 (spread)',minDeposit:'$50',markets:'17 countries',features:['Stocks','ETFs','Crypto','Forex','CopyTrading'],url:'https://www.etoro.com',pros:'Copy pro traders. Great for beginners.',cons:'Wider spreads. Withdrawal fees.'},
+  {name:'Saxo Bank',type:'European Premium',region:'eu',logo:'SX',color:'#002b5c',commission:'From 0.08%',minDeposit:'$2,000',markets:'70+ exchanges',features:['Stocks','ETFs','Options','Futures','Forex','Bonds'],url:'https://www.home.saxo',pros:'Premium research. 40,000+ instruments.',cons:'High minimum. Complex fees.'},
+  {name:'Degiro',type:'European Discount',region:'eu',logo:'DG',color:'#00b4d8',commission:'€1–€4/trade',minDeposit:'€0',markets:'50+ exchanges',features:['Stocks','ETFs','Options','Bonds'],url:'https://www.degiro.eu',pros:'Very low fees. Simple to use.',cons:'No crypto. Limited US access.'},
+  {name:'Tiger Brokers',type:'Asia Pacific',region:'asia',logo:'TB',color:'#f97316',commission:'From $0.01',minDeposit:'$0',markets:'US, HK, SG, AU, CN',features:['Stocks','ETFs','Options','Futures'],url:'https://www.tigersecurities.com',pros:'Best for Asian investors. US + HK access.',cons:'Limited to specific markets.'},
+  {name:'Moomoo',type:'Asia Pacific',region:'asia',logo:'MM',color:'#8b5cf6',commission:'$0 US stocks',minDeposit:'$0',markets:'US, HK, SG, AU, JP',features:['Stocks','ETFs','Options','Crypto'],url:'https://www.moomoo.com',pros:'Advanced charting. Free Level 2 data.',cons:'Newer platform.'},
+  {name:'EasyEquities',type:'African Pioneer',region:'africa',logo:'EE',color:'#ff6b00',commission:'0.25% min',minDeposit:'$0',markets:'SA, US, UK, AU',features:['Stocks','ETFs','Tax-Free','Fractional'],url:'https://www.easyequities.co.za',pros:'Best for South Africa. Fractional shares.',cons:'Limited to SA/US/UK/AU.'},
+  {name:'Stanbic IBTC',type:'Nigerian Broker',region:'africa',logo:'ST',color:'#0033a0',commission:'1.35%+',minDeposit:'NGN 10,000',markets:'Nigeria Stock Exchange',features:['Stocks','Bonds','ETFs','Mutual Funds'],url:'https://www.stanbicibtc.com',pros:'Best for Nigerian stocks. Full local access.',cons:'Nigeria only. High fees.'},
+  {name:'Zerodha',type:'Indian Discount',region:'asia',logo:'ZE',color:'#387ed1',commission:'₹20/order',minDeposit:'₹0',markets:'BSE + NSE India',features:['Stocks','ETFs','F&O','Mutual Funds'],url:'https://zerodha.com',pros:'India market leader. Best charting.',cons:'India only.'},
+  {name:'Robinhood',type:'US App-First',region:'us',logo:'RH',color:'#00c805',commission:'$0',minDeposit:'$0',markets:'US Markets',features:['Stocks','ETFs','Options','Crypto','IRA'],url:'https://robinhood.com',pros:'Simplest interface. No minimums.',cons:'US only. Limited research.'},
+];
+
 /* ── PLAN FEATURES ── */
 const PF = {
   s: {liveMap:false, liveData:false, history:0,  crypto:false, liveDays:0},
@@ -767,35 +1278,43 @@ const LAND_PATHS=[
 
 
 const WAR_EVENTS=[
+  // Middle East Conflict
   {id:'e1',cat:'mil',label:'MILITARY',loc:'Bandar Abbas, Iran',lon:56.3,lat:27.2,text:'US-Israel strike Bandar Abbas naval base. IRGC surface-to-air radar disabled in southern Iran.',impacts:[{a:'LMT',v:'+2.1%',c:'grn'},{a:'NOC',v:'+1.8%',c:'grn'},{a:'DFM',v:'-4.1%',c:'red'}],source:'Reuters',url:'https://www.reuters.com/world/middle-east/'},
   {id:'e2',cat:'nrg',label:'ENERGY',loc:'Strait of Hormuz',lon:56.5,lat:26.5,text:'IRGC speedboats approach 2 tankers in Strait of Hormuz. Traffic at 30% of normal. LNG exports disrupted.',impacts:[{a:'Brent',v:'+$3.20',c:'grn'},{a:'XOM',v:'+2.4%',c:'grn'},{a:'DAL',v:'-3.1%',c:'red'}],source:'Bloomberg',url:'https://www.bloomberg.com/energy'},
   {id:'e3',cat:'dip',label:'DIPLOMATIC',loc:'Beijing, China',lon:116.4,lat:39.9,text:'China proposes ceasefire framework. Iran signals conditional interest. US rejects without full Hormuz reopening.',impacts:[{a:'Gold',v:'-0.8%',c:'red'},{a:'VIX',v:'-1.2',c:'grn'},{a:'S&P',v:'+0.4%',c:'grn'}],source:'Al Jazeera',url:'https://www.aljazeera.com/news/'},
   {id:'e4',cat:'nuc',label:'NUCLEAR',loc:'Fordow, Iran',lon:51.2,lat:34.8,text:'IAEA loses contact with Fordow enrichment facility for 6 hours. US deploys B-2 bombers to Diego Garcia.',impacts:[{a:'Gold',v:'+1.9%',c:'grn'},{a:'S&P',v:'-1.4%',c:'red'},{a:'VIX',v:'+4.2',c:'red'}],source:'IAEA',url:'https://www.iaea.org/newscenter/news'},
-  {id:'e5',cat:'eco',label:'ECONOMIC',loc:'Riyadh, Saudi Arabia',lon:46.7,lat:24.7,text:'Saudi Arabia announces emergency output +2M bpd to offset Hormuz disruption. Brent pulls back from $90.',impacts:[{a:'Brent',v:'-$2.10',c:'red'},{a:'Tadawul',v:'+1.8%',c:'grn'},{a:'XOM',v:'-0.9%',c:'red'}],source:'Arab News',url:'https://www.arabnews.com/taxonomy/term/7'},
-  {id:'e6',cat:'mil',label:'MILITARY',loc:'Tel Aviv, Israel',lon:34.8,lat:32.1,text:'IDF launches deep strike on Iranian missile production facility near Isfahan. F-35s employed.',impacts:[{a:'LMT',v:'+3.2%',c:'grn'},{a:'Gold',v:'+1.4%',c:'grn'},{a:'S&P',v:'-0.7%',c:'red'}],source:'Times of Israel',url:'https://www.timesofisrael.com/liveblog-today-in-israel/'},
-  {id:'e7',cat:'int',label:'INTEL',loc:'Tabriz, Iran',lon:46.3,lat:38.1,text:'NSA intercepts suggest Iran preparing Shahab-3 ballistic missile drills near Tabriz. Pentagon briefing classified.',impacts:[{a:'Gold',v:'+2.2%',c:'grn'},{a:'S&P',v:'-1.8%',c:'red'},{a:'Nikkei',v:'-2.1%',c:'red'}],source:'Defence One',url:'https://www.defenseone.com/threats/'},
-  {id:'e8',cat:'eco',label:'ECONOMIC',loc:'Washington DC, USA',lon:-77.0,lat:38.9,text:'IMF emergency: Hormuz closure costs $4B/day globally. Oxford Economics raises recession probability to 38%.',impacts:[{a:'DAX',v:'-1.6%',c:'red'},{a:'CAC',v:'-1.4%',c:'red'},{a:'Sensex',v:'-2.0%',c:'red'}],source:'IMF',url:'https://www.imf.org/en/News'},
-  {id:'e9',cat:'dip',label:'DIPLOMATIC',loc:'Moscow, Russia',lon:37.6,lat:55.8,text:'Russia vetoes UN Security Council ceasefire resolution for 3rd time. Turkey offers Istanbul as neutral venue.',impacts:[{a:'S&P',v:'-0.3%',c:'red'},{a:'Gold',v:'+0.7%',c:'grn'},{a:'FTSE',v:'-0.5%',c:'red'}],source:'UN News',url:'https://news.un.org/en/news/topic/peace-and-security'},
-  {id:'e10',cat:'nrg',label:'ENERGY',loc:'Doha, Qatar',lon:51.5,lat:25.3,text:'Qatar suspends 40% of LNG shipments via Hormuz. European gas futures spike 22%.',impacts:[{a:'DAX',v:'-2.1%',c:'red'},{a:'EUR/USD',v:'-0.6%',c:'red'},{a:'Shell',v:'+4.2%',c:'grn'}],source:'S&P Global',url:'https://www.spglobal.com/commodityinsights/en/market-insights/latest-news/lng-natural-gas'},
-  {id:'e11',cat:'mil',label:'MILITARY',loc:'Gulf of Oman',lon:59.0,lat:23.0,text:'Iran deploys 3 submarines to Gulf of Oman. USS Connecticut tracked in same waters. Miscalculation risk elevated.',impacts:[{a:'VIX',v:'+3.8',c:'red'},{a:'S&P',v:'-0.9%',c:'red'},{a:'Gold',v:'+1.4%',c:'grn'}],source:'USNI News',url:'https://news.usni.org/'},
-  {id:'e12',cat:'int',label:'INTEL',loc:'Natanz, Iran',lon:51.9,lat:33.5,text:'Satellite imagery: Natanz nuclear facility partially operational. Centrifuge activity detected by IAEA.',impacts:[{a:'Gold',v:'+3.1%',c:'grn'},{a:'Silver',v:'+2.8%',c:'grn'},{a:'S&P',v:'-2.0%',c:'red'}],source:'Reuters',url:'https://www.reuters.com/world/middle-east/iran-nuclear/'},
-  {id:'e13',cat:'mil',label:'MILITARY',loc:'Red Sea / Yemen',lon:43.0,lat:15.5,text:'Houthi forces launch 11 drones targeting Red Sea shipping. 2 strike container ship.',impacts:[{a:'ZIM',v:'-6.1%',c:'red'},{a:'Shipping',v:'-5.2%',c:'red'},{a:'Brent',v:'+$1.40',c:'grn'}],source:'AP News',url:'https://apnews.com/hub/red-sea-attacks'},
-  {id:'e14',cat:'dip',label:'DIPLOMATIC',loc:'Tehran, Iran',lon:51.4,lat:35.7,text:'New Supreme Leader Mojtaba Khamenei delivers first televised speech. Rules out any nuclear deal.',impacts:[{a:'S&P',v:'-1.3%',c:'red'},{a:'Gold',v:'+2.0%',c:'grn'},{a:'LMT',v:'+1.6%',c:'grn'}],source:'Al Jazeera',url:'https://www.aljazeera.com/where/iran/'},
-  {id:'e15',cat:'eco',label:'ECONOMIC',loc:'New York, USA',lon:-74.0,lat:40.7,text:'JP Morgan cuts 2026 global GDP forecast to +1.2% from +2.8%. S&P 500 EPS estimates cut 8%.',impacts:[{a:'S&P',v:'-1.1%',c:'red'},{a:'Nasdaq',v:'-0.8%',c:'red'},{a:'Gold',v:'+0.9%',c:'grn'}],source:'Financial Times',url:'https://www.ft.com/global-economy'},
-  {id:'e16',cat:'nuc',label:'NUCLEAR',loc:'Pentagon, USA',lon:-77.1,lat:38.9,text:'Pentagon declassifies: Iran may have 2-4 nuclear devices at 70-90% completion. Congressional emergency session called.',impacts:[{a:'Gold',v:'+4.8%',c:'grn'},{a:'S&P',v:'-3.2%',c:'red'},{a:'VIX',v:'+8.4',c:'red'}],source:'Politico',url:'https://www.politico.com/news/defense'},
-  {id:'e17',cat:'mil',label:'MILITARY',loc:'Beirut, Lebanon',lon:35.5,lat:33.9,text:'Hezbollah forces mobilize along Israeli northern border. IDF reserves called up. Second front risk elevated.',impacts:[{a:'Gold',v:'+2.1%',c:'grn'},{a:'S&P',v:'-0.8%',c:'red'},{a:'FTSE',v:'-0.7%',c:'red'}],source:'BBC News',url:'https://www.bbc.com/news/world/middle_east'},
-  {id:'e18',cat:'eco',label:'ECONOMIC',loc:'London, UK',lon:-0.12,lat:51.5,text:'UK Parliament votes 312-288 against further military support for coalition. NATO showing fracture lines.',impacts:[{a:'FTSE',v:'-0.9%',c:'red'},{a:'GBP',v:'-0.5%',c:'red'},{a:'Gold',v:'+1.0%',c:'grn'}],source:'The Guardian',url:'https://www.theguardian.com/world/iran'},
-  {id:'e19',cat:'int',label:'INTEL',loc:'Caracas, Venezuela',lon:-66.9,lat:10.5,text:'CIA identifies Iran-Venezuela weapons transfer route. Oil-for-arms exchange suspected.',impacts:[{a:'USD',v:'-0.3%',c:'red'},{a:'Brent',v:'+$0.80',c:'grn'},{a:'LMT',v:'+0.9%',c:'grn'}],source:'WSJ',url:'https://www.wsj.com/news/world'},
-  {id:'e20',cat:'nrg',label:'ENERGY',loc:'Abu Dhabi, UAE',lon:54.4,lat:24.5,text:'ADNOC announces force majeure on 3 tanker routes. UAE oil exports via Fujairah at 180% capacity.',impacts:[{a:'DFM',v:'-2.8%',c:'red'},{a:'Brent',v:'+$2.10',c:'grn'},{a:'Airlines',v:'-2.4%',c:'red'}],source:'Gulf News',url:'https://gulfnews.com/business/energy'},
-  {id:'e21',cat:'mil',label:'MILITARY',loc:'Diego Garcia, Indian Ocean',lon:72.4,lat:-7.3,text:'USAF deploys 6 additional B-52 bombers to Diego Garcia. 4th carrier strike group USS Nimitz en route.',impacts:[{a:'LMT',v:'+1.8%',c:'grn'},{a:'NOC',v:'+1.4%',c:'grn'},{a:'Brent',v:'+$1.60',c:'grn'}],source:'Stars & Stripes',url:'https://www.stripes.com/theaters/us/'},
-  {id:'e22',cat:'nuc',label:'NUCLEAR',loc:'Vienna, Austria',lon:16.4,lat:48.2,text:'IAEA emergency board convenes in Vienna. Iran ordered to restore monitoring access within 48 hours.',impacts:[{a:'Gold',v:'+2.6%',c:'grn'},{a:'S&P',v:'-1.0%',c:'red'},{a:'EUR',v:'-0.4%',c:'red'}],source:'IAEA',url:'https://www.iaea.org/newscenter/pressreleases'},
-  {id:'e23',cat:'eco',label:'ECONOMIC',loc:'Frankfurt, Germany',lon:8.7,lat:50.1,text:'ECB emergency meeting: euro-area energy inflation hits 18.4% YoY. Emergency rate hold announced.',impacts:[{a:'EUR/USD',v:'-0.7%',c:'red'},{a:'DAX',v:'-2.3%',c:'red'},{a:'Gold',v:'+1.7%',c:'grn'}],source:'ECB',url:'https://www.ecb.europa.eu/press/pr/html/index.en.html'},
-  {id:'e24',cat:'dip',label:'DIPLOMATIC',loc:'Washington DC, USA',lon:-77.0,lat:38.9,text:'US Senate passes $48B emergency defense supplemental. F-35 production accelerated. LMT shares gap up.',impacts:[{a:'LMT',v:'+4.1%',c:'grn'},{a:'RTX',v:'+2.8%',c:'grn'},{a:'GD',v:'+3.2%',c:'grn'}],source:'Defense News',url:'https://www.defensenews.com/congress/'},
-  {id:'e25',cat:'int',label:'INTEL',loc:'Cyber / Unknown',lon:53.0,lat:32.0,text:'Major cyberattack disrupts Iranian banking system SWIFT nodes. Origin attributed to Unit 8200.',impacts:[{a:'BTC',v:'+4.2%',c:'grn'},{a:'XMR',v:'+6.8%',c:'grn'},{a:'USD',v:'+0.3%',c:'grn'}],source:'CyberScoop',url:'https://cyberscoop.com/'},
-  {id:'e26',cat:'nrg',label:'ENERGY',loc:'Houston, USA',lon:-95.4,lat:29.8,text:'EIA: US strategic petroleum reserve release of 30M barrels approved. WTI crude drops $4 intraday.',impacts:[{a:'Brent',v:'-$3.80',c:'red'},{a:'XOM',v:'-1.4%',c:'red'},{a:'Airlines',v:'+2.1%',c:'grn'}],source:'EIA',url:'https://www.eia.gov/petroleum/'},
-  {id:'e27',cat:'mil',label:'MILITARY',loc:'Mashhad, Iran',lon:59.6,lat:36.3,text:'Confirmed: IRGC Quds Force commander killed in Mashhad strike. Command-and-control disruption expected.',impacts:[{a:'LMT',v:'+2.9%',c:'grn'},{a:'Gold',v:'+2.2%',c:'grn'},{a:'S&P',v:'-1.1%',c:'red'}],source:'Reuters',url:'https://www.reuters.com/world/middle-east/'},
-  {id:'e28',cat:'dip',label:'DIPLOMATIC',loc:'Ankara, Turkey',lon:32.9,lat:39.9,text:'Turkey activates Montreux Convention, blocking naval passage through Bosphorus for non-Black Sea states.',impacts:[{a:'NATO',v:'—',c:'red'},{a:'Brent',v:'+$1.20',c:'grn'},{a:'TRY',v:'-1.8%',c:'red'}],source:'Al Monitor',url:'https://www.al-monitor.com/turkey'},
-  {id:'e29',cat:'eco',label:'ECONOMIC',loc:'Tokyo, Japan',lon:139.7,lat:35.7,text:'Bank of Japan emergency intervention: yen hits 162/USD. Japan imports 90% of oil — energy crisis declared.',impacts:[{a:'Nikkei',v:'-3.4%',c:'red'},{a:'JPY',v:'-1.9%',c:'red'},{a:'Gold',v:'+1.3%',c:'grn'}],source:'Nikkei Asia',url:'https://asia.nikkei.com/Economy'},
+  // Economic Crises
+  {id:'e5',cat:'eco',label:'ECONOMIC',loc:'New York, USA',lon:-74.0,lat:40.7,text:'Federal Reserve emergency rate hike of 75bps surprises markets. Inverted yield curve deepens. Recession probability rises to 68%.',impacts:[{a:'S&P',v:'-2.8%',c:'red'},{a:'Nasdaq',v:'-3.4%',c:'red'},{a:'Gold',v:'+1.6%',c:'grn'}],source:'Bloomberg',url:'https://www.bloomberg.com/economics'},
+  {id:'e6',cat:'eco',label:'ECONOMIC',loc:'Frankfurt, Germany',lon:8.7,lat:50.1,text:'ECB emergency meeting: euro-area energy inflation hits 18.4% YoY. Emergency rate hold announced. EU recession declared.',impacts:[{a:'EUR/USD',v:'-0.7%',c:'red'},{a:'DAX',v:'-2.3%',c:'red'},{a:'Gold',v:'+1.7%',c:'grn'}],source:'ECB',url:'https://www.ecb.europa.eu/press/pr/html/index.en.html'},
+  {id:'e7',cat:'eco',label:'ECONOMIC',loc:'Tokyo, Japan',lon:139.7,lat:35.7,text:'Bank of Japan emergency intervention: yen hits 162/USD. Japan imports 90% of oil — national energy crisis declared.',impacts:[{a:'Nikkei',v:'-3.4%',c:'red'},{a:'JPY',v:'-1.9%',c:'red'},{a:'Gold',v:'+1.3%',c:'grn'}],source:'Nikkei Asia',url:'https://asia.nikkei.com/Economy'},
+  {id:'e8',cat:'eco',label:'ECONOMIC',loc:'Ankara, Turkey',lon:32.9,lat:39.9,text:'Turkish lira collapses 18% in single session. Central bank deploys $12B in reserves. IMF emergency talks begin.',impacts:[{a:'EUR/USD',v:'-0.4%',c:'red'},{a:'EM ETF',v:'-3.1%',c:'red'},{a:'Gold',v:'+2.2%',c:'grn'}],source:'Reuters',url:'https://www.reuters.com/markets/currencies/'},
+  {id:'e9',cat:'eco',label:'ECONOMIC',loc:'Buenos Aires, Argentina',lon:-58.4,lat:-34.6,text:'Argentina declares sovereign debt default for 10th time. IMF $45B loan suspended. Contagion risk spreads to Brazil.',impacts:[{a:'Bovespa',v:'-4.2%',c:'red'},{a:'BRL',v:'-2.8%',c:'red'},{a:'Gold',v:'+1.1%',c:'grn'}],source:'Financial Times',url:'https://www.ft.com/global-economy'},
+  // Natural Disasters
+  {id:'e10',cat:'nrg',label:'DISASTER',loc:'Tokyo, Japan',lon:139.7,lat:35.7,text:'Magnitude 7.8 earthquake strikes Tokyo. Fukushima backup systems activated. Nuclear alert level raised to 3.',impacts:[{a:'Nikkei',v:'-5.1%',c:'red'},{a:'JPY',v:'-2.3%',c:'red'},{a:'Gold',v:'+3.4%',c:'grn'}],source:'NHK',url:'https://www3.nhk.or.jp/nhkworld/en/news/'},
+  {id:'e11',cat:'nrg',label:'DISASTER',loc:'Manila, Philippines',lon:120.9,lat:14.6,text:'Super Typhoon Haiyan 2 makes landfall near Manila. Category 5. 3M evacuated. Regional supply chains disrupted.',impacts:[{a:'ASX',v:'-1.2%',c:'red'},{a:'Shipping',v:'-2.8%',c:'red'},{a:'Insurance',v:'-3.1%',c:'red'}],source:'AP News',url:'https://apnews.com/hub/philippines'},
+  {id:'e12',cat:'nrg',label:'DISASTER',loc:'Istanbul, Turkey',lon:28.9,lat:41.0,text:'Major earthquake M7.4 strikes Istanbul. Bosphorus Strait closed for 48hrs. Black Sea trade route disrupted.',impacts:[{a:'Brent',v:'+$2.10',c:'grn'},{a:'TRY',v:'-3.8%',c:'red'},{a:'Shipping',v:'-4.2%',c:'red'}],source:'Reuters',url:'https://www.reuters.com/world/europe/'},
+  // Geopolitical Crises
+  {id:'e13',cat:'dip',label:'DIPLOMATIC',loc:'Moscow, Russia',lon:37.6,lat:55.8,text:'Russia vetoes UN Security Council ceasefire resolution for 3rd time. G7 emergency sanctions package announced.',impacts:[{a:'S&P',v:'-0.3%',c:'red'},{a:'Gold',v:'+0.7%',c:'grn'},{a:'FTSE',v:'-0.5%',c:'red'}],source:'UN News',url:'https://news.un.org/en/news/topic/peace-and-security'},
+  {id:'e14',cat:'mil',label:'MILITARY',loc:'Taiwan Strait',lon:121.0,lat:24.5,text:'China PLA conducts largest-ever Taiwan Strait military exercise. 80 aircraft, 20 warships deployed. TSMC operations halted.',impacts:[{a:'TSMC',v:'-8.2%',c:'red'},{a:'Nikkei',v:'-4.1%',c:'red'},{a:'Gold',v:'+3.8%',c:'grn'}],source:'Reuters',url:'https://www.reuters.com/world/asia-pacific/'},
+  {id:'e15',cat:'mil',label:'MILITARY',loc:'Seoul, South Korea',lon:126.9,lat:37.6,text:'North Korea launches 3 ICBMs toward Sea of Japan. UN emergency session called. THAAD activated in South Korea.',impacts:[{a:'KOSPI',v:'-5.4%',c:'red'},{a:'Nikkei',v:'-3.2%',c:'red'},{a:'Gold',v:'+4.1%',c:'grn'}],source:'BBC News',url:'https://www.bbc.com/news/world/asia'},
+  {id:'e16',cat:'dip',label:'DIPLOMATIC',loc:'Brussels, Belgium',lon:4.4,lat:50.8,text:'NATO activates Article 5 for first time. Emergency summit in Brussels. Defense budgets surge across 32 member states.',impacts:[{a:'LMT',v:'+4.8%',c:'grn'},{a:'RTX',v:'+5.2%',c:'grn'},{a:'EUR/USD',v:'-1.1%',c:'red'}],source:'NATO',url:'https://www.nato.int/cps/en/natohq/news.htm'},
+  // Pandemic / Health Crisis
+  {id:'e17',cat:'int',label:'HEALTH',loc:'Geneva, Switzerland',lon:6.1,lat:46.2,text:'WHO declares Public Health Emergency: Novel H5N3 influenza strain with 12% mortality rate spreading across Southeast Asia.',impacts:[{a:'Airlines',v:'-6.8%',c:'red'},{a:'Hotels',v:'-5.4%',c:'red'},{a:'Pharma',v:'+8.2%',c:'grn'}],source:'WHO',url:'https://www.who.int/emergencies/'},
+  {id:'e18',cat:'eco',label:'HEALTH',loc:'Bangkok, Thailand',lon:100.5,lat:13.8,text:'ASEAN economies enter lockdown as H5N3 spreads. Regional GDP impact estimated at -4.2%. Supply chain freeze.',impacts:[{a:'ASX',v:'-3.8%',c:'red'},{a:'Sensex',v:'-4.1%',c:'red'},{a:'Gold',v:'+2.9%',c:'grn'}],source:'Reuters',url:'https://www.reuters.com/business/healthcare-pharmaceuticals/'},
+  // Tech / Cyber Crises
+  {id:'e19',cat:'int',label:'CYBER',loc:'Washington DC, USA',lon:-77.0,lat:38.9,text:'Massive cyberattack disables US power grid in 12 eastern states. DHS attributes attack to state actor. CISA activated.',impacts:[{a:'S&P',v:'-1.9%',c:'red'},{a:'Cyber ETF',v:'+5.2%',c:'grn'},{a:'BTC',v:'+3.8%',c:'grn'}],source:'CISA',url:'https://www.cisa.gov/news-events/news'},
+  {id:'e20',cat:'int',label:'CYBER',loc:'London, UK',lon:-0.12,lat:51.5,text:'SWIFT banking network hit by coordinated cyberattack. $2.3B in fraudulent transfers detected. 14 central banks affected.',impacts:[{a:'Banks ETF',v:'-4.1%',c:'red'},{a:'BTC',v:'+6.8%',c:'grn'},{a:'Gold',v:'+2.4%',c:'grn'}],source:'Financial Times',url:'https://www.ft.com/stream/cyber-security'},
+  // Energy / Climate
+  {id:'e21',cat:'nrg',label:'ENERGY',loc:'Riyadh, Saudi Arabia',lon:46.7,lat:24.7,text:'OPEC+ announces surprise output cut of 3M bpd. Brent crude spikes to $104. Energy crisis deepens globally.',impacts:[{a:'Brent',v:'+$8.40',c:'grn'},{a:'XOM',v:'+4.2%',c:'grn'},{a:'Airlines',v:'-5.8%',c:'red'}],source:'OPEC',url:'https://www.opec.org/opec_web/en/press_room/'},
+  {id:'e22',cat:'nrg',label:'CLIMATE',loc:'Miami, USA',lon:-80.2,lat:25.8,text:'Category 6 hurricane devastates Miami. $180B economic damage. Insurance sector crisis. US GDP impact -0.8%.',impacts:[{a:'Insurance',v:'-7.2%',c:'red'},{a:'Construction',v:'+4.1%',c:'grn'},{a:'S&P',v:'-0.9%',c:'red'}],source:'NOAA',url:'https://www.noaa.gov/news'},
+  {id:'e23',cat:'nrg',label:'CLIMATE',loc:'Beijing, China',lon:116.4,lat:39.9,text:'China announces emergency coal power revival as solar/wind grid fails during winter peak. Paris Agreement commitment abandoned.',impacts:[{a:'Coal ETF',v:'+8.4%',c:'grn'},{a:'Solar ETF',v:'-6.1%',c:'red'},{a:'Brent',v:'+$3.20',c:'grn'}],source:'Xinhua',url:'https://english.news.cn/'},
+  // Political Instability
+  {id:'e24',cat:'dip',label:'POLITICAL',loc:'Paris, France',lon:2.3,lat:48.9,text:'French government collapses in no-confidence vote. Snap elections called. Euro weakens on political uncertainty.',impacts:[{a:'EUR/USD',v:'-1.4%',c:'red'},{a:'CAC',v:'-3.2%',c:'red'},{a:'OAT Spread',v:'+42bps',c:'red'}],source:'Le Monde',url:'https://www.lemonde.fr/en/'},
+  {id:'e25',cat:'dip',label:'POLITICAL',loc:'Brasilia, Brazil',lon:-47.9,lat:-15.8,text:'Brazil congress votes to impeach President. Military on standby. Markets suspend trading for 3rd consecutive day.',impacts:[{a:'Bovespa',v:'-7.8%',c:'red'},{a:'BRL',v:'-5.4%',c:'red'},{a:'Gold',v:'+2.1%',c:'grn'}],source:'Reuters',url:'https://www.reuters.com/world/americas/'},
+  {id:'e26',cat:'eco',label:'TRADE WAR',loc:'Washington DC, USA',lon:-77.0,lat:38.9,text:'US imposes 60% tariffs on all Chinese goods. China retaliates with rare earth export ban. Global trade volumes drop 18%.',impacts:[{a:'S&P',v:'-2.4%',c:'red'},{a:'Shanghai',v:'-4.8%',c:'red'},{a:'Gold',v:'+3.1%',c:'grn'}],source:'WSJ',url:'https://www.wsj.com/economy/trade'},
+  {id:'e27',cat:'eco',label:'BANKING',loc:'Zurich, Switzerland',lon:8.5,lat:47.4,text:'Major European bank collapses amid derivatives exposure. ECB emergency liquidity injection of €400B. Contagion fears spread.',impacts:[{a:'Banks ETF',v:'-8.4%',c:'red'},{a:'EUR/USD',v:'-1.8%',c:'red'},{a:'Gold',v:'+4.2%',c:'grn'}],source:'Bloomberg',url:'https://www.bloomberg.com/markets/'},
+  {id:'e28',cat:'int',label:'INTEL',loc:'Pyongyang, North Korea',lon:125.7,lat:39.0,text:'Satellite imagery confirms North Korea selling nuclear material to non-state actors. IAEA emergency session convened.',impacts:[{a:'Gold',v:'+3.8%',c:'grn'},{a:'S&P',v:'-2.1%',c:'red'},{a:'Defense ETF',v:'+4.4%',c:'grn'}],source:'38 North',url:'https://www.38north.org/'},
+  {id:'e29',cat:'eco',label:'ECONOMIC',loc:'Lagos, Nigeria',lon:3.4,lat:6.5,text:'Nigeria central bank devalues naira 45% overnight. African Development Bank emergency support activated. EM contagion risk.',impacts:[{a:'EM ETF',v:'-3.2%',c:'red'},{a:'Gold',v:'+1.4%',c:'grn'},{a:'Oil',v:'+$1.80',c:'grn'}],source:'Reuters Africa',url:'https://www.reuters.com/world/africa/'},
 ];
 
 const CAT_COL={mil:'#c41e18',nrg:'#b05400',dip:'#1638a0',nuc:'#5a1888',eco:'#1a6635',int:'#0c6860'};
@@ -968,8 +1487,9 @@ const WAR_STOCKS = [
   { id:'slv',  tick:'SLV',  name:'iShares Silver Trust',   sector:'safe',   p:24,   vol:.018, drift:+.00058, warDir:'up',   warMag:'MED',   reason:'Silver follows gold. Defense electronics demand adds industrial premium.',       col:'grn' },
 ];
 
+
 const SECTOR_META = {
-  defense: { label:'🛡️ Defense — War Beneficiaries', col:'#1638a0' },
+  defense: { label:'🛡️ Defense — Crisis Beneficiaries', col:'#1638a0' },
   energy:  { label:'🛢️ Energy — Hormuz Winners',     col:'#b05400' },
   airlines:{ label:'✈️ Airlines — Fuel Shock Losers', col:'#c41e18' },
   shipping:{ label:'🚢 Shipping — Route Disruption',  col:'#5a1888' },
@@ -1074,15 +1594,22 @@ function goPage(id) {
   if(id==='map')     { renderMap(); renderMapList(); }
   if(id==='markets') renderMarkets();
   if(id==='stocks')  renderStocks();
+  if(id==='country') renderCountryPage();
   if(id==='crypto')  renderCryptoPage();
   if(id==='intel')   renderFeed();
   if(id==='history') renderHistory();
   if(id==='dash')    renderDash();
+  if(id==='screener')  renderScreener();
+  if(id==='portfolio') renderPortfolio();
+  if(id==='ipo')       renderIPO();
+  if(id==='calc')      { openCalc('sip'); }
+  if(id==='learn')     renderLearn();
+  if(id==='brokers')   renderBrokers();
 }
 
 /* ── PLAN UI ── */
 function applyPlan() {
-  const names={s:'Starter — $9/mo',a:'Analyst — $49/mo',c:'Command — $99/mo'};
+  const names={s:'Starter — $0.99/mo',a:'Analyst — $14.99/mo',c:'Command — $34.99/mo'};
   const shorts={s:'STARTER',a:'ANALYST',c:'COMMAND'};
   document.getElementById('plan-btn-name').textContent = shorts[PLAN];
   document.getElementById('sb-plan-name').textContent = names[PLAN];
@@ -1101,8 +1628,8 @@ function applyPlan() {
   // Upgrade button
   const ub = document.getElementById('sb-upg');
   if(PLAN==='c') ub.textContent='MANAGE PLAN';
-  else if(PLAN==='a') ub.textContent='UPGRADE — $99/mo →';
-  else ub.textContent='UPGRADE — $49/mo →';
+  else if(PLAN==='a') ub.textContent='UPGRADE — $34.99/mo →';
+  else ub.textContent='UPGRADE — $14.99/mo →';
   // Map lock
   const ml = document.getElementById('map-lock');
   if(ml) ml.style.display = can('liveMap')?'none':'flex';
@@ -1175,14 +1702,60 @@ function showPlanModal() {
 }
 
 function doPlanUpgrade(p) {
-  PLAN = p;
-  applyPlan();
+  // Free/starter plan — no payment needed
+  if(p === 's') {
+    PLAN = 's'; applyPlan(); closeM('plan-modal');
+    toast('Starter plan activated'); return;
+  }
+  // Paid plans — go to Pesapal
   closeM('plan-modal');
-  toast((p==='s'?'Starter':p==='a'?'Analyst':'Command')+' plan activated');
-  // feed key hardcoded
-  const ap=document.querySelector('.page.active');
-  if(ap) goPage(ap.id.replace('pg-',''));
+  initiatePayment(p);
 }
+
+async function initiatePayment(plan) {
+  const prices = { a: 14.99, c: 34.99 };
+  const amount = prices[plan] || 49;
+  const email  = prompt('Your email address:');
+  if (!email) return;
+  const phone  = prompt('Your phone number (e.g. +256700000000):');
+  if (!phone) return;
+  const name   = (prompt('Your full name:') || 'Orrery User').split(' ');
+  const orderId = 'orrery_' + plan + '_' + Date.now();
+  toast('Creating order...');
+  try {
+    const r = await fetch('/api/pesapal?action=create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        plan, amount, email, phone,
+        firstName: name[0] || 'User',
+        lastName: name[1] || '',
+        orderId
+      })
+    });
+    const d = await r.json();
+    if (d.redirect_url) {
+      window.location.href = d.redirect_url;
+    } else {
+      toast('Payment error: ' + (d.error || 'Unknown error'));
+      console.error('Pesapal response:', d);
+    }
+  } catch(e) {
+    toast('Network error — try again');
+    console.error(e);
+  }
+}
+
+// On app load — check if returning from payment
+(async function checkReturnedPayment() {
+  const plan = localStorage.getItem('orrery_plan');
+  if (plan && plan !== PLAN) {
+    PLAN = plan;
+    applyPlan();
+    toast('Welcome! Your ' + (plan==='a'?'Analyst':'Command') + ' plan is active.');
+    localStorage.removeItem('orrery_plan');
+  }
+})();
 
 function upgradeTo(p) {
   PLAN=p; applyPlan(); closeM('plan-modal');
@@ -1251,7 +1824,7 @@ function renderMap() {
   // War theater
   const[x1,y1]=lonlat(30,40),[x2,y2]=lonlat(65,18);
   h+=`<rect x="${x1.toFixed(0)}" y="${y1.toFixed(0)}" width="${(x2-x1).toFixed(0)}" height="${(y2-y1).toFixed(0)}" fill="rgba(196,30,24,.05)" stroke="rgba(196,30,24,.25)" stroke-width="1" stroke-dasharray="4 3" rx="2"/>`;
-  h+=`<text x="${((x1+x2)/2).toFixed(0)}" y="${(y2+12).toFixed(0)}" text-anchor="middle" font-size="7.5" fill="rgba(196,30,24,.55)" font-family="'IBM Plex Mono',monospace" letter-spacing=".06em">WAR THEATER</text>`;
+  h+=`<text x="${((x1+x2)/2).toFixed(0)}" y="${(y2+12).toFixed(0)}" text-anchor="middle" font-size="7.5" fill="rgba(196,30,24,.55)" font-family="'IBM Plex Mono',monospace" letter-spacing=".06em">CRISIS ZONE</text>`;
   // Hormuz
   const[hx,hy]=lonlat(56.5,26.5);
   h+=`<text x="${hx.toFixed(0)}" y="${(hy-13).toFixed(0)}" text-anchor="middle" font-size="7" fill="var(--amb)" font-family="'IBM Plex Mono',monospace" opacity=".8">HORMUZ</text>`;
@@ -1271,6 +1844,14 @@ function renderMap() {
     if(age<5){const rt=ex<700;h+=`<text x="${(ex+(rt?8:-8)).toFixed(1)}" y="${(ey+3).toFixed(1)}" text-anchor="${rt?'start':'end'}" font-size="7" fill="${col}" font-family="'IBM Plex Mono',monospace" opacity="${op}" style="pointer-events:none">${ev.loc.split(',')[0]}</text>`;}
   });
   h+=`<rect x="6" y="6" width="115" height="17" rx="2" fill="var(--bg2)" stroke="var(--brd)" stroke-width="1"/><text x="11" y="17.5" font-size="8" fill="var(--txt2)" font-family="'IBM Plex Mono',monospace">${filtered.length} events · Mar 13 2026</text>`;
+  // Draw world cities
+  WORLD_CITIES.forEach(city=>{
+    const[cx,cy]=lonlat(city.lon,city.lat);
+    const r=city.pop==='L'?2.2:city.pop==='M'?1.5:1.0;
+    const op=city.pop==='L'?.7:city.pop==='M'?.5:.35;
+    h+=`<circle cx="${cx.toFixed(1)}" cy="${cy.toFixed(1)}" r="${r}" fill="rgba(176,176,170,${op})" stroke="none"/>`;
+    if(city.pop==='L'){h+=`<text x="${(cx+3).toFixed(1)}" y="${(cy+3).toFixed(1)}" font-size="6" fill="rgba(176,176,170,.55)" font-family="'IBM Plex Mono',monospace" style="pointer-events:none">${city.n}</text>`;}
+  });
   svg.innerHTML=h;
   // Wire events
   svg.querySelectorAll('[data-ev]').forEach(el=>{
@@ -1304,7 +1885,7 @@ function moveMapTT(e) {
 function hideMapTT(){ const tt=document.getElementById('mtt'); if(tt) tt.style.display='none'; }
 
 function mapClick(evId) {
-  if(!can('liveMap')){ toast('Live Map requires Analyst ($49) or Command ($99)'); return; }
+  if(!can('liveMap')){ toast('Live Map requires Analyst ($14.99) or Command ($34.99)'); return; }
   const ev=WAR_EVENTS.find(x=>x.id===evId)||mapEvents.find(x=>x.id===evId); if(!ev) return;
   // AI via proxy - always active
   aiRequest(ev);
@@ -1406,7 +1987,7 @@ function renderStocks() {
     });
     const mn=Math.min(...pts),mx=Math.max(...pts),rng=mx-mn||1;
     const path=pts.map((v,i)=>`${i?'L':'M'}${(i/19*100).toFixed(1)},${(24-(v-mn)/rng*22).toFixed(1)}`).join(' ');
-    return `<div class="sc" id="sc-${s.id}">
+    return `<div class="sc" id="sc-${s.id}" onclick="openStockModal('${s.id}')" style="cursor:pointer">
       <div class="sc-top">
         <div>
           <div class="sc-sym">${s.tick}</div>
@@ -1441,8 +2022,8 @@ function renderCryptoPage() {
       <div style="text-align:center;max-width:380px">
         <div style="font-size:46px;margin-bottom:14px">₿</div>
         <div style="font:700 15px/1 var(--mono);color:var(--txt);margin-bottom:10px">Live Crypto Market</div>
-        <div style="font:400 13px/1.65 var(--sans);color:var(--txt3);margin-bottom:22px">12 assets with war correlation analysis. BTC, XMR, TON and others tracked during the Iran-Israel conflict.<br><br>Exclusive to <strong style="color:var(--txt)">Command plan ($99/mo)</strong>.</div>
-        <button class="btn btn-solid" onclick="doPlanUpgrade('c')">GET COMMAND — $99/MO →</button>
+        <div style="font:400 13px/1.65 var(--sans);color:var(--txt3);margin-bottom:22px">12 assets with crisis correlation analysis. BTC, XMR, TON and others tracked during the Iran-Israel conflict.<br><br>Exclusive to <strong style="color:var(--txt)">Command plan ($34.99/mo)</strong>.</div>
+        <button class="btn btn-solid" onclick="doPlanUpgrade('c')">GET COMMAND — $34.99/MO →</button>
       </div>
     </div>`;
     return;
@@ -1467,7 +2048,7 @@ function renderCryptoNums() {
         </div>
       </div>
       <div class="cc-corr-row">
-        <span style="color:${corrCol}">${c.warDir==='up'?'War Bullish':'War Bearish'}</span>
+        <span style="color:${corrCol}">${c.warDir==='up'?'Crisis Bullish':'Crisis Bearish'}</span>
         <span style="color:${magCol}">${c.warMag} · r=${c.warCorr>=0?'+':''}${c.warCorr}</span>
       </div>
       <div class="cc-bar-bg"><div class="cc-bar" style="width:${corrPct}%;background:${corrCol}"></div></div>
@@ -1597,12 +2178,14 @@ Provide a sharp 3-sentence intelligence brief: what happened, market impact, and
   fetch('/api/anthropic',{
     method:'POST',
     headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:800,stream:true,system:SYS,messages:[{role:'user',content:prompt}]})
+    body:JSON.stringify({model:'claude-haiku-4-5-20251001',max_tokens:800,stream:true,system:SYS,messages:[{role:'user',content:prompt}]})
   }).then(async r=>{
     if(!r.ok){
-      msg.text=`[API Error ${r.status}] Check your Anthropic key in the setup wizard.`;
+      let errMsg=`API Error ${r.status}`;
+      try{ const d=await r.json(); errMsg=d.error?.message||d.error||errMsg; }catch(_){}
+      msg.text=`[${errMsg}]`;
       msg.streaming=false; renderAiBriefs();
-      setAiDot('red','API Error'); if(btn) btn.disabled=false; return;
+      setAiDot('red','Error'); if(btn) btn.disabled=false; return;
     }
     const reader=r.body.getReader(),dec=new TextDecoder(); let buf='';
     while(true){
@@ -1761,6 +2344,454 @@ window.addEventListener('DOMContentLoaded',()=>{
   wizStep(1);
   openM('setup-modal');
 });
+
+// Init price histories for country stocks
+Object.values(COUNTRY_STOCKS).forEach(stocks=>{
+  (Array.isArray(stocks)?stocks:[]).forEach(s=>{
+    s.price = s.p || s.price || 100;
+    s.vol = s.vol || 0.02;
+    s.hist = [];
+    let px = s.price * 0.9;
+    for(let i=0;i<60;i++){ px *= 1+(Math.random()-.5)*s.vol*0.3; s.hist.push(+px.toFixed(2)); }
+    s.hist[59] = +s.price.toFixed(2);
+  });
+});
+
+let countrySearchVal = '';
+let selectedCountry = null;
+let chartModalChart = null;
+
+function filterCountries(v) {
+  countrySearchVal = v.toLowerCase();
+  renderCountryPage();
+}
+
+function renderCountryPage() {
+  const grid = document.getElementById('country-grid');
+  const detail = document.getElementById('country-detail');
+  if (!grid) return;
+  if (selectedCountry) {
+    grid.style.display = 'none';
+    detail.style.display = 'block';
+    renderCountryDetail(selectedCountry);
+    return;
+  }
+  grid.style.display = 'grid';
+  detail.style.display = 'none';
+  const entries = Object.entries(COUNTRY_STOCKS).filter(([cc]) =>
+    !countrySearchVal || (COUNTRY_META[cc]?.name||cc).toLowerCase().includes(countrySearchVal)
+  );
+  grid.innerHTML = entries.map(([cc, stocks]) => {
+    const meta = COUNTRY_META[cc] || {flag:'🌐', name:cc};
+    const arr = Array.isArray(stocks) ? stocks : [];
+    // find matching MKT index for this country
+    const mktId = MKT_TO_COUNTRY ? Object.entries(MKT_TO_COUNTRY).find(([id,c])=>c===cc)?.[0] : null;
+    const mkt = mktId ? MKT.find(m=>m.id===mktId) : null;
+    const pct = mkt ? getPct(mkt) : (arr.reduce((a,s)=>a+(s.chg||0),0)/Math.max(arr.length,1));
+    const col = pct >= 0 ? 'var(--grn)' : 'var(--red)';
+    const topMovers = arr.slice(0,3).map(s=>`<span style="font:700 9px/1 var(--mono);color:${s.chg>=0?'var(--grn)':'var(--red)'}">${s.sym} ${s.chg>=0?'+':''}${s.chg}%</span>`).join(' · ');
+    return `<div onclick="openCountry('${cc}')" style="background:var(--bg2);border:1px solid var(--brd);border-radius:6px;padding:14px;cursor:pointer;transition:all .12s" onmouseenter="this.style.background='var(--bg3)'" onmouseleave="this.style.background='var(--bg2)'">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+        <span style="font-size:22px">${meta.flag}</span>
+        <div style="flex:1;min-width:0">
+          <div style="font:600 13px/1 var(--sans);color:var(--txt)">${meta.name}</div>
+          <div style="font:400 9px/1 var(--mono);color:var(--txt3);margin-top:2px">${cc}</div>
+        </div>
+        <div style="font:700 13px/1 var(--mono);color:${col}">${pct>=0?'+':''}${pct.toFixed(2)}%</div>
+      </div>
+      <div style="font:400 9px/1.5 var(--sans);color:var(--txt3);margin-bottom:5px">${arr.length} stocks</div>
+      <div style="display:flex;flex-wrap:wrap;gap:4px">${topMovers}</div>
+    </div>`;
+  }).join('') || '<div style="color:var(--txt3);padding:20px">No countries found</div>';
+}
+
+function openCountry(name) {
+  selectedCountry = name;
+  renderCountryPage();
+}
+
+function renderCountryDetail(cc) {
+  const detail = document.getElementById('country-detail');
+  const stocks = Array.isArray(COUNTRY_STOCKS[cc]) ? COUNTRY_STOCKS[cc] : [];
+  const meta = COUNTRY_META[cc] || {flag:'🌐', name:cc};
+  if (!detail) return;
+  detail.innerHTML = `
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:20px">
+      <button onclick="selectedCountry=null;renderCountryPage()" style="background:var(--bg3);border:1px solid var(--brd2);border-radius:3px;color:var(--txt3);font:700 9px/1 var(--mono);padding:6px 10px;cursor:pointer">← BACK</button>
+      <span style="font-size:24px">${meta.flag}</span>
+      <div>
+        <div style="font:600 20px/1 var(--sans);color:var(--txt)">${meta.name}</div>
+        <div style="font:400 11px/1 var(--mono);color:var(--txt3)">${cc} · ${stocks.length} stocks</div>
+      </div>
+      <button onclick="quickAsk('Give me an overview of the ${meta.name} stock market: current conditions, top movers, and investment outlook.');goPage('intel')" class="btn btn-ghost" style="margin-left:auto;font-size:7px">AI Market Brief</button>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px">
+      ${stocks.map(s => {
+        const sp = s.price || s.p || 0;
+        const pct = s.chg || ((s.price - s.p) / Math.max(s.p,1) * 100) || 0;
+        const col = pct >= 0 ? 'var(--grn)' : 'var(--red)';
+        // mini sparkline from hist if available, else flat
+        const pts = (s.hist && s.hist.length) ? s.hist.slice(-20) : Array.from({length:20},(_,i)=>sp*(1+(i/19-0.5)*0.05));
+        const mn=Math.min(...pts),mx=Math.max(...pts),rng=mx-mn||1;
+        const path=pts.map((v,i)=>`${i?'L':'M'}${(i/19*100).toFixed(1)},${(26-(v-mn)/rng*24).toFixed(1)}`).join(' ');
+        return `<div onclick="quickAsk('Full analysis of ${s.name} (${s.sym}): business model, recent performance, risks, and recommendation.')" style="background:var(--bg2);border:1px solid var(--brd);border-radius:6px;padding:13px;cursor:pointer;transition:background .1s" onmouseenter="this.style.background='var(--bg3)'" onmouseleave="this.style.background='var(--bg2)'">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px">
+            <div>
+              <div style="font:700 13px/1 var(--mono);color:var(--txt)">${s.sym}</div>
+              <div style="font:400 10px/1 var(--sans);color:var(--txt3);margin-top:3px">${s.name}</div>
+            </div>
+            <div style="text-align:right">
+              <div style="font:700 13px/1 var(--mono);color:var(--txt)">$${sp>1000?sp.toLocaleString('en',{maximumFractionDigits:0}):sp.toFixed(2)}</div>
+              <div style="font:700 10px/1 var(--mono);color:${col};margin-top:3px">${pct>=0?'▲ +':'▼ '}${Math.abs(pct).toFixed(2)}%</div>
+            </div>
+          </div>
+          <svg viewBox="0 0 100 28" preserveAspectRatio="none" style="width:100%;height:28px;margin-top:4px">
+            <path d="${path}" fill="none" stroke="${col}" stroke-width="1.5" stroke-linejoin="round"/>
+          </svg>
+        </div>`;
+      }).join('')}
+    </div>`;
+}
+
+/* ══ STOCK CHART MODAL ══ */
+function openStockChart(country, sym) {
+  // Works for both WAR_STOCKS and country stocks
+  let s = WAR_STOCKS.find(x => x.tick === sym);
+  if (!s && country && COUNTRY_STOCKS[country]) {
+    s = (Array.isArray(COUNTRY_STOCKS[country])?COUNTRY_STOCKS[country]:[]).find(x => x.sym === sym);
+  }
+  if (!s) return;
+  const pct = ((s.price - s.p) / s.p * 100);
+  const col = pct >= 0 ? '#3ab860' : '#e03836';
+  document.getElementById('chart-modal-sym').textContent = s.tick || s.sym;
+  document.getElementById('chart-modal-name').textContent = s.name;
+  document.getElementById('chart-modal-price').textContent = '$' + (s.price > 1000 ? s.price.toLocaleString('en',{maximumFractionDigits:0}) : s.price.toFixed(2));
+  const chgEl = document.getElementById('chart-modal-chg');
+  chgEl.textContent = (pct>=0?'▲ +':'▼ ') + Math.abs(pct).toFixed(2) + '%';
+  chgEl.style.color = col;
+  document.getElementById('chart-modal-reason').textContent = s.reason || s.sector || '';
+  document.getElementById('chart-modal').style.display = 'flex';
+  // Draw chart
+  const ctx = document.getElementById('chart-modal-canvas').getContext('2d');
+  if (chartModalChart) chartModalChart.destroy();
+  const labels = Array.from({length: s.hist.length}, (_,i) => i === s.hist.length-1 ? 'Now' : i === 0 ? '60 ticks ago' : '');
+  chartModalChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: s.hist,
+        borderColor: col,
+        borderWidth: 2,
+        pointRadius: 0,
+        tension: 0.3,
+        fill: true,
+        backgroundColor: pct >= 0 ? 'rgba(58,184,96,.08)' : 'rgba(224,56,54,.08)',
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { display: false }, tooltip: {
+        callbacks: { label: ctx => '$' + ctx.raw.toFixed(2) }
+      }},
+      scales: {
+        x: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#666670', font: { family: 'IBM Plex Mono', size: 9 }, maxTicksLimit: 6 }},
+        y: { grid: { color: 'rgba(255,255,255,.04)' }, ticks: { color: '#666670', font: { family: 'IBM Plex Mono', size: 9 }, callback: v => '$'+v.toFixed(0) }}
+      }
+    }
+  });
+}
+
+function closeChartModal() {
+  document.getElementById('chart-modal').style.display = 'none';
+  if (chartModalChart) { chartModalChart.destroy(); chartModalChart = null; }
+}
+
+// Close chart modal on backdrop click
+document.getElementById('chart-modal')?.addEventListener('click', function(e) {
+  if (e.target === this) closeChartModal();
+});
+
+
+/* ── STOCK DETAIL MODAL ── */
+let stkChart = null;
+
+function openStockModal(sid) {
+  const s = WAR_STOCKS.find(x=>x.id===sid); if(!s) return;
+  const p = getPct(s);
+  const col = p>=0?'var(--grn)':'var(--red)';
+  const hexCol = p>=0?'#3ab860':'#e03836';
+  document.getElementById('smd-sym').textContent = s.tick;
+  document.getElementById('smd-name').textContent = s.name + ' · ' + s.sector.charAt(0).toUpperCase()+s.sector.slice(1);
+  document.getElementById('smd-price').textContent = '$'+fmtP(s.price,2);
+  document.getElementById('smd-price').style.color = col;
+  document.getElementById('smd-chg').textContent = (p>=0?'▲ +':'▼ ')+Math.abs(p).toFixed(2)+'%  from base $'+fmtP(s.base,2);
+  document.getElementById('smd-chg').style.color = col;
+  document.getElementById('smd-sector').textContent = s.sector.toUpperCase();
+  document.getElementById('smd-war').textContent = s.warDir.toUpperCase()+' · '+s.warMag+' IMPACT';
+  document.getElementById('smd-war').style.color = s.warDir==='up'?'var(--grn)':'var(--red)';
+  document.getElementById('smd-vol').textContent = (s.vol*100).toFixed(1)+'%';
+  document.getElementById('smd-reason').textContent = s.reason;
+  // Draw chart
+  const ctx = document.getElementById('stk-detail-canvas');
+  if(stkChart){ stkChart.destroy(); stkChart=null; }
+  // Generate 60-point history with trend
+  const pts = [];
+  let px = s.base * 0.92;
+  for(let i=0;i<60;i++){
+    px *= 1 + (Math.random()-.5)*s.vol*.18 + s.drift*0.01;
+    pts.push(+px.toFixed(2));
+  }
+  pts[59] = +s.price.toFixed(2);
+  const labels = Array.from({length:60},(_,i)=>i%10===0?'-'+(60-i)+'m':'');
+  // Render country stocks
+  const cc = MKT_TO_COUNTRY[s.id] || 'US';
+  renderCountryStocksInModal(cc);
+  // Show modal first, THEN render chart (canvas needs visible dimensions)
+  document.getElementById('stk-modal').classList.add('open');
+  setTimeout(()=>{
+    const ctx = document.getElementById('stk-detail-canvas');
+    if(!ctx) return;
+    if(stkChart){ stkChart.destroy(); stkChart=null; }
+    stkChart = new Chart(ctx, {
+      type:'line',
+      data:{labels,datasets:[{data:pts,borderColor:hexCol,borderWidth:2,fill:true,backgroundColor:p>=0?'rgba(58,184,96,.08)':'rgba(224,56,54,.08)',tension:0.3,pointRadius:0,pointHoverRadius:4,pointHoverBackgroundColor:hexCol}]},
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        interaction:{intersect:false,mode:'index'},
+        plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>'$'+c.raw.toFixed(2)},backgroundColor:'rgba(17,17,22,.95)',titleColor:'#b0b0aa',borderColor:'rgba(255,255,255,.1)',borderWidth:1,padding:8,titleFont:{family:"'IBM Plex Mono',monospace",size:10},bodyFont:{family:"'IBM Plex Mono',monospace",size:11}}},
+        scales:{
+          x:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#666670',font:{family:"'IBM Plex Mono',monospace",size:9},maxTicksLimit:8}},
+          y:{grid:{color:'rgba(255,255,255,.04)'},ticks:{color:'#666670',font:{family:"'IBM Plex Mono',monospace",size:9},callback:v=>'$'+v.toFixed(0)},position:'right'}
+        }
+      }
+    });
+  }, 60);
+}
+
+function renderCountryStocksInModal(cc) {
+  const meta = COUNTRY_META[cc] || {flag:'🌐',name:'Global'};
+  const stocks = (Array.isArray(COUNTRY_STOCKS[cc])?COUNTRY_STOCKS[cc]:[]);
+  document.getElementById('smd-country-title').textContent = meta.flag + ' ' + meta.name + ' — Top Stocks';
+  const grid = document.getElementById('smd-country-grid');
+  grid.innerHTML = stocks.map(s=>{
+    const col = s.chg>=0?'var(--grn)':'var(--red)';
+    return `<div class="stk-country-item" onclick="quickAsk('Analyse ${s.name} (${s.sym}) stock in current crisis conditions')">
+      <div class="scc-name">${s.sym}</div>
+      <div class="scc-name" style="color:var(--txt3);font-weight:400">${s.name}</div>
+      <div class="scc-chg" style="color:${col}">${s.chg>=0?'+':''}${s.chg}%</div>
+    </div>`;
+  }).join('') || '<div style="color:var(--txt3);font-size:11px;padding:8px">No country data</div>';
+}
+
+function closeStockModal() {
+  document.getElementById('stk-modal').classList.remove('open');
+  if(stkChart){ stkChart.destroy(); stkChart=null; }
+}
+
+
+/* ══════════════════════════════════════════════
+   INVEST MODULE — DATA & FUNCTIONS
+══════════════════════════════════════════════ */
+
+let scrSortCol='mcap',scrSortAsc=false,currentCalc='sip',ipoTab='upcoming',learnCat='all',brokerFilter='all';
+let portfolio=JSON.parse(localStorage.getItem('orrery_portfolio')||'[]');
+
+function scrSort(col){scrSortCol=col;scrSortAsc=!scrSortAsc;runScreener();}
+function resetScreener(){['scr-region','scr-sector','scr-mcap','scr-pe','scr-div','scr-perf','scr-debt'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('scr-sort').value='mcap';runScreener();}
+function runScreener(){
+  const reg=document.getElementById('scr-region')?.value||'',sec=document.getElementById('scr-sector')?.value||'',mc=document.getElementById('scr-mcap')?.value||'',pe=document.getElementById('scr-pe')?.value||'',dv=document.getElementById('scr-div')?.value||'',pf=document.getElementById('scr-perf')?.value||'',db=document.getElementById('scr-debt')?.value||'';
+  let res=[...SCREENER_STOCKS];
+  if(reg) res=res.filter(s=>s.region===reg);
+  if(sec) res=res.filter(s=>s.sector===sec);
+  if(mc==='mega') res=res.filter(s=>s.mcap>=200);else if(mc==='large') res=res.filter(s=>s.mcap>=10&&s.mcap<200);else if(mc==='mid') res=res.filter(s=>s.mcap>=2&&s.mcap<10);else if(mc==='small') res=res.filter(s=>s.mcap<2);
+  if(pe==='low') res=res.filter(s=>s.pe<15);else if(pe==='fair') res=res.filter(s=>s.pe>=15&&s.pe<=25);else if(pe==='high') res=res.filter(s=>s.pe>25&&s.pe<=50);else if(pe==='very-high') res=res.filter(s=>s.pe>50);
+  if(dv==='none') res=res.filter(s=>s.div===0);else if(dv==='low') res=res.filter(s=>s.div>0&&s.div<=2);else if(dv==='mid') res=res.filter(s=>s.div>2&&s.div<=4);else if(dv==='high') res=res.filter(s=>s.div>4);
+  if(pf==='top') res=res.filter(s=>s.perf>=20);else if(pf==='pos') res=res.filter(s=>s.perf>=0&&s.perf<20);else if(pf==='neg') res=res.filter(s=>s.perf<0&&s.perf>=-20);else if(pf==='crash') res=res.filter(s=>s.perf<-20);
+  if(db==='low') res=res.filter(s=>s.debt<0.5);else if(db==='mid') res=res.filter(s=>s.debt>=0.5&&s.debt<=1.5);else if(db==='high') res=res.filter(s=>s.debt>1.5);
+  res.sort((a,b)=>{const v=scrSortAsc?1:-1;if(scrSortCol==='name')return a.name.localeCompare(b.name)*v;return((b[scrSortCol]||0)-(a[scrSortCol]||0))*v;});
+  const cnt=document.getElementById('scr-count');if(cnt)cnt.textContent=res.length+' results';
+  const tbody=document.getElementById('scr-body');if(!tbody)return;
+  const flags={US:'🇺🇸',GB:'🇬🇧',DE:'🇩🇪',FR:'🇫🇷',JP:'🇯🇵',CN:'🇨🇳',IN:'🇮🇳',AU:'🇦🇺',SA:'🇸🇦',AE:'🇦🇪',BR:'🇧🇷',KR:'🇰🇷',HK:'🇭🇰',TW:'🇹🇼',NL:'🇳🇱',DK:'🇩🇰',CH:'🇨🇭',NG:'🇳🇬',ZA:'🇿🇦',KE:'🇰🇪',MX:'🇲🇽'};
+  tbody.innerHTML=res.map(s=>{
+    const pc=s.perf>=0?'var(--grn)':'var(--red)';
+    const mc2=s.mcap>=1000?'$'+(s.mcap/1000).toFixed(1)+'T':'$'+s.mcap+'B';
+    const fl=flags[s.country]||'🌐';
+    return `<tr style="cursor:pointer" onclick="scrStockClick('${s.sym}','${s.name.replace(/'/g,'')}')">
+      <td><div class="scr-sym">${fl} ${s.sym}</div><div class="scr-name">${s.name}</div></td>
+      <td style="font-size:10px;color:var(--txt3)">${s.region}</td>
+      <td><span style="font:700 6.5px/1 var(--mono);padding:2px 5px;border-radius:2px;background:var(--bg4);color:var(--txt3)">${s.sector}</span></td>
+      <td>${mc2}</td><td>$${s.price.toLocaleString()}</td>
+      <td style="color:${pc};font-weight:600">${s.perf>=0?'+':''}${s.perf}%</td>
+      <td>${s.pe}x</td><td>${s.div>0?s.div+'%':'—'}</td><td>${s.debt}</td>
+      <td><button class="btn btn-ghost" style="padding:3px 8px;font-size:7px" onclick="event.stopPropagation();scrAIResearch('${s.sym}','${s.name.replace(/'/g,'')}')">AI Report</button></td>
+    </tr>`;
+  }).join('')||'<tr><td colspan="10" style="text-align:center;padding:28px;color:var(--txt3)">No stocks match your filters</td></tr>';
+}
+function renderScreener(){runScreener();}
+function scrStockClick(sym,name){quickAsk('Full investment analysis for '+name+' ('+sym+'): business model, moat, catalysts, risks, valuation, buy/hold/sell?');goPage('intel');}
+function scrAIResearch(sym,name){quickAsk('Professional equity research report for '+name+' ('+sym+'): revenue trend, margins, peer comparison, risks, 12-month target, recommendation.');goPage('intel');}
+
+/* ── PORTFOLIO ── */
+function addPortfolioItem(){
+  const sym=document.getElementById('pt-sym').value.trim().toUpperCase();
+  const name=document.getElementById('pt-name').value.trim();
+  const qty=parseFloat(document.getElementById('pt-qty').value)||0;
+  const cost=parseFloat(document.getElementById('pt-cost').value)||0;
+  const curr=parseFloat(document.getElementById('pt-curr').value)||cost;
+  if(!sym||qty<=0||cost<=0){toast('Fill in symbol, quantity and cost');return;}
+  portfolio.push({sym,name:name||sym,qty,cost,curr,id:Date.now()});
+  localStorage.setItem('orrery_portfolio',JSON.stringify(portfolio));
+  ['pt-sym','pt-name','pt-qty','pt-cost','pt-curr'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  renderPortfolio();
+}
+function removePortfolioItem(id){portfolio=portfolio.filter(p=>p.id!==id);localStorage.setItem('orrery_portfolio',JSON.stringify(portfolio));renderPortfolio();}
+function renderPortfolio(){
+  const list=document.getElementById('pt-list'),empty=document.getElementById('pt-empty');if(!list)return;
+  if(!portfolio.length){list.innerHTML='';if(empty)empty.style.display='block';updatePortfolioSummary();return;}
+  if(empty)empty.style.display='none';
+  list.innerHTML=portfolio.map(p=>{
+    const val=p.qty*p.curr,pnl=val-p.qty*p.cost,ret=((p.curr-p.cost)/p.cost*100);
+    const col=pnl>=0?'var(--grn)':'var(--red)';
+    return `<div class="port-item">
+      <div><div style="font:700 13px/1 var(--mono);color:var(--txt)">${p.sym}</div><div style="font:400 10px/1 var(--sans);color:var(--txt3);margin-top:2px">${p.name} · ${p.qty} shares @ $${p.cost}</div></div>
+      <div style="text-align:right"><div style="font:700 14px/1 var(--mono);color:var(--txt)">$${val.toLocaleString(undefined,{maximumFractionDigits:2})}</div><div style="font:600 10px/1 var(--mono);color:${col};margin-top:2px">${pnl>=0?'+':'-'}$${Math.abs(pnl).toFixed(2)} (${ret>=0?'+':''}${ret.toFixed(2)}%)</div></div>
+      <div><button class="btn btn-ghost" style="padding:4px 9px;font-size:7px" onclick="quickAsk('Should I hold, add or sell ${p.sym} given current market conditions?');goPage('intel')">AI Advice</button></div>
+      <button class="port-del" onclick="removePortfolioItem(${p.id})">✕</button>
+    </div>`;
+  }).join('');
+  updatePortfolioSummary();
+}
+function updatePortfolioSummary(){
+  const total=portfolio.reduce((a,p)=>a+p.qty*p.curr,0);
+  const cost=portfolio.reduce((a,p)=>a+p.qty*p.cost,0);
+  const pnl=total-cost,ret=cost>0?(pnl/cost*100):0;
+  const col=pnl>=0?'var(--grn)':'var(--red)';
+  document.getElementById('pt-total').textContent='$'+total.toLocaleString(undefined,{maximumFractionDigits:0});
+  document.getElementById('pt-cost-total').textContent='$'+cost.toLocaleString(undefined,{maximumFractionDigits:0});
+  const pnlEl=document.getElementById('pt-pnl');pnlEl.style.color=col;pnlEl.textContent=(pnl>=0?'+':'-')+'$'+Math.abs(pnl).toLocaleString(undefined,{maximumFractionDigits:0});
+  const retEl=document.getElementById('pt-ret');retEl.style.color=col;retEl.textContent=(ret>=0?'+':'')+ret.toFixed(2)+'%';
+}
+function exportPortfolio(){
+  const rows=[['Symbol','Name','Qty','Avg Cost','Current','Value','P&L','Return']];
+  portfolio.forEach(p=>{const v=p.qty*p.curr,pnl=v-p.qty*p.cost;rows.push([p.sym,p.name,p.qty,p.cost,p.curr,v.toFixed(2),(pnl>=0?'+':'')+pnl.toFixed(2),((pnl/(p.qty*p.cost))*100).toFixed(2)+'%']);});
+  const csv=rows.map(r=>r.join(',')).join('\n');
+  const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='portfolio.csv';a.click();
+}
+
+/* ── IPO TRACKER ── */
+
+function setIpoTab(tab,btn){ipoTab=tab;document.querySelectorAll('[id^="ipo-tab-"]').forEach(b=>b.classList.remove('on'));if(btn)btn.classList.add('on');renderIPO();}
+function renderIPO(){
+  const body=document.getElementById('ipo-body');if(!body)return;
+  const data=IPO_DATA[ipoTab]||[];
+  const bc={upcoming:'ipo-upcoming',open:'ipo-open',recent:'ipo-recent'}[ipoTab];
+  const bt={upcoming:'UPCOMING',open:'OPEN NOW',recent:'LISTED'}[ipoTab];
+  body.innerHTML=data.map(ipo=>`<div class="ipo-card">
+    <div class="ipo-hd"><div><div class="ipo-name">${ipo.flag} ${ipo.name} <span style="font:400 11px/1 var(--mono);color:var(--txt3)">(${ipo.sym})</span></div><div class="ipo-sector">${ipo.sector} · ${ipo.exchange}</div></div><span class="ipo-badge ${bc}">${bt}</span></div>
+    <div style="font:400 12px/1.6 var(--sans);color:var(--txt2);margin-bottom:12px">${ipo.desc}</div>
+    <div class="ipo-meta">
+      <div class="ipo-meta-item"><div class="ipo-meta-lbl">Date</div><div class="ipo-meta-val">${ipo.date}</div></div>
+      <div class="ipo-meta-item"><div class="ipo-meta-lbl">Price</div><div class="ipo-meta-val">${ipo.price}</div></div>
+      <div class="ipo-meta-item"><div class="ipo-meta-lbl">Deal Size</div><div class="ipo-meta-val">${ipo.size}</div></div>
+      <div class="ipo-meta-item"><button class="btn btn-ghost" style="padding:4px 9px;font-size:7px;margin-top:4px" onclick="quickAsk('Analyse the ${ipo.name} IPO: business model, valuation, risks and should retail investors subscribe?');goPage('intel')">AI Analysis</button></div>
+    </div></div>`).join('');
+}
+
+/* ── CALCULATORS ── */
+
+function openCalc(id){
+  currentCalc=id;
+  document.querySelectorAll('.calc-card').forEach(c=>c.classList.toggle('on',c.id==='cc-'+id));
+  const cfg=CALC_CONFIGS[id];if(!cfg)return;
+  const panel=document.getElementById('calc-panel');if(!panel)return;
+  panel.className='calc-body on';
+  panel.innerHTML=`<div class="calc-fields"><div style="font:600 14px/1 var(--sans);color:var(--txt);margin-bottom:4px">${cfg.title}</div>${cfg.fields.map(f=>`<div class="calc-field"><label>${f.label}</label><input id="${f.id}" type="number" value="${f.val}" oninput="runCalc('${id}')"></div>`).join('')}<button class="calc-run" onclick="runCalc('${id}')">CALCULATE ▶</button></div><div class="calc-result" id="calc-result-${id}">${calcResults(id,cfg)}</div>`;
+}
+function calcResults(id,cfg){
+  if(!cfg)return'';
+  const f={};cfg.fields.forEach(fi=>{const el=document.getElementById(fi.id);f[fi.id]=el?el.value:fi.val;});
+  try{return cfg.calc(f).map(r=>`<div class="calc-res-item"><div class="calc-res-lbl">${r.l}</div><div class="calc-res-val" style="color:${r.c}">${r.v}</div></div>`).join('');}catch(e){return '<div class="calc-res-item"><div class="calc-res-lbl">Error</div><div class="calc-res-val">Check inputs</div></div>';}
+}
+function runCalc(id){const cfg=CALC_CONFIGS[id];const res=document.getElementById('calc-result-'+id);if(res&&cfg)res.innerHTML=calcResults(id,cfg);}
+
+/* ── LEARN ── */
+
+function setLearnCat(cat,btn){learnCat=cat;document.querySelectorAll('#pg-learn .inv-tab').forEach(b=>b.classList.remove('on'));if(btn)btn.classList.add('on');renderLearn();}
+function renderLearn(){
+  const grid=document.getElementById('learn-grid');if(!grid)return;
+  const filtered=learnCat==='all'?LEARN_TOPICS:LEARN_TOPICS.filter(t=>t.cat===learnCat);
+  const lc={beg:'lv-beg',int:'lv-int',adv:'lv-adv'},lt={beg:'Beginner',int:'Intermediate',adv:'Advanced'};
+  grid.innerHTML=filtered.map(t=>`<div class="learn-card" onclick="openLearnTopic('${t.id}')"><div class="learn-icon">${t.icon}</div><div class="learn-title">${t.title}</div><div class="learn-desc">${t.desc}</div><span class="learn-level ${lc[t.level]||'lv-beg'}">${lt[t.level]||'Beginner'}</span></div>`).join('');
+}
+function openLearnTopic(id){
+  const t=LEARN_TOPICS.find(x=>x.id===id);if(!t)return;
+  document.getElementById('lm-title').textContent=t.icon+' '+t.title;
+  document.getElementById('lm-body').innerHTML=t.content+`<hr style="border:none;border-top:1px solid var(--brd);margin:20px 0"><button class="btn btn-ghost" onclick="quickAsk('Tell me more about ${t.title} with real examples and actionable insights for a global investor.');goPage('intel');closeLearnModal()">Ask AI for deeper analysis →</button>`;
+  document.getElementById('learn-modal').classList.add('open');
+}
+function closeLearnModal(){document.getElementById('learn-modal').classList.remove('open');}
+
+/* ── BROKERS ── */
+
+function setBrokerFilter(filter,btn){brokerFilter=filter;document.querySelectorAll('#pg-brokers .inv-tab').forEach(b=>b.classList.remove('on'));if(btn)btn.classList.add('on');renderBrokers();}
+function renderBrokers(){
+  const grid=document.getElementById('broker-grid');if(!grid)return;
+  const filtered=brokerFilter==='all'?BROKERS:BROKERS.filter(b=>b.region===brokerFilter);
+  grid.innerHTML=filtered.map(b=>`<div class="broker-card">
+    <div class="broker-hd"><div class="broker-logo" style="background:${b.color}20;color:${b.color};border:1px solid ${b.color}40">${b.logo}</div><div><div class="broker-name">${b.name}</div><div class="broker-type">${b.type}</div></div></div>
+    <div class="broker-meta"><div class="bm-item"><div class="bm-lbl">Commission</div><div class="bm-val">${b.commission}</div></div><div class="bm-item"><div class="bm-lbl">Min Deposit</div><div class="bm-val">${b.minDeposit}</div></div><div class="bm-item"><div class="bm-lbl">Markets</div><div class="bm-val" style="font-size:9px">${b.markets}</div></div></div>
+    <div class="broker-tags">${b.features.slice(0,5).map(f=>`<span class="broker-tag">${f}</span>`).join('')}</div>
+    <div style="font:400 10px/1.55 var(--sans);color:var(--grn);margin-bottom:3px">✓ ${b.pros}</div>
+    <div style="font:400 10px/1.55 var(--sans);color:var(--txt3);margin-bottom:10px">✗ ${b.cons}</div>
+    <button class="broker-btn" onclick="window.open('${b.url}','_blank')">VISIT ${b.name.split(' ')[0].toUpperCase()} →</button>
+  </div>`).join('');
+}
+
 </script>
+
+<!-- ── STOCK DETAIL MODAL ── -->
+<div class="stk-modal-ov" id="stk-modal" onclick="if(event.target===this)closeStockModal()">
+  <div class="stk-modal">
+    <div class="stk-modal-hd">
+      <div>
+        <div class="stk-modal-sym" id="smd-sym">LMT</div>
+        <div class="stk-modal-name" id="smd-name">Lockheed Martin</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:16px">
+        <div>
+          <div class="stk-modal-price" id="smd-price">$676.00</div>
+          <div class="stk-modal-chg" id="smd-chg">▲ +1.2%</div>
+        </div>
+        <button class="stk-modal-x" onclick="closeStockModal()">✕</button>
+      </div>
+    </div>
+    <div class="stk-chart-wrap">
+      <canvas id="stk-detail-canvas" height="200"></canvas>
+    </div>
+    <div class="stk-modal-meta">
+      <div class="stk-meta-item"><div class="stk-meta-lbl">Sector</div><div class="stk-meta-val" id="smd-sector">—</div></div>
+      <div class="stk-meta-item"><div class="stk-meta-lbl">War impact</div><div class="stk-meta-val" id="smd-war">—</div></div>
+      <div class="stk-meta-item"><div class="stk-meta-lbl">Volatility</div><div class="stk-meta-val" id="smd-vol">—</div></div>
+    </div>
+    <div class="stk-modal-reason" id="smd-reason"></div>
+    <div class="stk-country-wrap">
+      <div class="stk-country-title" id="smd-country-title">Country Stocks</div>
+      <div class="stk-country-grid" id="smd-country-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── LEARN MODAL ── -->
+<div class="learn-modal-ov" id="learn-modal">
+  <div class="learn-modal-box">
+    <div class="learn-modal-hd">
+      <div class="learn-modal-title" id="lm-title">Topic</div>
+      <button class="learn-modal-x" onclick="closeLearnModal()">✕</button>
+    </div>
+    <div class="learn-modal-body" id="lm-body"></div>
+  </div>
+</div>
+
 </body>
 </html>
