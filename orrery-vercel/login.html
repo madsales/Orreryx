@@ -161,7 +161,7 @@ if(session) {
   try {
     const s = JSON.parse(session);
     if(s.email && s.expires > Date.now()) {
-      window.location.href = '/index.html';
+      window.location.href = '/app';
     }
   } catch(e) {}
 }
