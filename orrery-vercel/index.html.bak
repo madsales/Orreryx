@@ -1886,18 +1886,12 @@ function showPlanModal() {
 }
 
 function doPlanUpgrade(p) {
+  // Free/starter plan — no payment needed
   if(p === 's') {
     PLAN = 's'; applyPlan(); closeM('plan-modal');
     toast('Starter plan activated'); return;
   }
-  // Verify user hasn't already paid for this or higher plan
-  const planRank = {s:0, a:1, c:2};
-  if(planRank[PLAN] >= planRank[p]) {
-    closeM('plan-modal');
-    toast('You are already on the ' + (PLAN==='a'?'Analyst':'Command') + ' plan');
-    return;
-  }
-  // Paid plans — go to Pesapal payment
+  // Paid plans — go to Pesapal
   closeM('plan-modal');
   initiatePayment(p);
 }
@@ -1983,16 +1977,7 @@ async function submitPayment() {
     PLAN = plan;
     applyPlan();
     toast('Welcome! Your ' + (plan==='a'?'Analyst':'Command') + ' plan is active.');
-    localStorage.setItem('orrery_paid_verified', plan + '_' + Date.now());
     localStorage.removeItem('orrery_plan');
-  }
-  // Security: if no session and no valid payment record, force back to starter
-  // Prevents manual localStorage manipulation
-  const sess = localStorage.getItem('orrery_session');
-  const hasPaidSession = sess && (() => { try { const s=JSON.parse(sess); return s.plan && s.plan !== 'starter' && s.expires > Date.now(); } catch(e){ return false; } })();
-  const hasPesapalRecord = !!localStorage.getItem('orrery_paid_verified');
-  if(!hasPaidSession && !hasPesapalRecord && (PLAN === 'a' || PLAN === 'c')) {
-    PLAN = 's'; applyPlan();
   }
 })();
 
