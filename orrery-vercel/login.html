@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orrery — Sign In</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090b;--bg2:#111116;--bg3:#18181f;--bg4:#222230;
+  --brd:rgba(255,255,255,.07);--brd2:rgba(255,255,255,.13);
+  --txt:#f0f0ec;--txt2:#b0b0aa;--txt3:#666670;
+  --red:#e03836;--red2:rgba(224,56,54,.12);
+  --grn:#3ab860;--grn2:rgba(58,184,96,.12);
+  --amb:#e0a830;--gld:#d4a843;--gld2:rgba(212,168,67,.12);
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--sans)}
+/* Grid background */
+body::before{
+  content:'';position:fixed;inset:0;
+  background-image:linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);
+  background-size:64px 64px;
+  mask-image:radial-gradient(ellipse 80% 80% at 50% 50%,black 30%,transparent 100%);
+  pointer-events:none;z-index:0;
+}
+body::after{
+  content:'';position:fixed;top:40%;left:50%;transform:translate(-50%,-50%);
+  width:600px;height:600px;pointer-events:none;z-index:0;
+  background:radial-gradient(circle,rgba(224,56,54,.06) 0%,transparent 65%);
+}
+.wrap{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  padding:40px 20px;position:relative;z-index:1;
+}
+/* Logo */
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;margin-bottom:48px}
+.logo-mark{width:36px;height:36px;flex-shrink:0}
+.logo-name{font:700 18px/1 var(--mono);color:var(--txt);letter-spacing:.04em}
+.logo-tag{font:400 8px/1 var(--mono);color:var(--txt3);letter-spacing:.12em;text-transform:uppercase}
+/* Card */
+.card{
+  width:100%;max-width:400px;
+  background:var(--bg2);border:1px solid var(--brd2);
+  border-radius:8px;padding:36px 32px;
+}
+.card-eye{font:700 8px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--txt3);margin-bottom:10px}
+.card-title{font:700 22px/1.2 var(--mono);color:var(--txt);margin-bottom:8px}
+.card-sub{font:400 13px/1.6 var(--sans);color:var(--txt3);margin-bottom:28px}
+/* Input */
+.inp-wrap{position:relative;margin-bottom:14px}
+.inp-lbl{font:600 8px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);display:block;margin-bottom:7px}
+.inp{
+  width:100%;background:var(--bg3);border:1px solid var(--brd2);
+  border-radius:4px;color:var(--txt);font:400 14px/1 var(--mono);
+  padding:12px 14px;outline:none;transition:border-color .15s;
+}
+.inp:focus{border-color:rgba(255,255,255,.35)}
+.inp::placeholder{color:var(--txt3)}
+/* Button */
+.btn-submit{
+  width:100%;background:var(--txt);border:none;border-radius:4px;
+  color:var(--bg);font:700 10px/1 var(--mono);letter-spacing:.08em;
+  text-transform:uppercase;padding:14px;cursor:pointer;
+  transition:opacity .15s;margin-top:4px;
+}
+.btn-submit:hover{opacity:.85}
+.btn-submit:disabled{opacity:.4;cursor:not-allowed}
+/* States */
+.msg{
+  display:none;margin-top:20px;padding:14px 16px;border-radius:4px;
+  font:400 12px/1.6 var(--sans);
+}
+.msg.success{display:block;background:var(--grn2);border:1px solid rgba(58,184,96,.3);color:var(--grn)}
+.msg.error{display:block;background:var(--red2);border:1px solid rgba(224,56,54,.3);color:var(--red)}
+.msg.loading{display:block;background:var(--bg3);border:1px solid var(--brd2);color:var(--txt3)}
+/* Divider */
+.div{height:1px;background:var(--brd);margin:24px 0}
+.div-lbl{text-align:center;font:400 10px/1 var(--mono);color:var(--txt3);margin:-8px auto 0;background:var(--bg2);padding:0 10px;width:fit-content;display:block}
+/* Back link */
+.back{display:inline-flex;align-items:center;gap:6px;margin-top:28px;font:400 11px/1 var(--mono);color:var(--txt3);text-decoration:none;transition:color .14s}
+.back:hover{color:var(--txt)}
+/* Plan badge */
+.plan-badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--gld2);border:1px solid rgba(212,168,67,.3);
+  border-radius:3px;padding:5px 10px;
+  font:600 8px/1 var(--mono);letter-spacing:.08em;color:var(--gld);
+  margin-bottom:20px;
+}
+/* Sent state */
+.sent-icon{font-size:40px;text-align:center;display:block;margin-bottom:16px}
+/* Features list */
+.feat-list{list-style:none;display:flex;flex-direction:column;gap:6px;margin-top:20px}
+.feat-list li{display:flex;align-items:center;gap:8px;font:400 11px/1 var(--sans);color:var(--txt3)}
+.feat-list li span:first-child{color:var(--grn);font-size:10px}
+@media(max-width:480px){.card{padding:24px 20px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="/home.html" class="logo">
+    <svg class="logo-mark" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <rect width="32" height="32" rx="4" fill="#f0f0ec"/>
+      <ellipse cx="16" cy="16" rx="10" ry="4" fill="none" stroke="#09090a" stroke-width="1" transform="rotate(-30,16,16)"/>
+      <ellipse cx="16" cy="16" rx="6.5" ry="2.5" fill="none" stroke="rgba(9,9,10,0.4)" stroke-width="0.8" stroke-dasharray="3 2" transform="rotate(-30,16,16)"/>
+      <circle cx="16" cy="16" r="2" fill="#09090a"/>
+      <circle cx="23" cy="11" r="1.5" fill="#09090a"/>
+      <circle cx="12" cy="20" r="1" fill="#e03836"/>
+    </svg>
+    <div>
+      <div class="logo-name">Orrery</div>
+      <div class="logo-tag">Geopolitical Intelligence</div>
+    </div>
+  </a>
+
+  <div class="card" id="login-card">
+    <div class="card-eye">Access Platform</div>
+    <div class="card-title">Sign in to Orrery</div>
+    <div class="card-sub">Enter your email and we'll send you a secure sign-in link. No password needed.</div>
+
+    <label class="inp-lbl" for="email-inp">Email address</label>
+    <div class="inp-wrap">
+      <input class="inp" id="email-inp" type="email" placeholder="you@example.com" autocomplete="email" autofocus>
+    </div>
+    <button class="btn-submit" id="send-btn" onclick="sendMagicLink()">SEND SIGN-IN LINK →</button>
+    <div class="msg" id="msg"></div>
+
+    <div class="div"><span class="div-lbl">what you get</span></div>
+    <ul class="feat-list">
+      <li><span>✓</span>Global crisis intel feed — 29 events</li>
+      <li><span>✓</span>AI Intel Console — Claude powered</li>
+      <li><span>✓</span>Global stock screener + IPO tracker</li>
+      <li><span>✓</span>Financial calculators in 18 currencies</li>
+      <li><span>✓</span>Stocks by country — 13 countries</li>
+    </ul>
+  </div>
+
+  <!-- Sent state -->
+  <div class="card" id="sent-card" style="display:none;text-align:center">
+    <span class="sent-icon">📬</span>
+    <div class="card-eye" style="text-align:center">Check your inbox</div>
+    <div class="card-title" style="font-size:18px;text-align:center;margin-bottom:10px">Link sent!</div>
+    <div class="card-sub" style="text-align:center">We sent a sign-in link to <strong id="sent-email" style="color:var(--txt)"></strong>. Click it to access Orrery — it expires in 15 minutes.</div>
+    <div class="div"></div>
+    <div style="font:400 11px/1.6 var(--sans);color:var(--txt3);text-align:center">
+      Didn't get it? Check your spam folder or
+      <button onclick="resetForm()" style="background:none;border:none;color:var(--txt2);font:400 11px/1 var(--sans);cursor:pointer;text-decoration:underline;padding:0">try again</button>
+    </div>
+  </div>
+
+  <a href="/home.html" class="back">← Back to home</a>
+</div>
+
+<script>
+// Check if already logged in
+const session = localStorage.getItem('orrery_session');
+if(session) {
+  try {
+    const s = JSON.parse(session);
+    if(s.email && s.expires > Date.now()) {
+      window.location.href = '/app';
+    }
+  } catch(e) {}
+}
+
+// Check if plan param from home page
+const urlPlan = new URLSearchParams(window.location.search).get('plan');
+const errParam = new URLSearchParams(window.location.search).get('error');
+
+// Show error messages
+if (errParam) {
+  const msgs = { expired:'Your sign-in link expired. Please request a new one.', invalid_token:'Invalid sign-in link. Please request a new one.', missing_token:'Missing token. Please request a new sign-in link.', server_error:'Server error. Please try again.' };
+  const m = document.getElementById('msg');
+  m.className='msg error'; m.textContent = msgs[errParam] || 'Something went wrong. Please try again.';
+}
+
+// Show plan badge
+if (urlPlan) {
+  const planNames = { starter:'Starter — $0.99/mo', analyst:'Analyst — $14.99/mo', command:'Command — $34.99/mo' };
+  const badge = document.createElement('div');
+  badge.className = 'plan-badge';
+  badge.innerHTML = '✦ ' + (planNames[urlPlan] || urlPlan);
+  document.querySelector('.card-eye').before(badge);
+  document.querySelector('.card-sub').textContent = 'Enter your email to access Orrery with your ' + (planNames[urlPlan] || urlPlan) + ' plan.';
+}
+
+async function sendMagicLink() {
+  const email = document.getElementById('email-inp').value.trim();
+  const btn = document.getElementById('send-btn');
+  const msg = document.getElementById('msg');
+
+  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    msg.className='msg error';
+    msg.textContent='Please enter a valid email address.';
+    return;
+  }
+
+  btn.disabled = true;
+  msg.className='msg loading';
+  msg.textContent='Sending your sign-in link...';
+
+  try {
+    const res = await fetch('/api/send-magic', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ email, plan: urlPlan || null })
+    });
+    const data = await res.json();
+
+    if(res.ok) {
+      document.getElementById('sent-email').textContent = email;
+      document.getElementById('login-card').style.display = 'none';
+      document.getElementById('sent-card').style.display = 'block';
+    } else {
+      msg.className='msg error';
+      msg.textContent = data.error || 'Something went wrong. Please try again.';
+      btn.disabled = false;
+    }
+  } catch(e) {
+    msg.className='msg error';
+    msg.textContent = 'Network error. Please check your connection and try again.';
+    btn.disabled = false;
+  }
+}
+
+function resetForm() {
+  document.getElementById('login-card').style.display = 'block';
+  document.getElementById('sent-card').style.display = 'none';
+  document.getElementById('send-btn').disabled = false;
+  document.getElementById('msg').className = 'msg';
+  document.getElementById('email-inp').value = '';
+  document.getElementById('email-inp').focus();
+}
+
+// Enter key support
+document.getElementById('email-inp').addEventListener('keydown', e => {
+  if(e.key === 'Enter') sendMagicLink();
+});
+</script>
+</body>
+</html>
