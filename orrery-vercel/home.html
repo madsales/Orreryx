@@ -1,0 +1,1266 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orrery — Geopolitical Market Intelligence</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090a;--bg2:#111113;--bg3:#18181b;--bg4:#222226;
+  --txt:#f0f0ec;--txt2:#a0a09a;--txt3:#484844;
+  --brd:#222226;--brd2:#343438;
+  --red:#e03836;--red2:rgba(224,56,54,.12);
+  --amber:#d87818;--amber2:rgba(216,120,24,.1);
+  --green:#3ab860;--green2:rgba(58,184,96,.1);
+  --gold:#d4a843;--gold2:rgba(212,168,67,.12);
+  --blue:#4878e8;--blue2:rgba(72,120,232,.12);
+  --mono:'IBM Plex Mono',monospace;
+  --sans:'IBM Plex Sans',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);overflow-x:hidden}
+::-webkit-scrollbar{width:5px}::-webkit-scrollbar-track{background:var(--bg)}::-webkit-scrollbar-thumb{background:var(--brd2);border-radius:3px}
+
+/* ── NAV ── */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:100;
+  height:52px;padding:0 48px;display:flex;align-items:center;gap:14px;
+  background:rgba(9,9,10,.9);backdrop-filter:blur(18px);
+  border-bottom:1px solid var(--brd);
+}
+.nav-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.nav-mark{width:32px;height:32px;flex-shrink:0}
+.nav-wordmark{font-family:var(--mono);font-size:16px;font-weight:700;color:var(--txt);letter-spacing:.04em}
+.nav-sep{width:1px;height:22px;background:var(--brd2);margin:0 4px}
+.nav-tag{font-family:var(--mono);font-size:8px;color:var(--txt3);letter-spacing:.1em;text-transform:uppercase}
+.nav-links{display:flex;align-items:center;gap:4px;margin-left:auto}
+.nav-a{padding:6px 14px;font-family:var(--mono);font-size:10px;color:var(--txt2);text-decoration:none;letter-spacing:.05em;border-radius:3px;transition:all .14s}
+.nav-a:hover{color:var(--txt);background:var(--bg3)}
+.nav-cta{
+  background:var(--txt);color:var(--bg);
+  padding:7px 18px;border-radius:3px;
+  font-family:var(--mono);font-size:10px;font-weight:700;
+  text-decoration:none;letter-spacing:.06em;
+  transition:opacity .14s;
+}
+.nav-cta:hover{opacity:.85}
+
+/* ── LIVE BADGE ── */
+.live-pill{
+  display:inline-flex;align-items:center;gap:6px;
+  background:var(--red2);border:1px solid rgba(224,56,54,.35);
+  border-radius:3px;padding:4px 11px;
+  font-family:var(--mono);font-size:8.5px;font-weight:600;color:var(--red);letter-spacing:.12em;
+}
+.lpulse{width:6px;height:6px;border-radius:50%;background:var(--red);animation:lp 1.4s infinite}
+@keyframes lp{0%,100%{opacity:1}50%{opacity:.15}}
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  text-align:center;padding:120px 40px 80px;
+  position:relative;overflow:hidden;
+}
+.hero-grid{
+  position:absolute;inset:0;
+  background-image:
+    linear-gradient(rgba(255,255,255,.022) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.022) 1px,transparent 1px);
+  background-size:64px 64px;
+  mask-image:radial-gradient(ellipse 80% 70% at 50% 50%,black 20%,transparent 100%);
+}
+.hero-glow{
+  position:absolute;top:40%;left:50%;transform:translate(-50%,-50%);
+  width:800px;height:800px;pointer-events:none;
+  background:radial-gradient(circle,rgba(224,56,54,.07) 0%,transparent 65%);
+}
+.hero-glow2{
+  position:absolute;top:55%;left:30%;
+  width:400px;height:400px;pointer-events:none;
+  background:radial-gradient(circle,rgba(72,120,232,.05) 0%,transparent 70%);
+}
+.fade-up{animation:fup .7s ease both}
+@keyframes fup{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+.hero-eyebrow{margin-bottom:28px;animation:fup .6s .05s ease both}
+.hero h1{
+  font-family:var(--mono);
+  font-size:clamp(40px,6.5vw,84px);
+  font-weight:700;letter-spacing:-.025em;line-height:1.04;
+  margin-bottom:24px;
+  animation:fup .7s .12s ease both;
+}
+.hero h1 em{font-style:normal;color:var(--red)}
+.hero-sub{
+  font-size:clamp(14px,1.6vw,18px);color:var(--txt2);
+  max-width:580px;margin:0 auto 40px;line-height:1.7;
+  animation:fup .7s .2s ease both;
+}
+.hero-btns{
+  display:flex;gap:10px;justify-content:center;flex-wrap:wrap;
+  animation:fup .7s .28s ease both;
+}
+.btn-p{
+  background:var(--txt);color:var(--bg);
+  padding:13px 32px;border-radius:3px;
+  font-family:var(--mono);font-size:11.5px;font-weight:700;
+  text-decoration:none;letter-spacing:.06em;transition:opacity .14s;
+}
+.btn-p:hover{opacity:.84}
+.btn-s{
+  background:transparent;color:var(--txt2);
+  padding:13px 28px;border-radius:3px;
+  font-family:var(--mono);font-size:11.5px;font-weight:500;
+  text-decoration:none;letter-spacing:.06em;
+  border:1px solid var(--brd2);transition:all .14s;
+}
+.btn-s:hover{border-color:var(--brd2);color:var(--txt);background:var(--bg3)}
+.hero-stats{
+  display:flex;gap:52px;margin-top:72px;flex-wrap:wrap;justify-content:center;
+  animation:fup .7s .36s ease both;padding-top:40px;
+  border-top:1px solid var(--brd);width:100%;max-width:700px;
+}
+.hst{text-align:center}
+.hst-v{font-family:var(--mono);font-size:32px;font-weight:700;line-height:1;color:var(--txt)}
+.hst-v span{font-size:20px;color:var(--txt3)}
+.hst-l{font-size:9.5px;color:var(--txt3);letter-spacing:.1em;text-transform:uppercase;font-family:var(--mono);margin-top:5px}
+
+/* ── MARQUEE ── */
+.marquee-wrap{
+  border-top:1px solid var(--brd);border-bottom:1px solid var(--brd);
+  background:var(--bg2);height:30px;overflow:hidden;display:flex;align-items:center;
+}
+.marquee-live{
+  background:var(--red);color:#fff;padding:0 12px;height:100%;
+  display:flex;align-items:center;font-family:var(--mono);font-size:7.5px;
+  font-weight:700;letter-spacing:.15em;flex-shrink:0;
+}
+.marquee-scroll{flex:1;overflow:hidden}
+.marquee-inner{
+  display:flex;align-items:center;white-space:nowrap;
+  animation:mq 80s linear infinite;
+}
+@keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.mqi{display:inline-flex;align-items:center;gap:5px;padding:0 18px;font-family:var(--mono);font-size:10.5px;color:var(--txt3)}
+.mqi strong{color:var(--txt);font-weight:500}
+.mqi.up strong+span{color:var(--green);font-weight:600}
+.mqi.dn strong+span{color:var(--red);font-weight:600}
+
+/* ── PLATFORM PREVIEW ── */
+.preview-section{padding:100px 48px 80px;max-width:1200px;margin:0 auto}
+.section-eyebrow{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:.2em;text-transform:uppercase;color:var(--txt3);margin-bottom:12px}
+.section-h{font-family:var(--mono);font-size:clamp(26px,3.2vw,42px);font-weight:700;letter-spacing:-.02em;line-height:1.1;margin-bottom:14px}
+.section-sub{font-size:15px;color:var(--txt2);max-width:520px;line-height:1.7}
+
+.mockup{
+  margin-top:52px;border-radius:8px;overflow:hidden;
+  border:1px solid var(--brd2);
+  box-shadow:0 0 0 1px var(--brd),0 32px 80px rgba(0,0,0,.5);
+}
+.mockup-bar{
+  background:var(--bg3);border-bottom:1px solid var(--brd);
+  padding:10px 16px;display:flex;align-items:center;gap:8px;
+}
+.mb-d{width:10px;height:10px;border-radius:50%}
+.mockup-url{
+  flex:1;background:var(--bg4);border-radius:3px;
+  padding:4px 12px;font-family:var(--mono);font-size:9px;
+  color:var(--txt3);margin:0 12px;text-align:center;
+}
+.mockup-body{display:grid;grid-template-columns:208px 1fr 248px;height:300px;background:var(--bg2)}
+.mock-col{border-right:1px solid var(--brd);display:flex;flex-direction:column;overflow:hidden}
+.mock-col:last-child{border-right:none}
+.mock-hd{font-family:var(--mono);font-size:7px;color:var(--txt3);letter-spacing:.14em;text-transform:uppercase;padding:6px 10px 5px;border-bottom:1px solid var(--brd);flex-shrink:0}
+.mock-ev{padding:5px 10px;border-bottom:1px solid var(--brd)}
+.mev-cat{display:inline-block;font-family:var(--mono);font-size:5.5px;font-weight:600;padding:1px 4px;border-radius:2px;margin-bottom:2px}
+.mev-txt{font-size:8.5px;color:var(--txt2);line-height:1.4}
+.mev-tags{display:flex;gap:3px;margin-top:2px}
+.mev-tag{font-size:6.5px;padding:1px 4px;border-radius:2px;font-family:var(--mono);font-weight:500}
+.mock-map{flex:1;position:relative;overflow:hidden;background:var(--bg3)}
+.mock-stocks{flex:1;overflow:hidden}
+.mst-row{display:flex;align-items:center;padding:3px 10px;border-bottom:1px solid var(--brd);gap:4px}
+.mst-tick{font-family:var(--mono);font-size:9px;font-weight:700;width:40px;flex-shrink:0}
+.mst-name{flex:1;font-size:8px;color:var(--txt3)}
+.mst-chg{font-family:var(--mono);font-size:9px;font-weight:600;min-width:46px;text-align:right}
+.mst-war{font-size:6px;padding:1px 4px;border-radius:2px;font-family:var(--mono);font-weight:600;margin-left:3px;flex-shrink:0}
+
+/* ── FEATURE GRID ── */
+.features-section{padding:80px 48px;border-top:1px solid var(--brd)}
+.features-inner{max-width:1100px;margin:0 auto}
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--brd);border:1px solid var(--brd);border-radius:6px;overflow:hidden;margin-top:52px}
+.feat{background:var(--bg);padding:32px 28px;transition:background .18s;cursor:default}
+.feat:hover{background:var(--bg2)}
+.feat-icon{font-size:26px;margin-bottom:14px}
+.feat-title{font-family:var(--mono);font-size:12px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--txt);margin-bottom:8px}
+.feat-body{font-size:12.5px;color:var(--txt3);line-height:1.65}
+
+/* ── WAR STOCKS FEATURE ── */
+.stocks-feature{
+  padding:80px 48px;border-top:1px solid var(--brd);
+  background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);
+}
+.stocks-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.stocks-table{border:1px solid var(--brd2);border-radius:6px;overflow:hidden}
+.st-hd{display:grid;grid-template-columns:52px 1fr 70px 62px 50px;gap:0;padding:6px 12px;background:var(--bg3);border-bottom:1px solid var(--brd2)}
+.st-hd span{font-family:var(--mono);font-size:7px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--txt3)}
+.st-row{display:grid;grid-template-columns:52px 1fr 70px 62px 50px;gap:0;padding:7px 12px;border-bottom:1px solid var(--brd);transition:background .1s;align-items:center}
+.st-row:last-child{border-bottom:none}
+.st-row:hover{background:var(--bg3)}
+.st-tick{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--txt)}
+.st-name{font-size:9.5px;color:var(--txt3)}
+.st-price{font-family:var(--mono);font-size:10px;color:var(--txt);text-align:right;font-variant-numeric:tabular-nums}
+.st-chg{font-family:var(--mono);font-size:10px;font-weight:600;text-align:right;font-variant-numeric:tabular-nums}
+.st-war{display:flex;justify-content:flex-end}
+.st-warb{font-size:6.5px;padding:2px 5px;border-radius:2px;font-family:var(--mono);font-weight:600}
+
+/* ── PRICING ── */
+.pricing-section{padding:100px 48px;border-top:1px solid var(--brd)}
+.pricing-inner{max-width:960px;margin:0 auto}
+.pricing-hd{text-align:center;margin-bottom:60px}
+.pricing-hd p{font-size:12.5px;color:var(--txt3);font-family:var(--mono);margin-top:10px}
+.pricing-grid{display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--brd2);border-radius:6px;overflow:hidden}
+.plan{padding:36px 30px;border-right:1px solid var(--brd2);position:relative;background:var(--bg);transition:background .18s}
+.plan:last-child{border-right:none}
+.plan:hover{background:var(--bg2)}
+.plan.featured{background:var(--bg2)}
+.plan-pop{
+  position:absolute;top:0;left:50%;transform:translateX(-50%);
+  background:var(--gold);color:var(--bg);
+  font-family:var(--mono);font-size:7px;font-weight:700;
+  padding:3px 14px;border-radius:0 0 4px 4px;letter-spacing:.1em;text-transform:uppercase;
+}
+.plan-name{font-family:var(--mono);font-size:9.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--txt3);margin-top:18px;margin-bottom:10px}
+.plan-price{display:flex;align-items:baseline;gap:3px;margin-bottom:5px}
+.plan-curr{font-family:var(--mono);font-size:18px;font-weight:500;color:var(--txt2);margin-top:6px;align-self:flex-start}
+.plan-val{font-family:var(--mono);font-size:52px;font-weight:700;color:var(--txt);letter-spacing:-.03em;line-height:1}
+.plan-per{font-size:12px;color:var(--txt3);font-family:var(--mono)}
+.plan-tagline{font-size:11.5px;color:var(--txt3);margin-bottom:26px;line-height:1.6;margin-top:6px}
+.plan-div{height:1px;background:var(--brd2);margin-bottom:22px}
+.plan-feats{list-style:none;display:flex;flex-direction:column;gap:8px;margin-bottom:28px}
+.pf{display:flex;align-items:flex-start;gap:8px;font-size:11.5px;color:var(--txt2);line-height:1.4}
+.pf-yes{color:var(--green);flex-shrink:0}
+.pf-no{color:var(--txt3);flex-shrink:0}
+.pf.off{color:var(--txt3)}
+.plan-btn{
+  display:block;width:100%;padding:11px;text-align:center;border-radius:3px;
+  font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.07em;
+  text-decoration:none;cursor:pointer;border:none;transition:all .15s;
+}
+.plan-btn.outline{background:transparent;border:1px solid var(--brd2);color:var(--txt3)}
+.plan-btn.outline:hover{border-color:var(--txt);color:var(--txt)}
+.plan-btn.solid{background:var(--txt);color:var(--bg)}
+.plan-btn.solid:hover{opacity:.86}
+.plan-btn.gold{background:var(--gold);color:var(--bg)}
+.plan-btn.gold:hover{opacity:.86}
+.stripe-note{text-align:center;margin-top:28px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:11px;color:var(--txt3);font-family:var(--mono)}
+.stripe-pill{background:#635BFF;color:#fff;padding:2px 8px;border-radius:3px;font-size:9.5px;font-weight:700;letter-spacing:.04em}
+
+/* ── HOW IT WORKS ── */
+.how-section{padding:80px 48px;border-top:1px solid var(--brd)}
+.how-inner{max-width:1100px;margin:0 auto}
+.how-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--brd);border:1px solid var(--brd);border-radius:6px;overflow:hidden;margin-top:52px}
+.how-step{background:var(--bg);padding:28px 24px}
+.how-n{font-family:var(--mono);font-size:52px;font-weight:700;color:var(--bg3);line-height:1;margin-bottom:14px}
+.how-t{font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--txt);margin-bottom:7px}
+.how-d{font-size:11.5px;color:var(--txt3);line-height:1.65}
+
+/* ── FAQ ── */
+.faq-section{padding:80px 48px;border-top:1px solid var(--brd)}
+.faq-inner{max-width:1000px;margin:0 auto}
+.faq-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--brd);border:1px solid var(--brd);border-radius:6px;overflow:hidden;margin-top:48px}
+.faq-item{background:var(--bg);padding:24px 26px}
+.faq-q{font-family:var(--mono);font-size:12px;font-weight:600;color:var(--txt);margin-bottom:8px}
+.faq-a{font-size:11.5px;color:var(--txt3);line-height:1.65}
+.faq-a a{color:var(--txt2);text-decoration:underline}
+
+/* ── CTA BAND ── */
+.cta-band{
+  padding:80px 48px;text-align:center;
+  background:linear-gradient(180deg,var(--bg) 0%,var(--bg2) 100%);
+  border-top:1px solid var(--brd);
+}
+.cta-h{font-family:var(--mono);font-size:clamp(24px,3vw,40px);font-weight:700;letter-spacing:-.02em;margin-bottom:16px}
+.cta-sub{font-size:14px;color:var(--txt2);margin-bottom:36px;line-height:1.7}
+
+/* ── FOOTER ── */
+footer{
+  border-top:1px solid var(--brd);padding:36px 48px;
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;
+}
+.foot-left{display:flex;align-items:center;gap:10px}
+.foot-links{display:flex;gap:18px}
+.foot-a{font-size:10.5px;color:var(--txt3);text-decoration:none;font-family:var(--mono);transition:color .14s}
+.foot-a:hover{color:var(--txt)}
+.foot-copy{font-size:10px;color:var(--txt3);font-family:var(--mono)}
+
+/* ══ MOBILE RESPONSIVE ══ */
+@media(max-width:768px){
+  nav{padding:0 16px;gap:8px}
+  .nav-sep,.nav-tag,.nav-links .nav-a:not(.nav-cta){display:none}
+  .nav-links{gap:6px}
+
+  .hero{padding:90px 20px 60px;min-height:auto}
+  .hero h1{font-size:clamp(32px,9vw,52px)}
+  .hero-sub{font-size:14px}
+  .hero-btns{flex-direction:column;align-items:center}
+  .btn-p,.btn-s{width:100%;max-width:300px;text-align:center;padding:14px 20px}
+  .hero-stats{gap:28px;margin-top:48px;padding-top:28px}
+  .hst-v{font-size:24px}
+
+  .preview-section{padding:60px 20px 40px}
+  .mockup-body{grid-template-columns:1fr;height:auto}
+  .mock-col{height:180px}
+  .mock-col:not(:first-child){border-right:none;border-top:1px solid var(--brd)}
+
+  .features-section{padding:60px 20px}
+  .feat-grid{grid-template-columns:1fr;gap:0}
+
+  .stocks-feature{padding:60px 20px}
+  .stocks-inner{grid-template-columns:1fr;gap:32px}
+  .st-hd,.st-row{grid-template-columns:44px 1fr 60px 54px}
+  .st-hd span:last-child,.st-row .st-war{display:none}
+
+  .pricing-section{padding:60px 20px}
+  .pricing-grid{grid-template-columns:1fr;border-radius:6px}
+  .plan{border-right:none!important;border-bottom:1px solid var(--brd2)}
+  .plan:last-child{border-bottom:none}
+
+  .how-section{padding:60px 20px}
+  .how-steps{grid-template-columns:1fr 1fr}
+
+  .faq-section{padding:60px 20px}
+  .faq-grid{grid-template-columns:1fr}
+
+  section[style*="padding:90px 48px"]{padding:60px 20px!important}
+  [style*="grid-template-columns:repeat(4,1fr)"]{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:32px!important;
+  }
+  [style*="grid-template-columns:repeat(3,1fr)"]{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+  }
+
+  .cta-band{padding:60px 20px}
+  .cta-h{font-size:22px}
+  .cta-band [style*="display:flex"]{flex-direction:column;align-items:center}
+
+  footer{flex-direction:column;gap:16px;padding:28px 20px;text-align:center}
+  .foot-links{flex-wrap:wrap;justify-content:center}
+
+  /* Crypto/demo bar */
+  [style*="display:flex;align-items:center;justify-content:space-between;gap"]{
+    flex-direction:column!important;gap:16px!important;
+  }
+  .demo-cta-bar{flex-direction:column!important;text-align:center;gap:16px!important;padding:28px 20px!important}
+  .demo-cta-btns{flex-direction:column;align-items:center;width:100%}
+  .demo-cta-btns a{width:100%;max-width:280px;text-align:center}
+}
+
+@media(max-width:480px){
+  .how-steps{grid-template-columns:1fr}
+  [style*="grid-template-columns:repeat(4,1fr)"]{grid-template-columns:1fr!important}
+  .hero-stats{flex-direction:column;gap:20px}
+}
+
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <a href="/home.html" class="nav-logo">
+    <svg class="nav-mark" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <rect width="32" height="32" rx="4" fill="#f0f0ec"/>
+      <ellipse cx="16" cy="16" rx="10" ry="4" fill="none" stroke="#09090a" stroke-width="1" transform="rotate(-30,16,16)"/>
+      <ellipse cx="16" cy="16" rx="6.5" ry="2.5" fill="none" stroke="rgba(9,9,10,0.4)" stroke-width="0.8" stroke-dasharray="3 2" transform="rotate(-30,16,16)"/>
+      <circle cx="16" cy="16" r="2" fill="#09090a"/>
+      <circle cx="23" cy="11" r="1.5" fill="#09090a"/>
+      <circle cx="12" cy="20" r="1" fill="#e03836"/>
+    </svg>
+    <span class="nav-wordmark">Orrery</span>
+  </a>
+  <div class="nav-sep"></div>
+  <span class="nav-tag">Geopolitical Market Intelligence</span>
+  <div class="nav-links">
+    <a href="/login.html" class="nav-a">Sign In</a>
+    <a href="#features" class="nav-a">FEATURES</a>
+    <a href="#demo" class="nav-a">DEMO</a>
+    <a href="#stocks" class="nav-a">WAR STOCKS</a>
+    <a href="#pricing" class="nav-a">PRICING</a>
+    <a href="#faq" class="nav-a">FAQ</a>
+    <a href="/app" class="nav-cta">LAUNCH PLATFORM →</a>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-grid"></div>
+  <div class="hero-glow"></div>
+  <div class="hero-glow2"></div>
+
+  <div class="hero-eyebrow">
+    <svg width="48" height="48" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="margin-bottom:8px">
+      <rect width="32" height="32" rx="5" fill="#f0f0ec"/>
+      <ellipse cx="16" cy="16" rx="10" ry="4" fill="none" stroke="#09090a" stroke-width="1" transform="rotate(-30,16,16)"/>
+      <ellipse cx="16" cy="16" rx="6.5" ry="2.5" fill="none" stroke="rgba(9,9,10,0.4)" stroke-width="0.8" stroke-dasharray="3 2" transform="rotate(-30,16,16)"/>
+      <circle cx="16" cy="16" r="2" fill="#09090a"/>
+      <circle cx="23" cy="11" r="1.5" fill="#09090a"/>
+      <circle cx="12" cy="20" r="1" fill="#e03836"/>
+    </svg>
+    <div class="live-pill"><div class="lpulse"></div>LIVE — IR · IL · US WAR · DAY 14 · HORMUZ DISRUPTED</div>
+  </div>
+
+  <h1 class="fade-up" style="animation-delay:.1s">
+    The Intelligence Platform<br>for <em>Crisis Markets</em>
+  </h1>
+
+  <p class="hero-sub fade-up" style="animation-delay:.18s">
+    Geopolitical events mapped in real time. 18 global indices. 18 equities across defense, energy, airlines and shipping. Live crypto market. AI briefings every 60 seconds. Know before the market does.
+  </p>
+
+  <div class="hero-btns fade-up" style="animation-delay:.26s">
+    <a href="#pricing" class="btn-p">GET STARTED — FROM $0.99/MO →</a>
+    <a href="/app" class="btn-s">OPEN LIVE PLATFORM</a>
+  </div>
+
+  <div class="hero-stats fade-up" style="animation-delay:.34s">
+    <div class="hst"><div class="hst-v">40<span> indices</span></div><div class="hst-l">Global Markets</div></div>
+    <div class="hst"><div class="hst-v">40<span> stocks</span></div><div class="hst-l">War Equities</div></div>
+    <div class="hst"><div class="hst-v">60<span>s</span></div><div class="hst-l">AI Brief Interval</div></div>
+    <div class="hst"><div class="hst-v">20<span>+</span></div><div class="hst-l">Event Types</div></div>
+  </div>
+</section>
+
+<!-- TICKER -->
+<div class="marquee-wrap">
+  <div class="marquee-live">● LIVE</div>
+  <div class="marquee-scroll">
+    <div class="marquee-inner">
+      <span class="mqi up"><strong>LMT</strong> <span>$676.40 +12.4%</span> ▲ HIGH WAR IMPACT</span>
+      <span class="mqi dn"><strong>DAL</strong> <span>$32.80 −13.7%</span> ▼ FUEL SHOCK</span>
+      <span class="mqi up"><strong>XOM</strong> <span>$115.20 +8.9%</span> ▲ HORMUZ WINNER</span>
+      <span class="mqi dn"><strong>ZIM</strong> <span>$14.80 −18.2%</span> ▼ ROUTE DISRUPTED</span>
+      <span class="mqi up"><strong>NOC</strong> <span>$520.10 +9.8%</span> ▲ B-2 DEPLOYED</span>
+      <span class="mqi up"><strong>GOLD</strong> <span>$2,812 +4.2%</span> ▲ SAFE HAVEN</span>
+      <span class="mqi dn"><strong>UAL</strong> <span>$37.20 −11.2%</span> ▼ AIRSPACE CLOSED</span>
+      <span class="mqi up"><strong>RTX</strong> <span>$138.60 +7.2%</span> ▲ PATRIOT DEMAND</span>
+      <span class="mqi dn"><strong>AAL</strong> <span>$12.80 −9.8%</span> ▼ COVENANT RISK</span>
+      <span class="mqi up"><strong>CVX</strong> <span>$172.40 +7.4%</span> ▲ SHALE PREMIUM</span>
+      <span class="mqi up"><strong>OXY</strong> <span>$68.10 +9.2%</span> ▲ PERMIAN SURGE</span>
+      <span class="mqi dn"><strong>Maersk</strong> <span>$7.90 −12.2%</span> ▼ RED SEA BLOCKED</span>
+      <span class="mqi up"><strong>GD</strong> <span>$290.50 +5.8%</span> ▲ STRYKER ORDERS</span>
+      <span class="mqi up"><strong>BA</strong> <span>$178.30 +4.4%</span> ▲ HARPOON DEMAND</span>
+      <span class="mqi dn"><strong>S&amp;P 500</strong> <span>5,307 −4.7%</span> ▼ WAR SELL-OFF</span>
+      <span class="mqi up"><strong>BRENT</strong> <span>$86.10 +15.8%</span> ▲ HORMUZ PREMIUM</span>
+      <span class="mqi dn"><strong>VIX</strong> <span>28.4 ELEVATED</span> ▼ RISK-OFF</span>
+
+      <!-- repeat for seamless loop -->
+      <span class="mqi up"><strong>LMT</strong> <span>$676.40 +12.4%</span> ▲ HIGH WAR IMPACT</span>
+      <span class="mqi dn"><strong>DAL</strong> <span>$32.80 −13.7%</span> ▼ FUEL SHOCK</span>
+      <span class="mqi up"><strong>XOM</strong> <span>$115.20 +8.9%</span> ▲ HORMUZ WINNER</span>
+      <span class="mqi dn"><strong>ZIM</strong> <span>$14.80 −18.2%</span> ▼ ROUTE DISRUPTED</span>
+      <span class="mqi up"><strong>NOC</strong> <span>$520.10 +9.8%</span> ▲ B-2 DEPLOYED</span>
+      <span class="mqi up"><strong>GOLD</strong> <span>$2,812 +4.2%</span> ▲ SAFE HAVEN</span>
+      <span class="mqi dn"><strong>UAL</strong> <span>$37.20 −11.2%</span> ▼ AIRSPACE CLOSED</span>
+      <span class="mqi up"><strong>RTX</strong> <span>$138.60 +7.2%</span> ▲ PATRIOT DEMAND</span>
+      <span class="mqi dn"><strong>AAL</strong> <span>$12.80 −9.8%</span> ▼ COVENANT RISK</span>
+      <span class="mqi up"><strong>CVX</strong> <span>$172.40 +7.4%</span> ▲ SHALE PREMIUM</span>
+    </div>
+  </div>
+</div>
+
+<!-- PLATFORM PREVIEW -->
+<section class="preview-section" id="features">
+  <div class="section-eyebrow">Platform Preview</div>
+  <h2 class="section-h">Everything in one screen</h2>
+  <p class="section-sub">War feed, live world map, 18 global indices, 18 war-impacted stocks, AI briefings — all updating simultaneously.</p>
+
+  <div class="mockup">
+    <div class="mockup-bar">
+      <div class="mb-d" style="background:#ff5f57"></div>
+      <div class="mb-d" style="background:#febc2e"></div>
+      <div class="mb-d" style="background:#28c840"></div>
+      <div class="mockup-url">app.orreryx.io — Geopolitical Market Intelligence</div>
+      <div class="live-pill" style="padding:2px 9px;font-size:7px"><div class="lpulse"></div>LIVE</div>
+    </div>
+    <div class="mockup-body">
+      <!-- War Feed -->
+      <div class="mock-col">
+        <div class="mock-hd">◈ War Intel Feed</div>
+        <div class="mock-ev">
+          <div class="mev-cat" style="background:rgba(224,56,54,.12);color:#e03836">MILITARY</div>
+          <div class="mev-txt">US-Israel strike Bandar Abbas naval base. IRGC radar disabled.</div>
+          <div class="mev-tags">
+            <span class="mev-tag" style="background:rgba(58,184,96,.1);color:#3ab860">LMT +2.1%</span>
+            <span class="mev-tag" style="background:rgba(224,56,54,.1);color:#e03836">DFM −4.1%</span>
+          </div>
+        </div>
+        <div class="mock-ev" style="opacity:.7">
+          <div class="mev-cat" style="background:rgba(216,120,24,.1);color:#d87818">ENERGY</div>
+          <div class="mev-txt">IRGC boats approach Hormuz tankers. Traffic at 30%.</div>
+          <div class="mev-tags">
+            <span class="mev-tag" style="background:rgba(58,184,96,.1);color:#3ab860">XOM +2.4%</span>
+            <span class="mev-tag" style="background:rgba(224,56,54,.1);color:#e03836">DAL −3.1%</span>
+          </div>
+        </div>
+        <div class="mock-ev" style="opacity:.45">
+          <div class="mev-cat" style="background:rgba(90,24,136,.1);color:#9850d8">NUCLEAR</div>
+          <div class="mev-txt">IAEA loses Fordow contact 6hrs. B-2 deployed Diego Garcia.</div>
+        </div>
+        <div class="mock-ev" style="opacity:.3">
+          <div class="mev-cat" style="background:rgba(72,120,232,.12);color:#4878e8">DIPLOMATIC</div>
+          <div class="mev-txt">China proposes ceasefire. US rejects without Hormuz reopening.</div>
+        </div>
+      </div>
+      <!-- Map -->
+      <div class="mock-col">
+        <div class="mock-hd">🌍 World Map — Live Events</div>
+        <div class="mock-map">
+          <svg viewBox="0 0 400 220" width="100%" height="100%" preserveAspectRatio="xMidYMid meet">
+            <!-- Grid -->
+            <rect width="400" height="220" fill="#18181b"/>
+            <line x1="100" y1="0" x2="100" y2="220" stroke="#222" stroke-width=".5"/>
+            <line x1="200" y1="0" x2="200" y2="220" stroke="#222" stroke-width=".5"/>
+            <line x1="300" y1="0" x2="300" y2="220" stroke="#222" stroke-width=".5"/>
+            <line x1="0" y1="73" x2="400" y2="73" stroke="#222" stroke-width=".5"/>
+            <line x1="0" y1="146" x2="400" y2="146" stroke="#222" stroke-width=".5"/>
+            <!-- Land shapes simplified -->
+            <path d="M15,55 L90,52 L92,95 L75,105 L25,100 Z" fill="#222226" stroke="#343438" stroke-width=".6"/>
+            <path d="M50,110 L68,115 L65,148 L60,160 L48,155 L44,140 Z" fill="#222226" stroke="#343438" stroke-width=".6"/>
+            <path d="M112,55 L122,58 L120,80 L110,82 L110,70 Z" fill="#222226" stroke="#343438" stroke-width=".6"/>
+            <path d="M130,35 L195,32 L198,80 L185,90 L145,88 L128,70 Z" fill="#222226" stroke="#343438" stroke-width=".6"/>
+            <path d="M160,82 L172,85 L170,105 L158,102 Z" fill="#222226" stroke="#343438" stroke-width=".6"/>
+            <path d="M200,25 L330,22 L335,70 L310,80 L245,78 L200,65 Z" fill="#222226" stroke="#343438" stroke-width=".6"/>
+            <path d="M270,80 L295,82 L292,110 L268,106 Z" fill="#222226" stroke="#343438" stroke-width=".6"/>
+            <path d="M310,108 L348,110 L345,148 L308,146 Z" fill="#222226" stroke="#343438" stroke-width=".6"/>
+            <path d="M345,60 L378,58 L380,88 L348,90 Z" fill="#222226" stroke="#343438" stroke-width=".6"/>
+            <!-- War theater -->
+            <rect x="188" y="60" width="52" height="30" rx="2" fill="rgba(224,56,54,.06)" stroke="rgba(224,56,54,.35)" stroke-width=".8" stroke-dasharray="3 2"/>
+            <text x="214" y="96" text-anchor="middle" font-size="5" fill="rgba(224,56,54,.5)" font-family="'IBM Plex Mono',monospace">WAR THEATER</text>
+            <!-- Pulsing latest event -->
+            <circle cx="214" cy="74" r="3" fill="none" stroke="#e03836" stroke-width="1.2" opacity="0">
+              <animate attributeName="r" values="3;16;3" dur="2s" repeatCount="indefinite"/>
+              <animate attributeName="opacity" values=".7;0;.7" dur="2s" repeatCount="indefinite"/>
+            </circle>
+            <circle cx="214" cy="74" r="5" fill="#e03836"/>
+            <!-- Other events -->
+            <circle cx="200" cy="70" r="3.5" fill="#d87818" opacity=".85"/>
+            <circle cx="222" cy="68" r="3.5" fill="#9850d8" opacity=".8"/>
+            <circle cx="300" cy="35" r="3" fill="#4878e8" opacity=".7"/>
+            <circle cx="58" cy="70" r="3" fill="#1a6635" opacity=".7"/>
+            <circle cx="163" cy="48" r="3" fill="#4878e8" opacity=".6"/>
+            <circle cx="264" cy="100" r="3" fill="#e03836" opacity=".65"/>
+            <circle cx="165" cy="54" r="3" fill="#e03836" opacity=".55"/>
+            <!-- Line to DC -->
+            <line x1="214" y1="74" x2="60" y2="55" stroke="#e03836" stroke-width=".5" stroke-dasharray="3 3" opacity=".3"/>
+            <!-- Labels -->
+            <text x="225" y="68" font-size="5" fill="#e03836" font-family="'IBM Plex Mono',monospace">Bandar Abbas</text>
+            <text x="224" y="62" font-size="4.5" fill="#9850d8" font-family="'IBM Plex Mono',monospace">Fordow</text>
+            <!-- Badge -->
+            <rect x="6" y="6" width="108" height="16" rx="2" fill="#111" stroke="#333" stroke-width=".8"/>
+            <text x="11" y="16" font-size="7.5" fill="#666" font-family="'IBM Plex Mono',monospace">7 events · Mar 13, 2026</text>
+          </svg>
+        </div>
+      </div>
+      <!-- War stocks -->
+      <div class="mock-col">
+        <div class="mock-hd">⚔️ War Stocks — Live</div>
+        <div class="mock-stocks">
+          <div style="font-size:6.5px;color:#b05400;font-family:'IBM Plex Mono',monospace;padding:4px 10px 2px;border-bottom:1px solid #222;letter-spacing:.1em">🛡️ DEFENSE</div>
+          <div class="mst-row"><span class="mst-tick" style="color:#f0f0ec">LMT</span><span class="mst-name">Lockheed</span><span class="mst-chg" style="color:#3ab860">+12.4%</span><span class="mst-war" style="background:rgba(58,184,96,.1);color:#3ab860">▲ HIGH</span></div>
+          <div class="mst-row"><span class="mst-tick" style="color:#f0f0ec">NOC</span><span class="mst-name">Northrop</span><span class="mst-chg" style="color:#3ab860">+9.8%</span><span class="mst-war" style="background:rgba(58,184,96,.1);color:#3ab860">▲ HIGH</span></div>
+          <div class="mst-row"><span class="mst-tick" style="color:#f0f0ec">RTX</span><span class="mst-name">Raytheon</span><span class="mst-chg" style="color:#3ab860">+7.2%</span><span class="mst-war" style="background:rgba(58,184,96,.1);color:#3ab860">▲ HIGH</span></div>
+          <div style="font-size:6.5px;color:#b05400;font-family:'IBM Plex Mono',monospace;padding:4px 10px 2px;border-bottom:1px solid #222;letter-spacing:.1em">🛢️ ENERGY</div>
+          <div class="mst-row"><span class="mst-tick" style="color:#f0f0ec">XOM</span><span class="mst-name">ExxonMobil</span><span class="mst-chg" style="color:#3ab860">+8.9%</span><span class="mst-war" style="background:rgba(58,184,96,.1);color:#3ab860">▲ HIGH</span></div>
+          <div class="mst-row"><span class="mst-tick" style="color:#f0f0ec">OXY</span><span class="mst-name">Occidental</span><span class="mst-chg" style="color:#3ab860">+9.2%</span><span class="mst-war" style="background:rgba(58,184,96,.1);color:#3ab860">▲ HIGH</span></div>
+          <div style="font-size:6.5px;color:#c41e18;font-family:'IBM Plex Mono',monospace;padding:4px 10px 2px;border-bottom:1px solid #222;letter-spacing:.1em">✈️ AIRLINES</div>
+          <div class="mst-row"><span class="mst-tick" style="color:#f0f0ec">DAL</span><span class="mst-name">Delta</span><span class="mst-chg" style="color:#e03836">−13.7%</span><span class="mst-war" style="background:rgba(224,56,54,.1);color:#e03836">▼ HIGH</span></div>
+          <div class="mst-row"><span class="mst-tick" style="color:#f0f0ec">ZIM</span><span class="mst-name">ZIM Ship</span><span class="mst-chg" style="color:#e03836">−18.2%</span><span class="mst-war" style="background:rgba(224,56,54,.1);color:#e03836">▼ HIGH</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FEATURE GRID -->
+<section class="features-section">
+  <div class="features-inner">
+    <div class="section-eyebrow">Platform Features</div>
+    <h2 class="section-h">Everything you need to trade crises and invest globally</h2>
+    <div class="feat-grid">
+      <div class="feat">
+        <div class="feat-icon">🌍</div>
+        <div class="feat-title">Live World Map</div>
+        <div class="feat-body">150+ world cities plotted with real-time crisis event markers. Every event drops as a pulsing dot at its exact location. Hover for detail, click for instant AI analysis.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">⚔️</div>
+        <div class="feat-title">Crisis Stocks Panel</div>
+        <div class="feat-body">18 war-impacted equities across defense, energy, airlines, shipping and safe haven. Live sparkline charts. Click any stock for a full 1W–5Y chart with timeframe selector.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🌐</div>
+        <div class="feat-title">Stocks by Country</div>
+        <div class="feat-body">Browse top stocks from 13 countries — US, UK, Germany, Japan, China, India, UAE, Saudi Arabia, Nigeria and more. Search within any country's stocks instantly.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">📡</div>
+        <div class="feat-title">Global Crisis Feed</div>
+        <div class="feat-body">Not just war — every crisis fires every 60 seconds: pandemics, cyber attacks, natural disasters, banking collapses, trade wars, political upheaval. 29 crisis events across 8 categories.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🤖</div>
+        <div class="feat-title">AI Intel Console</div>
+        <div class="feat-body">Claude AI briefs you automatically on every event. Ask anything — "Which stocks win if Hormuz closes?" "Best buy right now?" — and get sharp, specific, actionable answers in seconds.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🔍</div>
+        <div class="feat-title">Global Stock Screener</div>
+        <div class="feat-body">Filter 40+ global stocks by region, sector, market cap, P/E ratio, dividend yield, YTD performance and debt ratio. One-click AI research report on any stock.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🧮</div>
+        <div class="feat-title">Financial Calculators</div>
+        <div class="feat-body">SIP/DCA, lumpsum returns, goal planner, CAGR, inflation, and loan EMI calculators — all with 18 currency support including USD, EUR, GBP, INR, UGX, NGN, KES, AED and more.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">📚</div>
+        <div class="feat-title">Investment Learning Hub</div>
+        <div class="feat-body">10 structured topics from beginner to advanced — stock market basics, value vs growth, fundamental analysis, technical analysis, macro economics, options, portfolio theory and global frameworks.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🏦</div>
+        <div class="feat-title">Broker Comparison</div>
+        <div class="feat-body">12 global brokers compared — Interactive Brokers, eToro, Saxo, Degiro, Tiger Brokers, EasyEquities, Stanbic IBTC, Zerodha and more. Filtered by region: Global, US, Europe, Asia, Africa.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">🚀</div>
+        <div class="feat-title">IPO Tracker</div>
+        <div class="feat-body">Track upcoming, open, and recently listed IPOs globally — CoreWeave, Klarna, Shein, Waymo, Starlink and more. AI analysis on any IPO with one click.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">₿</div>
+        <div class="feat-title">Live Crypto Market</div>
+        <div class="feat-body">12 crypto assets with crisis correlation scores — BTC, ETH, XMR, TON, SOL and more. War correlation analysis shows which assets hedge and which collapse under geopolitical stress.</div>
+      </div>
+      <div class="feat">
+        <div class="feat-icon">📊</div>
+        <div class="feat-title">18 Global Indices</div>
+        <div class="feat-body">S&P 500, NASDAQ, DAX, Nikkei, Hang Seng, Sensex, Tadawul and 11 more — all live-simulated with war-adjusted drift. Real prices via Twelve Data on Analyst and Command plans.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WAR STOCKS FEATURE -->
+<section class="stocks-feature" id="stocks">
+  <div class="stocks-inner">
+    <div>
+      <div class="section-eyebrow">War Stocks</div>
+      <h2 class="section-h">Which stocks the war is moving — and why</h2>
+      <p class="section-sub" style="margin-bottom:20px">Every equity is tracked from its pre-war price. Impact magnitude is rated HIGH or MED. The reason for each move is explained in plain language.</p>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:12px;color:var(--txt3);font-family:var(--mono)">
+        <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--green);font-size:14px">▲</span> Defense stocks gain on every military strike, nuclear signal, and escalation event</div>
+        <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--green);font-size:14px">▲</span> US energy stocks gain as Hormuz disruption makes shale more valuable</div>
+        <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--red);font-size:14px">▼</span> Airlines crash on fuel cost surge + Iranian airspace closure</div>
+        <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--red);font-size:14px">▼</span> Shipping falls as Hormuz and Red Sea reroutes add millions per voyage</div>
+        <div style="display:flex;align-items:center;gap:8px"><span style="color:var(--gold);font-size:14px">▲</span> Gold and silver surge on every nuclear signal and DEFCON elevation</div>
+      </div>
+    </div>
+    <div>
+      <div class="stocks-table">
+        <div class="st-hd">
+          <span>TICKER</span><span>NAME</span><span style="text-align:right">PRICE</span><span style="text-align:right">CHANGE</span><span style="text-align:right">WAR</span>
+        </div>
+        <div class="st-row"><span class="st-tick">LMT</span><span class="st-name">Lockheed Martin</span><span class="st-price">$676.40</span><span class="st-chg" style="color:var(--green)">+12.4%</span><div class="st-war"><span class="st-warb" style="background:var(--green2);color:var(--green)">▲ HIGH</span></div></div>
+        <div class="st-row"><span class="st-tick">NOC</span><span class="st-name">Northrop Grumman</span><span class="st-price">$520.10</span><span class="st-chg" style="color:var(--green)">+9.8%</span><div class="st-war"><span class="st-warb" style="background:var(--green2);color:var(--green)">▲ HIGH</span></div></div>
+        <div class="st-row"><span class="st-tick">XOM</span><span class="st-name">ExxonMobil</span><span class="st-price">$115.20</span><span class="st-chg" style="color:var(--green)">+8.9%</span><div class="st-war"><span class="st-warb" style="background:var(--green2);color:var(--green)">▲ HIGH</span></div></div>
+        <div class="st-row"><span class="st-tick">OXY</span><span class="st-name">Occidental</span><span class="st-price">$68.10</span><span class="st-chg" style="color:var(--green)">+9.2%</span><div class="st-war"><span class="st-warb" style="background:var(--green2);color:var(--green)">▲ HIGH</span></div></div>
+        <div class="st-row"><span class="st-tick">GLD</span><span class="st-name">SPDR Gold ETF</span><span class="st-price">$193.40</span><span class="st-chg" style="color:var(--gold)">+4.2%</span><div class="st-war"><span class="st-warb" style="background:var(--gold2);color:var(--gold)">▲ HIGH</span></div></div>
+        <div class="st-row"><span class="st-tick">DAL</span><span class="st-name">Delta Air Lines</span><span class="st-price">$32.80</span><span class="st-chg" style="color:var(--red)">−13.7%</span><div class="st-war"><span class="st-warb" style="background:var(--red2);color:var(--red)">▼ HIGH</span></div></div>
+        <div class="st-row"><span class="st-tick">ZIM</span><span class="st-name">ZIM Shipping</span><span class="st-price">$14.80</span><span class="st-chg" style="color:var(--red)">−18.2%</span><div class="st-war"><span class="st-warb" style="background:var(--red2);color:var(--red)">▼ HIGH</span></div></div>
+        <div class="st-row"><span class="st-tick">AAL</span><span class="st-name">American Airlines</span><span class="st-price">$12.80</span><span class="st-chg" style="color:var(--red)">−9.8%</span><div class="st-war"><span class="st-warb" style="background:var(--red2);color:var(--red)">▼ HIGH</span></div></div>
+      </div>
+      <div style="font-size:9px;color:var(--txt3);font-family:var(--mono);margin-top:10px;text-align:center">Prices update every 2.5 seconds in the live platform · Simulated from pre-war baseline</div>
+    </div>
+  </div>
+</section>
+
+<!-- ══ LIVE DEMO SECTION ══ -->
+<style>
+.demo-section{padding:100px 48px;background:var(--bg);border-top:1px solid var(--brd);border-bottom:1px solid var(--brd)}
+.demo-inner{max-width:1100px;margin:0 auto}
+.demo-hd{text-align:center;margin-bottom:56px}
+.demo-hd .live-pill{margin:0 auto 22px;display:inline-flex}
+.demo-hd h2{font-family:var(--mono);font-size:clamp(26px,3.5vw,40px);font-weight:700;letter-spacing:-.02em;color:var(--txt);margin-bottom:14px}
+.demo-hd p{font-size:14px;color:var(--txt2);max-width:520px;margin:0 auto;line-height:1.7}
+.demo-steps{display:grid;grid-template-columns:repeat(4,1fr);gap:0;margin-bottom:64px;position:relative}
+.demo-steps::before{content:'';position:absolute;top:28px;left:12.5%;right:12.5%;height:1px;background:linear-gradient(90deg,transparent,var(--brd2) 20%,var(--brd2) 80%,transparent)}
+.demo-step{display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 16px;position:relative}
+.ds-num{width:56px;height:56px;border-radius:50%;background:var(--txt);color:var(--bg);border:1px solid var(--txt);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.06em;margin-bottom:20px;position:relative;z-index:1;box-shadow:0 0 20px rgba(240,240,236,.12)}
+.ds-label{font-family:var(--mono);font-size:8.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--txt3);margin-bottom:6px}
+.ds-title{font-family:var(--mono);font-size:13px;font-weight:600;color:var(--txt);margin-bottom:7px}
+.ds-desc{font-size:11.5px;color:var(--txt2);line-height:1.6}
+.demo-screens{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:20px}
+.demo-screen{background:var(--bg2);border:1px solid var(--brd2);border-radius:6px;overflow:hidden}
+.dsc-bar{display:flex;align-items:center;gap:6px;padding:8px 14px;background:var(--bg3);border-bottom:1px solid var(--brd)}
+.dsc-dot{width:8px;height:8px;border-radius:50%}
+.dsc-title{font-family:var(--mono);font-size:8px;color:var(--txt3);letter-spacing:.07em;margin:0 auto}
+.dsc-body{padding:16px}
+.demo-plan-row{display:flex;gap:7px;margin-bottom:10px}
+.dpc{flex:1;background:var(--bg3);border:1px solid var(--brd);border-radius:3px;padding:9px 6px;text-align:center}
+.dpc.on{border-color:var(--gold);background:rgba(212,168,67,.04)}
+.dpc-name{font-family:var(--mono);font-size:7px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;margin-bottom:3px;color:var(--txt3)}
+.dpc.on .dpc-name{color:var(--gold)}
+.dpc-price{font-family:var(--mono);font-size:17px;font-weight:700;color:var(--txt);line-height:1.1}
+.dpc.on .dpc-price{color:var(--gold)}
+.dpc-note{font-family:var(--mono);font-size:6.5px;color:var(--txt3);margin-top:2px}
+.demo-confirm-btn{width:100%;padding:9px;background:var(--txt);color:var(--bg);font-family:var(--mono);font-size:8.5px;font-weight:700;letter-spacing:.06em;border:none;border-radius:3px;text-align:center;margin-top:6px}
+.demo-map-mini{background:var(--bg3);border:1px solid var(--brd);border-radius:3px;height:128px;position:relative;overflow:hidden;margin-bottom:10px}
+.dmap-label{position:absolute;top:6px;left:8px;font-family:var(--mono);font-size:6.5px;color:var(--txt3);letter-spacing:.08em}
+.dmap-dot{position:absolute;width:7px;height:7px;border-radius:50%;background:var(--red)}
+.dmap-dot::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1px solid var(--red);opacity:.45;animation:lp 1.4s infinite}
+.dmap-dot2{position:absolute;width:5px;height:5px;border-radius:50%;background:var(--amber);opacity:.65}
+.dmap-theater{position:absolute;border:1px solid rgba(224,56,54,.3);border-radius:2px;font-family:var(--mono);font-size:5.5px;color:rgba(224,56,54,.55);padding:2px 4px}
+.demo-ticker-mini{display:flex;gap:5px;overflow:hidden}
+.dtm{font-family:var(--mono);font-size:7.5px;padding:3px 7px;border-radius:2px;border:1px solid var(--brd);white-space:nowrap;color:var(--txt2)}
+.dtm.dn{background:var(--red2);border-color:rgba(224,56,54,.2);color:var(--red)}
+.dtm.gn{background:var(--green2);border-color:rgba(58,184,96,.2);color:var(--green)}
+.dtm.au{background:var(--gold2);border-color:rgba(212,168,67,.2);color:var(--gold)}
+.demo-event{background:var(--bg3);border:1px solid var(--brd);border-radius:3px;padding:10px;margin-bottom:8px}
+.dev-cat{display:inline-block;font-family:var(--mono);font-size:7px;font-weight:600;letter-spacing:.1em;padding:2px 7px;border-radius:2px;margin-bottom:7px}
+.dev-txt{font-size:11px;color:var(--txt2);line-height:1.55;margin-bottom:8px}
+.dev-impacts{display:flex;gap:5px;flex-wrap:wrap}
+.dev-imp{font-family:var(--mono);font-size:7.5px;padding:2px 6px;border-radius:2px}
+.demo-brief{background:var(--bg3);border:1px solid var(--brd);border-radius:3px;padding:10px;margin-bottom:8px}
+.dbr-meta{display:flex;gap:6px;align-items:center;margin-bottom:7px;flex-wrap:wrap}
+.dbr-ts{font-family:var(--mono);font-size:7.5px;color:var(--txt3)}
+.dbr-tag{font-family:var(--mono);font-size:7px;padding:2px 6px;border-radius:2px;background:rgba(196,30,24,.1);color:var(--red)}
+.dbr-txt{font-size:11px;color:var(--txt2);line-height:1.65}
+.dbr-cursor{display:inline-block;animation:blink .8s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.demo-query-row{display:flex;gap:6px;align-items:center;margin-top:10px}
+.demo-q-inp{flex:1;background:var(--bg4);border:1px solid var(--brd2);border-radius:3px;font-family:var(--mono);font-size:8px;color:var(--txt3);padding:6px 8px}
+.demo-q-btn{background:var(--txt);color:var(--bg);border:none;border-radius:3px;font-family:var(--mono);font-size:8px;font-weight:700;padding:6px 10px}
+.demo-chip{font-family:var(--mono);font-size:7.5px;padding:3px 8px;background:var(--bg3);border:1px solid var(--brd);border-radius:2px;color:var(--txt3);margin-top:6px;display:inline-block;margin-right:4px}
+.demo-cta-bar{display:flex;align-items:center;justify-content:space-between;gap:20px;background:var(--bg2);border:1px solid var(--brd2);border-radius:6px;padding:24px 32px;margin-top:20px;flex-wrap:wrap}
+.demo-cta-bar .dctl-head{font-family:var(--mono);font-size:14px;font-weight:600;color:var(--txt);letter-spacing:-.01em;margin-bottom:4px}
+.demo-cta-bar .dctl-sub{font-size:11.5px;color:var(--txt2);line-height:1.5}
+.demo-cta-btns{display:flex;gap:10px;flex-shrink:0;flex-wrap:wrap}
+
+/* ══ MOBILE RESPONSIVE ══ */
+@media(max-width:768px){
+  nav{padding:0 16px;gap:8px}
+  .nav-sep,.nav-tag,.nav-links .nav-a:not(.nav-cta){display:none}
+  .nav-links{gap:6px}
+
+  .hero{padding:90px 20px 60px;min-height:auto}
+  .hero h1{font-size:clamp(32px,9vw,52px)}
+  .hero-sub{font-size:14px}
+  .hero-btns{flex-direction:column;align-items:center}
+  .btn-p,.btn-s{width:100%;max-width:300px;text-align:center;padding:14px 20px}
+  .hero-stats{gap:28px;margin-top:48px;padding-top:28px}
+  .hst-v{font-size:24px}
+
+  .preview-section{padding:60px 20px 40px}
+  .mockup-body{grid-template-columns:1fr;height:auto}
+  .mock-col{height:180px}
+  .mock-col:not(:first-child){border-right:none;border-top:1px solid var(--brd)}
+
+  .features-section{padding:60px 20px}
+  .feat-grid{grid-template-columns:1fr;gap:0}
+
+  .stocks-feature{padding:60px 20px}
+  .stocks-inner{grid-template-columns:1fr;gap:32px}
+  .st-hd,.st-row{grid-template-columns:44px 1fr 60px 54px}
+  .st-hd span:last-child,.st-row .st-war{display:none}
+
+  .pricing-section{padding:60px 20px}
+  .pricing-grid{grid-template-columns:1fr;border-radius:6px}
+  .plan{border-right:none!important;border-bottom:1px solid var(--brd2)}
+  .plan:last-child{border-bottom:none}
+
+  .how-section{padding:60px 20px}
+  .how-steps{grid-template-columns:1fr 1fr}
+
+  .faq-section{padding:60px 20px}
+  .faq-grid{grid-template-columns:1fr}
+
+  section[style*="padding:90px 48px"]{padding:60px 20px!important}
+  [style*="grid-template-columns:repeat(4,1fr)"]{
+    display:grid!important;
+    grid-template-columns:1fr 1fr!important;
+    gap:32px!important;
+  }
+  [style*="grid-template-columns:repeat(3,1fr)"]{
+    display:grid!important;
+    grid-template-columns:1fr!important;
+  }
+
+  .cta-band{padding:60px 20px}
+  .cta-h{font-size:22px}
+  .cta-band [style*="display:flex"]{flex-direction:column;align-items:center}
+
+  footer{flex-direction:column;gap:16px;padding:28px 20px;text-align:center}
+  .foot-links{flex-wrap:wrap;justify-content:center}
+
+  /* Crypto/demo bar */
+  [style*="display:flex;align-items:center;justify-content:space-between;gap"]{
+    flex-direction:column!important;gap:16px!important;
+  }
+  .demo-cta-bar{flex-direction:column!important;text-align:center;gap:16px!important;padding:28px 20px!important}
+  .demo-cta-btns{flex-direction:column;align-items:center;width:100%}
+  .demo-cta-btns a{width:100%;max-width:280px;text-align:center}
+}
+
+@media(max-width:480px){
+  .how-steps{grid-template-columns:1fr}
+  [style*="grid-template-columns:repeat(4,1fr)"]{grid-template-columns:1fr!important}
+  .hero-stats{flex-direction:column;gap:20px}
+}
+
+</style>
+
+<section class="demo-section" id="demo">
+  <div class="demo-inner">
+    <div class="demo-hd">
+      <div class="live-pill"><div class="lpulse"></div>LIVE DEMO</div>
+      <h2>Here's exactly what you'll see</h2>
+      <p>Open Orrery and within 30 seconds you're watching war events move real markets — no setup, no tutorial needed.</p>
+    </div>
+
+    <div class="demo-steps">
+      <div class="demo-step">
+        <div class="ds-num">01</div>
+        <div class="ds-label">On load</div>
+        <div class="ds-title">Choose your plan</div>
+        <div class="ds-desc">A modal presents the 3 tiers side by side. Select Starter, Analyst, or Command and confirm.</div>
+      </div>
+      <div class="demo-step">
+        <div class="ds-num">02</div>
+        <div class="ds-label">Instantly</div>
+        <div class="ds-title">Platform boots</div>
+        <div class="ds-desc">The world map loads with 5 live war events already placed. Indices and war stocks begin ticking.</div>
+      </div>
+      <div class="demo-step">
+        <div class="ds-num">03</div>
+        <div class="ds-label">Every 60s</div>
+        <div class="ds-title">New event fires</div>
+        <div class="ds-desc">A new intel event drops on the map — Military, Energy, Nuclear, Diplomatic — with exact asset tags.</div>
+      </div>
+      <div class="demo-step">
+        <div class="ds-num">04</div>
+        <div class="ds-label">Automatic</div>
+        <div class="ds-title">AI briefs you</div>
+        <div class="ds-desc">The AI reads the event and tells you which stocks move, in which direction, and what to do next.</div>
+      </div>
+    </div>
+
+    <div class="demo-screens">
+
+      <!-- Screen 1: Plan modal -->
+      <div class="demo-screen">
+        <div class="dsc-bar">
+          <div class="dsc-dot" style="background:#ff5f57"></div>
+          <div class="dsc-dot" style="background:#febc2e"></div>
+          <div class="dsc-dot" style="background:#28c840"></div>
+          <div class="dsc-title">① ON LOAD — Plan selector</div>
+        </div>
+        <div class="dsc-body">
+          <div style="font-family:var(--mono);font-size:7.5px;color:var(--txt3);letter-spacing:.1em;margin-bottom:12px;text-align:center">SELECT YOUR ACCESS TIER</div>
+          <div class="demo-plan-row">
+            <div class="dpc">
+              <div class="dpc-name">Starter</div>
+              <div class="dpc-price">$0.99</div>
+              <div class="dpc-note">Simulation</div>
+            </div>
+            <div class="dpc on">
+              <div class="dpc-name">Analyst ★</div>
+              <div class="dpc-price">$14.99</div>
+              <div class="dpc-note">Live · 7 days/mo</div>
+            </div>
+            <div class="dpc">
+              <div class="dpc-name">Command</div>
+              <div class="dpc-price">$34.99</div>
+              <div class="dpc-note">Live · Unlimited</div>
+            </div>
+          </div>
+          <div style="font-family:var(--mono);font-size:7.5px;color:var(--txt3);padding:8px;background:var(--bg3);border-radius:3px;border:1px solid var(--brd);line-height:1.8;margin-bottom:8px">
+            <span style="color:var(--green)">✓</span> Everything in Starter &nbsp;&nbsp;
+            <span style="color:var(--green)">✓</span> Live Twelve Data — 7 days/mo<br>
+            <span style="color:var(--green)">✓</span> 36 symbols streaming &nbsp;&nbsp;
+            <span style="color:var(--green)">✓</span> 7-day history archive
+          </div>
+          <div class="demo-confirm-btn">CONFIRM PLAN & CONTINUE →</div>
+        </div>
+      </div>
+
+      <!-- Screen 2: Map boots -->
+      <div class="demo-screen">
+        <div class="dsc-bar">
+          <div class="dsc-dot" style="background:#ff5f57"></div>
+          <div class="dsc-dot" style="background:#febc2e"></div>
+          <div class="dsc-dot" style="background:#28c840"></div>
+          <div class="dsc-title">② INSTANTLY — Platform boots with live map</div>
+        </div>
+        <div class="dsc-body">
+          <div class="demo-map-mini">
+            <div class="dmap-label">🌍 WORLD MAP — MIDDLE EAST WAR THEATER</div>
+            <div class="dmap-dot" style="top:62%;left:61%"></div>
+            <div class="dmap-dot2" style="top:40%;left:49%"></div>
+            <div class="dmap-dot2" style="top:35%;left:58%"></div>
+            <div class="dmap-dot2" style="top:52%;left:54%"></div>
+            <div class="dmap-dot2" style="top:38%;left:47%"></div>
+            <div class="dmap-theater" style="top:26%;left:41%;right:14%;bottom:8%">WAR THEATER</div>
+            <div style="position:absolute;bottom:6px;left:8px;font-family:var(--mono);font-size:6px;color:var(--red);opacity:.7">● 5 events seeded · next event in 0:52</div>
+          </div>
+          <div class="demo-ticker-mini">
+            <div class="dtm">S&P −4.7%</div>
+            <div class="dtm gn">LMT +12.4%</div>
+            <div class="dtm dn">DAL −13.7%</div>
+            <div class="dtm au">GOLD +4.2%</div>
+            <div class="dtm dn">ZIM −18.2%</div>
+          </div>
+          <div style="font-family:var(--mono);font-size:7.5px;color:var(--txt3);margin-top:8px">● LIVE DATA — WebSocket streaming · 36 symbols</div>
+        </div>
+      </div>
+
+      <!-- Screen 3: Event fires -->
+      <div class="demo-screen">
+        <div class="dsc-bar">
+          <div class="dsc-dot" style="background:#ff5f57"></div>
+          <div class="dsc-dot" style="background:#febc2e"></div>
+          <div class="dsc-dot" style="background:#28c840"></div>
+          <div class="dsc-title">③ EVERY 60s — New war event drops on map + feed</div>
+        </div>
+        <div class="dsc-body">
+          <div class="demo-event">
+            <div class="dev-cat" style="background:rgba(90,24,136,.15);color:#9b6ddc">☢️ NUCLEAR</div>
+            <div class="dev-txt">Pentagon declassifies: Iran may have 2–4 nuclear devices at 70–90% completion. Congressional emergency session. B-2 bombers repositioned to Diego Garcia.</div>
+            <div class="dev-impacts">
+              <span class="dev-imp" style="background:var(--gold2);color:var(--gold)">Gold +4.8%</span>
+              <span class="dev-imp" style="background:var(--red2);color:var(--red)">S&P −3.2%</span>
+              <span class="dev-imp" style="background:var(--red2);color:var(--red)">VIX +8.4</span>
+              <span class="dev-imp" style="background:var(--green2);color:var(--green)">LMT +2.1%</span>
+            </div>
+            <div style="font-family:var(--mono);font-size:7px;color:var(--txt3);margin-top:8px">📍 Fordow, Iran · 14:32:07 UTC · next event in 0:43</div>
+          </div>
+          <div style="font-size:10.5px;color:var(--txt2);line-height:1.6;padding:8px;background:var(--bg3);border-radius:3px;border:1px solid var(--brd)">
+            <strong style="color:var(--txt);font-family:var(--mono);font-size:8.5px">20 events across 6 categories</strong> — Military · Energy · Nuclear · Diplomatic · Economic · Intelligence. Each with asset-level impact tags.
+          </div>
+        </div>
+      </div>
+
+      <!-- Screen 4: AI brief -->
+      <div class="demo-screen">
+        <div class="dsc-bar">
+          <div class="dsc-dot" style="background:#ff5f57"></div>
+          <div class="dsc-dot" style="background:#febc2e"></div>
+          <div class="dsc-dot" style="background:#28c840"></div>
+          <div class="dsc-title">④ AUTO — AI brief streams in within seconds</div>
+        </div>
+        <div class="dsc-body">
+          <div class="demo-brief">
+            <div class="dbr-meta">
+              <span class="dbr-ts">14:32:09 UTC</span>
+              <span class="dbr-tag">☢️ NUCLEAR</span>
+              <span style="font-family:var(--mono);font-size:7px;color:var(--txt3);margin-left:auto">AUTO BRIEF</span>
+            </div>
+            <div class="dbr-txt">Nuclear disclosure is the single highest-volatility trigger in this conflict. GLD targeting $2,850 intraday — institutional panic-buying already in futures. BTC surging alongside gold as digital safe-haven flows hit $2.1B in 4 hours — Command users see this live in the ₿ Crypto tab. Exit DAL and UAL immediately; S&P downside target −5.2% by close.<span class="dbr-cursor">▋</span></div>
+          </div>
+          <div class="demo-query-row">
+            <div class="demo-q-inp">Ask any market or war query...</div>
+            <div class="demo-q-btn">ASK</div>
+          </div>
+          <div style="margin-top:6px">
+            <span class="demo-chip">Hormuz winners</span>
+            <span class="demo-chip">Best buy now</span>
+            <span class="demo-chip">Nuke scenario</span>
+            <span class="demo-chip">BTC vs Gold?</span>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /demo-screens -->
+
+    <!-- Crypto exclusive callout -->
+    <div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.25);border-radius:6px;padding:20px 28px;margin-bottom:20px;display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+      <div style="font-size:32px;flex-shrink:0;line-height:1">₿</div>
+      <div style="flex:1;min-width:200px">
+        <div style="font-family:var(--mono);font-size:12px;font-weight:700;color:var(--gold);margin-bottom:5px">Live Crypto Market — Command ($34.99) exclusive</div>
+        <div style="font-size:11.5px;color:var(--txt2);line-height:1.65;margin-bottom:10px">12 crypto assets tracked with live exchange prices and war correlation scores. BTC and XMR surge on nuclear signals. TON and XRP hit by sanctions risk. DOGE collapses in every risk-off regime. Each asset explained with exact geopolitical context.</div>
+        <div style="display:flex;gap:5px;flex-wrap:wrap">
+          <span style="font-family:var(--mono);font-size:7.5px;padding:2px 8px;background:rgba(247,147,26,.1);border:1px solid rgba(247,147,26,.3);border-radius:2px;color:#f7931a">BTC +war hedge</span>
+          <span style="font-family:var(--mono);font-size:7.5px;padding:2px 8px;background:rgba(255,102,0,.1);border:1px solid rgba(255,102,0,.3);border-radius:2px;color:#ff6600">XMR +sanctions evasion</span>
+          <span style="font-family:var(--mono);font-size:7.5px;padding:2px 8px;background:rgba(0,152,234,.1);border:1px solid rgba(0,152,234,.3);border-radius:2px;color:#0098ea">TON −OFAC risk</span>
+          <span style="font-family:var(--mono);font-size:7.5px;padding:2px 8px;background:rgba(0,170,228,.1);border:1px solid rgba(0,170,228,.3);border-radius:2px;color:#00aae4">XRP −SWIFT disruption</span>
+          <span style="font-family:var(--mono);font-size:7.5px;padding:2px 8px;background:rgba(153,69,255,.1);border:1px solid rgba(153,69,255,.3);border-radius:2px;color:#9945ff">SOL +PoS tailwind</span>
+          <span style="font-family:var(--mono);font-size:7.5px;padding:2px 8px;background:var(--bg3);border:1px solid var(--brd);border-radius:2px;color:var(--txt3)">+ 7 more assets</span>
+        </div>
+      </div>
+      <a href="#pricing" style="background:var(--gold);color:var(--bg);font-family:var(--mono);font-size:9.5px;font-weight:700;padding:10px 18px;border-radius:3px;text-decoration:none;white-space:nowrap;flex-shrink:0">GET COMMAND →</a>
+    </div>
+
+    <div class="demo-cta-bar">
+      <div>
+        <div class="dctl-head">Open the platform now — no signup required</div>
+        <div class="dctl-sub">Preview all 4 screens live. Paid plan unlocks live exchange data, full AI, and history archive.</div>
+      </div>
+      <div class="demo-cta-btns">
+        <a href="/app" class="btn-p" style="white-space:nowrap">OPEN LIVE PLATFORM →</a>
+        <a href="#pricing" class="btn-s" style="white-space:nowrap">VIEW PLANS</a>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section style="padding:90px 48px;border-top:1px solid var(--brd);background:var(--bg2)" id="how-it-works">
+  <div style="max-width:960px;margin:0 auto">
+    <div class="section-eyebrow" style="text-align:center">How It Works</div>
+    <h2 class="section-h" style="text-align:center;margin-bottom:48px">From signup to live intelligence in 60 seconds</h2>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:0;position:relative">
+      <div style="position:absolute;top:28px;left:12.5%;right:12.5%;height:1px;background:linear-gradient(90deg,transparent,var(--brd2) 20%,var(--brd2) 80%,transparent)"></div>
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 20px">
+        <div style="width:56px;height:56px;border-radius:50%;background:var(--txt);color:var(--bg);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.06em;margin-bottom:20px;position:relative;z-index:1">01</div>
+        <div style="font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--txt3);margin-bottom:7px">Pick a plan</div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--txt);margin-bottom:8px">Choose your tier</div>
+        <div style="font-size:11.5px;color:var(--txt2);line-height:1.6">Starter $0.99, Analyst $14.99, or Command $34.99. Instant access after Stripe checkout. No setup.</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 20px">
+        <div style="width:56px;height:56px;border-radius:50%;background:var(--txt);color:var(--bg);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.06em;margin-bottom:20px;position:relative;z-index:1">02</div>
+        <div style="font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--txt3);margin-bottom:7px">Open platform</div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--txt);margin-bottom:8px">Platform boots instantly</div>
+        <div style="font-size:11.5px;color:var(--txt2);line-height:1.6">World map loads with 5 live war events. Indices and war stocks begin ticking in real time.</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 20px">
+        <div style="width:56px;height:56px;border-radius:50%;background:var(--txt);color:var(--bg);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.06em;margin-bottom:20px;position:relative;z-index:1">03</div>
+        <div style="font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--txt3);margin-bottom:7px">Every 60 seconds</div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--txt);margin-bottom:8px">New event fires</div>
+        <div style="font-size:11.5px;color:var(--txt2);line-height:1.6">A new geopolitical event drops on the map — Military, Energy, Nuclear, Diplomatic — with asset impact tags.</div>
+      </div>
+      <div style="display:flex;flex-direction:column;align-items:center;text-align:center;padding:0 20px">
+        <div style="width:56px;height:56px;border-radius:50%;background:var(--txt);color:var(--bg);display:flex;align-items:center;justify-content:center;font-family:var(--mono);font-size:11px;font-weight:700;letter-spacing:.06em;margin-bottom:20px;position:relative;z-index:1">04</div>
+        <div style="font-family:var(--mono);font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--txt3);margin-bottom:7px">Automatic</div>
+        <div style="font-family:var(--mono);font-size:13px;font-weight:600;color:var(--txt);margin-bottom:8px">AI briefs you</div>
+        <div style="font-size:11.5px;color:var(--txt2);line-height:1.6">Claude reads each event and tells you exactly which stocks move, in which direction, and what to do next.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="pricing-section" id="pricing">
+  <div class="pricing-inner">
+    <div class="pricing-hd">
+      <div class="section-eyebrow" style="text-align:center">Pricing</div>
+      <h2 class="section-h" style="text-align:center">Simple, transparent access</h2>
+      <p>Billed monthly · Cancel anytime · Stripe payments · Instant access after payment</p>
+    </div>
+
+    <div class="pricing-grid">
+      <!-- STARTER $0.99 -->
+      <div class="plan">
+        <div class="plan-name">Starter</div>
+        <div class="plan-price">
+          <span class="plan-curr">$</span>
+          <span class="plan-val">0.99</span>
+          <span class="plan-per">/mo</span>
+        </div>
+        <div class="plan-tagline">Full platform. AI briefings. Simulated market data.</div>
+        <div class="plan-div"></div>
+        <ul class="plan-feats">
+          <li class="pf"><span class="pf-yes">✓</span>Global crisis intel feed — 29 events</li>
+          <li class="pf"><span class="pf-yes">✓</span>18 crisis stocks + 18 global indices</li>
+          <li class="pf"><span class="pf-yes">✓</span>Stocks by country — 13 countries</li>
+          <li class="pf"><span class="pf-yes">✓</span>Global stock screener — 40+ stocks</li>
+          <li class="pf"><span class="pf-yes">✓</span>AI Intel Console — unlimited queries</li>
+          <li class="pf"><span class="pf-yes">✓</span>Financial calculators + 18 currencies</li>
+          <li class="pf"><span class="pf-yes">✓</span>IPO tracker + broker comparison</li>
+          <li class="pf"><span class="pf-yes">✓</span>Investment learning hub</li>
+          <li class="pf off"><span class="pf-no">✗</span>Live world map</li>
+          <li class="pf off"><span class="pf-no">✗</span>Live exchange data</li>
+          <li class="pf off"><span class="pf-no">✗</span>Event history archive</li>
+        </ul>
+        <a href="#" href='/login.html?plan=starter' class="plan-btn outline">GET STARTER — $0.99/MO →</a>
+      </div>
+
+      <!-- ANALYST $14.99 -->
+      <div class="plan featured">
+        <div class="plan-pop">MOST POPULAR</div>
+        <div class="plan-name" style="color:var(--gold)">Analyst</div>
+        <div class="plan-price">
+          <span class="plan-curr" style="color:var(--gold)">$</span>
+          <span class="plan-val" style="color:var(--gold)">14.99</span>
+          <span class="plan-per">/mo</span>
+        </div>
+        <div class="plan-tagline">Live exchange data for 7 days/mo. Full AI. 7-day history.</div>
+        <div class="plan-div"></div>
+        <ul class="plan-feats">
+          <li class="pf"><span class="pf-yes">✓</span>Everything in Starter</li>
+          <li class="pf"><span class="pf-yes">✓</span><strong style="color:var(--green)">🌍 Live world map — 150+ cities</strong></li>
+          <li class="pf"><span class="pf-yes">✓</span><strong style="color:var(--green)">● Live Twelve Data — 7 days/mo</strong></li>
+          <li class="pf"><span class="pf-yes">✓</span>WebSocket streaming — 36 symbols</li>
+          <li class="pf"><span class="pf-yes">✓</span>Click any map event for AI brief</li>
+          <li class="pf"><span class="pf-yes">✓</span>7-day crisis event history archive</li>
+          <li class="pf"><span class="pf-yes">✓</span>Stock charts — 1W to 5Y timeframes</li>
+          <li class="pf off"><span class="pf-no">✗</span>Unlimited live data</li>
+          <li class="pf off"><span class="pf-no">✗</span>Live crypto market</li>
+        </ul>
+        <a href="#" href='/login.html?plan=analyst' class="plan-btn gold">GET ANALYST — $14.99/MO →</a>
+      </div>
+
+      <!-- COMMAND $34.99 -->
+      <div class="plan">
+        <div class="plan-name">Command</div>
+        <div class="plan-price">
+          <span class="plan-curr">$</span>
+          <span class="plan-val">34.99</span>
+          <span class="plan-per">/mo</span>
+        </div>
+        <div class="plan-tagline">Unlimited live data. Live crypto. Every feature. Professional grade.</div>
+        <div class="plan-div"></div>
+        <ul class="plan-feats">
+          <li class="pf"><span class="pf-yes">✓</span>Everything in Analyst</li>
+          <li class="pf"><span class="pf-yes">✓</span><strong style="color:var(--green)">● Live data — unlimited, no cutoff</strong></li>
+          <li class="pf"><span class="pf-yes">✓</span><strong style="color:var(--gold)">₿ Live crypto — 12 assets + war scores</strong></li>
+          <li class="pf"><span class="pf-yes">✓</span>BTC · ETH · XMR · TON · SOL + 7 more</li>
+          <li class="pf"><span class="pf-yes">✓</span>30-day crisis event history archive</li>
+          <li class="pf"><span class="pf-yes">✓</span>Stock charts — full 5Y history</li>
+          <li class="pf"><span class="pf-yes">✓</span>CSV export · Priority support</li>
+          <li class="pf"><span class="pf-yes">✓</span>Early access to new features</li>
+        </ul>
+        <a href="#" href='/login.html?plan=command' class="plan-btn solid">GET COMMAND — $34.99/MO →</a>
+      </div>
+    </div>
+
+    <div class="stripe-note">
+      <span class="stripe-pill">stripe</span>
+      Payments secured by Stripe · 256-bit TLS · Your card is never stored on our servers
+    </div>
+  </div>
+</section>
+
+<!-- HOW IT WORKS -->
+<section class="how-section">
+  <div class="how-inner">
+    <div class="section-eyebrow">Setup</div>
+    <h2 class="section-h">Live in under 60 seconds</h2>
+    <div class="how-steps">
+      <div class="how-step">
+        <div class="how-n">01</div>
+        <div class="how-t">Choose a plan</div>
+        <div class="how-d">Pick Starter ($0.99), Analyst ($14.99), or Command ($34.99). Pay via Stripe. No account setup needed.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-n">02</div>
+        <div class="how-t">Instant access</div>
+        <div class="how-d">After payment you receive a login link. No downloads, no apps, no waiting.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-n">03</div>
+        <div class="how-t">Open Orrery</div>
+        <div class="how-d">Platform loads in any browser. Map, war stocks, indices, AI all start immediately.</div>
+      </div>
+      <div class="how-step">
+        <div class="how-n">04</div>
+        <div class="how-t">AI briefs you</div>
+        <div class="how-d">Every 60 seconds an AI brief fires tied to the latest war event with exact stock moves.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="faq-section" id="faq">
+  <div class="faq-inner">
+    <div class="section-eyebrow">FAQ</div>
+    <h2 class="section-h">Common questions</h2>
+    <div class="faq-grid">
+      <div class="faq-item">
+        <div class="faq-q">Are prices live or simulated?</div>
+        <div class="faq-a">Starter plan uses GBM simulation — realistic war-calibrated price behavior, not live exchange data. Analyst and Command plans connect to Twelve Data for real exchange prices via WebSocket streaming on 36 symbols. Analyst gets 7 live days per month; Command is unlimited.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">What AI powers the briefings?</div>
+        <div class="faq-a">Claude by Anthropic — the same model behind Claude.ai. It receives the latest war event and full geopolitical context (Hormuz, DEFCON status, current prices) then generates specific market impact analysis in seconds.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Which stocks are tracked in War Stocks?</div>
+        <div class="faq-a">18 individual equities across 5 sectors: defense (LMT, NOC, RTX, GD, BA), energy (XOM, CVX, OXY, SLB), airlines (DAL, UAL, AAL, LUV), shipping (ZIM, Maersk, FedEx), and safe haven (GLD, SLV). Each shows price, % change from pre-war baseline, and war reason.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Can I cancel anytime?</div>
+        <div class="faq-a">Yes, cancel anytime from your account dashboard. You keep access until end of the billing period. No fees, no questions.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">What's the difference between the three plans?</div>
+        <div class="faq-a">Starter ($0.99) gives the full platform with AI briefings and simulation data. Analyst ($14.99) adds live Twelve Data exchange feed for 7 days/month — real prices, WebSocket streaming. Command ($34.99) gives unlimited live data with no monthly cutoff, plus live crypto market (12 assets), portfolio alerts, watchlist, 30-day history, and email digest.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Is my payment safe?</div>
+        <div class="faq-a">All payments are processed by <a href="https://stripe.com">Stripe</a> — the infrastructure used by Amazon, Google, and Shopify. We never see or store your card details.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA BAND -->
+<div class="cta-band">
+  <h2 class="cta-h">Start tracking geopolitical markets now</h2>
+  <p class="cta-sub">Full platform access from $0.99/month. Live exchange data from $14.99/month. No setup required.</p>
+  <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+    <a href="#pricing" class="btn-p">VIEW PRICING →</a>
+    <a href="/app" class="btn-s">OPEN PLATFORM →</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="foot-left">
+    <svg width="26" height="26" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0">
+      <rect width="32" height="32" rx="4" fill="#f0f0ec"/>
+      <ellipse cx="16" cy="16" rx="10" ry="4" fill="none" stroke="#09090a" stroke-width="1" transform="rotate(-30,16,16)"/>
+      <ellipse cx="16" cy="16" rx="6.5" ry="2.5" fill="none" stroke="rgba(9,9,10,0.4)" stroke-width="0.8" stroke-dasharray="3 2" transform="rotate(-30,16,16)"/>
+      <circle cx="16" cy="16" r="2" fill="#09090a"/>
+      <circle cx="23" cy="11" r="1.5" fill="#09090a"/>
+      <circle cx="12" cy="20" r="1" fill="#e03836"/>
+    </svg>
+    <span style="font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.04em">Orrery</span>
+    <span style="font-family:var(--mono);font-size:9px;color:var(--txt3);letter-spacing:.08em">Geopolitical Market Intelligence</span>
+  </div>
+  <div class="foot-links">
+    <a href="#" class="foot-a">Privacy Policy</a>
+    <a href="#" class="foot-a">Terms of Service</a>
+    <a href="#" class="foot-a">Contact</a>
+    <a href="/app" class="foot-a">Launch Platform →</a>
+  </div>
+  <div class="foot-copy">© 2026 Orrery. All rights reserved.</div>
+</footer>
+
+<script>
+function checkout(plan){
+  window.location.href = '/index.html?plan=' + plan;
+};
+  const labels={starter:'Starter — $0.99',analyst:'Analyst — $14.99',command:'Command — $34.99'};
+  alert(`Stripe checkout for ${labels[plan]}/mo.\n\nTo activate: create products in your Stripe dashboard and paste the payment link URLs into this file where it says YOUR_STARTER_LINK / YOUR_ANALYST_LINK / YOUR_COMMAND_LINK.`);
+  // Uncomment once you have real links:
+  // window.location.href = links[plan];
+}
+
+// Smooth scroll
+document.querySelectorAll('a[href^="#"]').forEach(a=>{
+  a.addEventListener('click',e=>{
+    const t=document.querySelector(a.getAttribute('href'));
+    if(t){e.preventDefault();t.scrollIntoView({behavior:'smooth'});}
+  });
+});
+</script>
+</body>
+</html>
