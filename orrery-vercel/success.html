@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Payment Successful — Orrery</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#09090b;color:#f0f0ec;font-family:'IBM Plex Sans',sans-serif;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.card{background:#111116;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:40px 48px;max-width:480px;width:100%;text-align:center}
+.icon{width:56px;height:56px;background:rgba(58,184,96,.15);border:1px solid rgba(58,184,96,.3);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:24px}
+h1{font-family:'IBM Plex Mono',monospace;font-size:20px;font-weight:600;margin-bottom:8px}
+.sub{font-size:14px;color:#868680;line-height:1.6;margin-bottom:24px}
+.plan-badge{display:inline-block;background:rgba(212,168,67,.12);border:1px solid rgba(212,168,67,.3);color:#d4a843;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.08em;padding:5px 14px;border-radius:4px;margin-bottom:28px}
+.btn{display:block;background:#f0f0ec;color:#09090b;font-family:'IBM Plex Mono',monospace;font-size:11px;font-weight:600;letter-spacing:.06em;padding:13px;border-radius:6px;text-decoration:none;transition:opacity .15s}
+.btn:hover{opacity:.85}
+.checking{color:#868680;font-family:'IBM Plex Mono',monospace;font-size:11px;margin-bottom:16px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="icon">✓</div>
+  <h1>Payment confirmed</h1>
+  <p class="sub">Your Orrery subscription is now active. You'll be redirected to the app in a moment.</p>
+  <div class="plan-badge" id="plan-badge">Loading...</div>
+  <p class="checking" id="status-msg">Activating your plan...</p>
+  <a href="/app" class="btn" id="open-btn">OPEN ORRERY →</a>
+</div>
+
+<script>
+const params   = new URLSearchParams(location.search);
+const orderId  = params.get('order');
+const planParam = params.get('plan'); // set by pesapal.js callback_url
+
+// Normalise plan to single-letter code
+function normPlan(p) {
+  if (!p) return 's';
+  if (p === 'command'  || p === 'c') return 'c';
+  if (p === 'analyst'  || p === 'a') return 'a';
+  return 's';
+}
+
+function planLabel(code) {
+  if (code === 'c') return 'Command Plan — Active';
+  if (code === 'a') return 'Analyst Plan — Active';
+  return 'Starter Plan — Active';
+}
+
+// Write verified payment to localStorage immediately using plan from URL
+// This means the app unlocks as soon as user arrives here — no polling needed
+const planCode = normPlan(planParam);
+localStorage.setItem('orrery_paid_verified', planCode + '|' + Date.now());
+localStorage.removeItem('orrery_plan');
+localStorage.removeItem('orrery_pending_plan');
+
+document.getElementById('plan-badge').textContent = planLabel(planCode);
+document.getElementById('status-msg').textContent = 'Payment verified. Redirecting...';
+
+// Auto-redirect after 2.5s
+setTimeout(() => { location.href = '/app'; }, 2500);
+</script>
+</body>
+</html>
