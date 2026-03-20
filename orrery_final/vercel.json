@@ -1,0 +1,30 @@
+{
+  "version": 2,
+  "functions": {
+    "api/*.js": { "maxDuration": 30 }
+  },
+  "routes": [
+    { "src": "/api/anthropic", "dest": "/api/anthropic.js" },
+    { "src": "/api/quotes(.*)", "dest": "/api/quotes.js" },
+    { "src": "/api/pesapal(.*)", "dest": "/api/pesapal.js" },
+    { "src": "/api/ipn(.*)", "dest": "/api/ipn.js" },
+    { "src": "/api/order-status(.*)", "dest": "/api/order-status.js" },
+    { "src": "/api/send-magic", "dest": "/api/send-magic.js" },
+    { "src": "/api/verify-magic(.*)", "dest": "/api/verify-magic.js" },
+    { "src": "/app", "dest": "/app.html" },
+    { "src": "/login", "dest": "/public/login/index.html" },
+    { "src": "/success", "dest": "/public/success/index.html" },
+    { "src": "/", "dest": "/index.html" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ],
+  "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET, POST, OPTIONS" },
+        { "key": "Access-Control-Allow-Headers", "value": "Content-Type" }
+      ]
+    }
+  ]
+}
