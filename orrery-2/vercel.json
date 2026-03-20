@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "routes": [
+    {
+      "src": "/api/anthropic",
+      "dest": "/api/anthropic.js"
+    },
+    {
+      "src": "/api/pesapal(.*)",
+      "dest": "/api/pesapal.js"
+    },
+    {
+      "src": "/api/ipn(.*)",
+      "dest": "/api/ipn.js"
+    },
+    {
+      "src": "/api/order-status(.*)",
+      "dest": "/api/order-status.js"
+    },
+    {
+      "src": "/api/send-magic",
+      "dest": "/api/send-magic.js"
+    },
+    {
+      "src": "/api/verify-magic(.*)",
+      "dest": "/api/verify-magic.js"
+    },
+    {
+      "src": "/(.*)",
+      "dest": "/api/serve.js"
+    }
+  ]
+}
