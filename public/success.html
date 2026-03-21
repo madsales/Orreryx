@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Payment Confirmed — Orrery</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090b;--bg2:#111116;--bg3:#18181f;
+  --txt:#f0f0ec;--txt2:#b0b0aa;--txt3:#666670;
+  --brd:rgba(255,255,255,.07);--brd2:rgba(255,255,255,.13);
+  --grn:#3ab860;--grn2:rgba(58,184,96,.12);
+  --gld:#d4a843;--gld2:rgba(212,168,67,.12);
+  --red:#e03836;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,black 20%,transparent 100%);pointer-events:none;z-index:0}
+.card{background:var(--bg2);border:1px solid var(--brd2);border-radius:12px;padding:44px 52px;max-width:500px;width:100%;text-align:center;position:relative;z-index:1}
+.check-ring{width:64px;height:64px;border-radius:50%;background:var(--grn2);border:1px solid rgba(58,184,96,.35);display:flex;align-items:center;justify-content:center;margin:0 auto 22px;animation:pop .4s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
+.check-ring svg{width:28px;height:28px;stroke:var(--grn);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+h1{font:700 22px/1.2 var(--mono);color:var(--txt);margin-bottom:8px;letter-spacing:-.02em}
+.sub{font:400 14px/1.7 var(--sans);color:var(--txt2);margin-bottom:26px}
+.plan-pill{display:inline-block;background:var(--gld2);border:1px solid rgba(212,168,67,.3);color:var(--gld);font:700 11px/1 var(--mono);letter-spacing:.08em;padding:6px 16px;border-radius:4px;margin-bottom:28px}
+.status{font:400 10px/1 var(--mono);color:var(--txt3);margin-bottom:20px;letter-spacing:.06em}
+.progress-bar{height:2px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-bottom:24px}
+.progress-fill{height:100%;background:var(--grn);border-radius:2px;animation:fill 2.5s linear forwards}
+@keyframes fill{from{width:0}to{width:100%}}
+.btn{display:block;background:var(--txt);color:var(--bg);font:700 10px/1 var(--mono);letter-spacing:.07em;text-transform:uppercase;padding:14px;border-radius:6px;text-decoration:none;transition:opacity .15s}
+.btn:hover{opacity:.86}
+.error-msg{display:none;color:var(--red);font:400 12px/1.5 var(--mono);margin-top:14px;padding:12px;background:rgba(224,56,54,.08);border:1px solid rgba(224,56,54,.2);border-radius:4px}
+.debug{display:none;margin-top:16px;padding:10px;background:var(--bg3);border:1px solid var(--brd);border-radius:4px;font:400 9px/1.6 var(--mono);color:var(--txt3);text-align:left}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="check-ring">
+    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+  </div>
+  <h1>Payment confirmed</h1>
+  <p class="sub">Your Orrery subscription is now active. Redirecting to the platform…</p>
+  <div class="plan-pill" id="plan-badge">Activating…</div>
+  <p class="status" id="status-msg">VERIFYING PLAN…</p>
+  <div class="progress-bar"><div class="progress-fill"></div></div>
+  <a href="/app" class="btn" id="go-btn">OPEN ORRERY →</a>
+  <div class="error-msg" id="error-msg"></div>
+  <div class="debug" id="debug-box"></div>
+</div>
+
+<script>
+(function(){
+  var params = new URLSearchParams(location.search);
+  var orderId = params.get('order') || '';
+  var dbg = document.getElementById('debug-box');
+  var statusEl = document.getElementById('status-msg');
+  var badgeEl = document.getElementById('plan-badge');
+  var errorEl = document.getElementById('error-msg');
+  var goBtn = document.getElementById('go-btn');
+
+  function log(msg) {
+    console.log('[success]', msg);
+    dbg.style.display = 'block';
+    dbg.innerHTML += String(msg) + '<br>';
+  }
+
+  function planLabel(code) {
+    if (code === 'c') return '⬛ Command Plan — Active';
+    if (code === 'a') return '★ Analyst Plan — Active';
+    return '✦ Starter Plan — Active';
+  }
+
+  function saveVerifiedSession(payload) {
+    var timestamp = Date.now();
+    localStorage.setItem('orrery_paid_verified', payload.plan + '|' + timestamp);
+    var session = {
+      plan: payload.plan,
+      verified: true,
+      paidAt: payload.paidAt || new Date(timestamp).toISOString(),
+      orderId: orderId,
+      trackingId: payload.trackingId || '',
+      status: payload.status || 'PAID',
+      amount: payload.amount,
+      currency: payload.currency,
+      expires: timestamp + (365 * 24 * 60 * 60 * 1000)
+    };
+    var pendingEmail = localStorage.getItem('orrery_pending_email');
+    if (pendingEmail) session.email = pendingEmail;
+    localStorage.setItem('orrery_session', JSON.stringify(session));
+    localStorage.removeItem('orrery_plan');
+    localStorage.removeItem('orrery_pending_plan');
+    badgeEl.textContent = planLabel(payload.plan);
+    statusEl.textContent = 'PAYMENT VERIFIED — OPENING PLATFORM…';
+    log('Verified session stored: ' + JSON.stringify(session));
+    setTimeout(function(){ window.location.href = '/app'; }, 1400);
+  }
+
+  async function verifyPayment() {
+    if (!orderId) {
+      errorEl.style.display = 'block';
+      errorEl.textContent = 'Missing order reference. Please return to login and try again.';
+      statusEl.textContent = 'ORDER ID REQUIRED';
+      return;
+    }
+
+    goBtn.style.display = 'none';
+    statusEl.textContent = 'VERIFYING PAYMENT…';
+    badgeEl.textContent = 'Checking order ' + orderId + '…';
+    log('Polling backend for order: ' + orderId);
+
+    var tries = 0;
+    var maxTries = 12;
+
+    while (tries < maxTries) {
+      tries += 1;
+      try {
+        var res = await fetch('/api/order-status?orderId=' + encodeURIComponent(orderId), { cache: 'no-store' });
+        var data = await res.json().catch(function(){ return {}; });
+        log('Attempt ' + tries + ': ' + res.status + ' ' + JSON.stringify(data));
+        if (res.ok && data.paid && data.plan) {
+          saveVerifiedSession(data);
+          return;
+        }
+      } catch (err) {
+        log('Attempt ' + tries + ' failed: ' + err.message);
+      }
+      statusEl.textContent = 'WAITING FOR PAYMENT CONFIRMATION… (' + tries + '/' + maxTries + ')';
+      await new Promise(function(resolve){ setTimeout(resolve, 2500); });
+    }
+
+    errorEl.style.display = 'block';
+    errorEl.innerHTML = 'We have not received payment confirmation yet. If you completed payment, wait a moment and <a href="" onclick="location.reload();return false;" style="color:var(--gld)">try again</a>.';
+    statusEl.textContent = 'PAYMENT STILL PENDING';
+    badgeEl.textContent = 'Verification pending';
+    goBtn.style.display = 'block';
+    goBtn.textContent = 'RETRY CHECK →';
+    goBtn.href = location.href;
+  }
+
+  verifyPayment();
+})();
+</script>
+</body>
+</html>
