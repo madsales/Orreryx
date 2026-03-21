@@ -1,0 +1,9 @@
+{
+  "name": "orrery",
+  "version": "2.0.0",
+  "type": "module",
+  "description": "Orrery — Real-Time Geopolitical Market Intelligence Platform",
+  "dependencies": {
+    "ioredis": "^5.3.2"
+  }
+}
