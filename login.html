@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Orrery — Get Access</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090b;--bg2:#111116;--bg3:#18181f;--bg4:#222230;
+  --brd:rgba(255,255,255,.07);--brd2:rgba(255,255,255,.13);
+  --txt:#f0f0ec;--txt2:#b0b0aa;--txt3:#666670;
+  --red:#e03836;--red2:rgba(224,56,54,.12);
+  --grn:#3ab860;--grn2:rgba(58,184,96,.12);
+  --gld:#d4a843;--gld2:rgba(212,168,67,.12);
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+}
+html,body{min-height:100%;background:var(--bg);color:var(--txt);font-family:var(--sans)}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.02) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.02) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(ellipse 80% 80% at 50% 40%,black 20%,transparent 100%);pointer-events:none;z-index:0}
+body::after{content:'';position:fixed;top:35%;left:50%;transform:translate(-50%,-50%);width:700px;height:700px;pointer-events:none;z-index:0;background:radial-gradient(circle,rgba(224,56,54,.05) 0%,transparent 65%)}
+.wrap{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 20px;position:relative;z-index:1}
+/* Logo */
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;margin-bottom:44px}
+.logo-mark{width:36px;height:36px;flex-shrink:0}
+.logo-name{font:700 18px/1 var(--mono);color:var(--txt);letter-spacing:.04em}
+.logo-tag{font:400 8px/1 var(--mono);color:var(--txt3);letter-spacing:.12em;text-transform:uppercase;margin-top:2px}
+/* Plan switcher */
+.plan-switch{display:flex;gap:0;background:var(--bg3);border:1px solid var(--brd2);border-radius:6px;padding:3px;margin-bottom:24px}
+.ps-btn{flex:1;padding:8px 14px;border-radius:4px;border:none;background:transparent;color:var(--txt3);font:600 9px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;cursor:pointer;transition:all .15s;white-space:nowrap}
+.ps-btn.active{background:var(--txt);color:var(--bg)}
+/* Card */
+.card{width:100%;max-width:420px;background:var(--bg2);border:1px solid var(--brd2);border-radius:8px;padding:32px}
+.card-eye{font:700 8px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--txt3);margin-bottom:8px}
+.plan-badge{display:inline-flex;align-items:center;gap:6px;background:var(--gld2);border:1px solid rgba(212,168,67,.3);border-radius:3px;padding:5px 10px;font:600 8px/1 var(--mono);letter-spacing:.08em;color:var(--gld);margin-bottom:16px}
+.card-title{font:700 20px/1.2 var(--mono);color:var(--txt);margin-bottom:6px;letter-spacing:-.02em}
+.card-sub{font:400 12px/1.65 var(--sans);color:var(--txt3);margin-bottom:22px}
+/* Inputs */
+.inp-lbl{font:600 8px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);display:block;margin-bottom:6px}
+.inp-wrap{margin-bottom:12px}
+.inp{width:100%;background:var(--bg3);border:1px solid var(--brd2);border-radius:4px;color:var(--txt);font:400 13px/1 var(--mono);padding:11px 13px;outline:none;transition:border-color .15s}
+.inp:focus{border-color:rgba(255,255,255,.3)}
+.inp::placeholder{color:var(--txt3)}
+.inp-hint{font:400 9px/1 var(--mono);color:var(--txt3);margin-top:5px}
+/* Button */
+.btn-pay{width:100%;background:var(--txt);border:none;border-radius:4px;color:var(--bg);font:700 10px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;padding:14px;cursor:pointer;transition:opacity .15s;margin-top:6px}
+.btn-pay:hover{opacity:.86}
+.btn-pay:disabled{opacity:.35;cursor:not-allowed}
+/* Messages */
+.msg{display:none;margin-top:14px;padding:12px 14px;border-radius:4px;font:400 12px/1.55 var(--sans)}
+.msg.err{display:block;background:var(--red2);border:1px solid rgba(224,56,54,.28);color:var(--red)}
+.msg.info{display:block;background:var(--bg3);border:1px solid var(--brd2);color:var(--txt3)}
+/* Divider */
+.div{height:1px;background:var(--brd);margin:20px 0;position:relative}
+.div-lbl{position:absolute;top:-7px;left:50%;transform:translateX(-50%);background:var(--bg2);padding:0 10px;font:400 9px/1 var(--mono);color:var(--txt3)}
+/* Feature list */
+.feat-list{list-style:none;display:flex;flex-direction:column;gap:5px;margin-top:4px}
+.feat-list li{display:flex;align-items:center;gap:8px;font:400 11px/1.3 var(--sans);color:var(--txt3)}
+.feat-list li .ck{color:var(--grn);font-size:10px;flex-shrink:0}
+.feat-list li .nx{color:var(--txt3);opacity:.4;font-size:10px;flex-shrink:0}
+/* Back link */
+.back{display:inline-flex;align-items:center;gap:6px;margin-top:24px;font:400 10px/1 var(--mono);color:var(--txt3);text-decoration:none;transition:color .14s}
+.back:hover{color:var(--txt)}
+/* Error banner */
+.err-banner{background:var(--red2);border:1px solid rgba(224,56,54,.25);border-radius:4px;padding:10px 14px;font:400 11px/1.5 var(--mono);color:var(--red);margin-bottom:16px;display:none}
+@media(max-width:480px){.card{padding:22px 18px}.plan-switch{flex-wrap:wrap}.ps-btn{font-size:8px;padding:7px 10px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <a href="/" class="logo">
+    <svg class="logo-mark" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <rect width="32" height="32" rx="4" fill="#f0f0ec"/>
+      <ellipse cx="16" cy="16" rx="10" ry="4" fill="none" stroke="#09090a" stroke-width="1" transform="rotate(-30,16,16)"/>
+      <ellipse cx="16" cy="16" rx="6.5" ry="2.5" fill="none" stroke="rgba(9,9,10,0.4)" stroke-width=".8" stroke-dasharray="3 2" transform="rotate(-30,16,16)"/>
+      <circle cx="16" cy="16" r="2" fill="#09090a"/>
+      <circle cx="23" cy="11" r="1.5" fill="#09090a"/>
+      <circle cx="12" cy="20" r="1" fill="#e03836"/>
+    </svg>
+    <div>
+      <div class="logo-name">Orrery</div>
+      <div class="logo-tag">Geopolitical Intelligence</div>
+    </div>
+  </a>
+
+  <!-- Plan switcher -->
+  <div class="plan-switch" id="plan-switch">
+    <button class="ps-btn active" onclick="switchPlan('s',this)">Starter $0.99</button>
+    <button class="ps-btn" onclick="switchPlan('a',this)">Analyst $14.99</button>
+    <button class="ps-btn" onclick="switchPlan('c',this)">Command $34.99</button>
+  </div>
+
+  <div class="card">
+    <div class="err-banner" id="err-banner"></div>
+    <div class="card-eye">Get Access</div>
+    <div class="plan-badge" id="plan-badge">✦ Starter Plan — $0.99/mo</div>
+    <div class="card-title" id="card-title">Start tracking now</div>
+    <div class="card-sub" id="card-sub">Enter your details to pay via Pesapal and unlock the platform instantly.</div>
+
+    <label class="inp-lbl" for="inp-name">Full Name</label>
+    <div class="inp-wrap">
+      <input class="inp" id="inp-name" type="text" placeholder="John Doe" autocomplete="name" autofocus>
+    </div>
+
+    <label class="inp-lbl" for="inp-email">Email Address</label>
+    <div class="inp-wrap">
+      <input class="inp" id="inp-email" type="email" placeholder="you@example.com" autocomplete="email">
+    </div>
+
+    <label class="inp-lbl" for="inp-phone">Phone Number</label>
+    <div class="inp-wrap">
+      <input class="inp" id="inp-phone" type="tel" placeholder="+256700000000">
+      <div class="inp-hint">MTN MoMo · Airtel Money · Visa · Mastercard</div>
+    </div>
+
+    <button class="btn-pay" id="pay-btn" onclick="handlePay()">PAY & GET ACCESS →</button>
+    <div class="msg" id="msg"></div>
+
+    <div class="div"><span class="div-lbl">included</span></div>
+    <ul class="feat-list" id="feat-list"></ul>
+  </div>
+
+  <a href="/" class="back">← Back to home</a>
+</div>
+
+<script>
+// Redirect if already paid
+(function(){
+  var v = localStorage.getItem('orrery_paid_verified');
+  if(v){ try{ var p=v.split('|'); if(['s','a','c'].includes(p[0])&&Date.now()-parseInt(p[1])<365*24*60*60*1000){ window.location.href='/app'; } }catch(e){} }
+})();
+
+// Show error from URL param
+(function(){
+  var err = new URLSearchParams(location.search).get('error');
+  var msgs = { missing_token:'Invalid sign-in link.', invalid_token:'Sign-in link not found or already used.', expired:'Your sign-in link has expired. Please try again.', server_error:'Server error. Please try again.' };
+  if(err && msgs[err]){ var b=document.getElementById('err-banner'); b.textContent=msgs[err]; b.style.display='block'; }
+})();
+
+var currentPlan = new URLSearchParams(location.search).get('plan') || 's';
+var planMap = {
+  s: { code:'s', name:'Starter', price:'$0.99/mo', badge:'✦ Starter Plan — $0.99/mo', title:'Start tracking now', amount:0.99,
+    feats:[{y:1,t:'Global crisis intel feed — 29 events'},{y:1,t:'18 crisis stocks + 18 global indices'},{y:1,t:'AI Intel Console — unlimited queries'},{y:1,t:'Stocks by country — 13 countries'},{y:1,t:'Global stock screener — 40+ stocks'},{y:1,t:'IPO tracker + broker comparison'},{y:1,t:'Financial calculators in 18 currencies'},{y:1,t:'Investment learning hub'},{y:0,t:'Live world map (Analyst+)'},{y:0,t:'Live exchange data (Analyst+)'},{y:0,t:'Live crypto market (Command only)'}]
+  },
+  a: { code:'a', name:'Analyst', price:'$14.99/mo', badge:'★ Analyst Plan — $14.99/mo', title:'Get live market data', amount:14.99,
+    feats:[{y:1,t:'Everything in Starter'},{y:1,t:'🌍 Live world map — 150+ cities'},{y:1,t:'● Live Twelve Data — 7 days/month'},{y:1,t:'WebSocket streaming — 36 symbols'},{y:1,t:'Click map events for AI brief'},{y:1,t:'7-day crisis history archive'},{y:1,t:'Stock charts — 1W to 5Y'},{y:0,t:'Unlimited live data (Command only)'},{y:0,t:'Live crypto market (Command only)'}]
+  },
+  c: { code:'c', name:'Command', price:'$34.99/mo', badge:'⬛ Command Plan — $34.99/mo', title:'Full platform access', amount:34.99,
+    feats:[{y:1,t:'Everything in Analyst'},{y:1,t:'● Live data — unlimited, no cutoff'},{y:1,t:'₿ Live crypto — 12 assets + war scores'},{y:1,t:'BTC · ETH · XMR · TON · SOL + 7 more'},{y:1,t:'30-day crisis history archive'},{y:1,t:'Full 5Y chart history'},{y:1,t:'CSV export + priority support'},{y:1,t:'Early access to new features'}]
+  }
+};
+
+// Normalise currentPlan
+if(!planMap[currentPlan]) currentPlan = 's';
+renderPlan(currentPlan);
+
+function switchPlan(p, btn) {
+  currentPlan = p;
+  document.querySelectorAll('.ps-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderPlan(p);
+}
+
+function renderPlan(p) {
+  var pl = planMap[p];
+  document.getElementById('plan-badge').textContent = pl.badge;
+  document.getElementById('card-title').textContent = pl.title;
+  document.getElementById('card-sub').textContent = 'Enter your details to pay via Pesapal and access the ' + pl.name + ' plan instantly.';
+  document.getElementById('pay-btn').textContent = 'PAY ' + pl.price.toUpperCase() + ' & GET ACCESS →';
+  var fl = document.getElementById('feat-list');
+  fl.innerHTML = pl.feats.map(function(f){ return '<li><span class="' + (f.y?'ck':'nx') + '">' + (f.y?'✓':'✗') + '</span>' + f.t + '</li>'; }).join('');
+}
+
+async function handlePay() {
+  var name  = document.getElementById('inp-name').value.trim();
+  var email = document.getElementById('inp-email').value.trim();
+  var phone = document.getElementById('inp-phone').value.trim();
+  var btn   = document.getElementById('pay-btn');
+  var msg   = document.getElementById('msg');
+
+  msg.className = 'msg'; msg.style.display = 'none';
+
+  if(!name)  { showErr('Please enter your full name.'); return; }
+  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { showErr('Please enter a valid email address.'); return; }
+  if(!phone) { showErr('Please enter your phone number.'); return; }
+
+  btn.disabled = true;
+  msg.className = 'msg info'; msg.style.display = 'block'; msg.textContent = 'Connecting to payment gateway…';
+
+  var pl   = planMap[currentPlan];
+  var parts = name.split(' ');
+  var orderId = 'orrery_' + pl.code + '_' + Date.now();
+
+  // Store email for post-payment use
+  try { localStorage.setItem('orrery_pending_email', email); } catch(e){}
+
+  try {
+    var r = await fetch('/api/pesapal?action=create', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        plan: pl.code,
+        amount: pl.amount,
+        email: email,
+        phone: phone,
+        firstName: parts[0] || name,
+        lastName: parts.slice(1).join(' ') || '',
+        orderId: orderId
+      })
+    });
+    var d = await r.json();
+    if(d.redirect_url){
+      msg.textContent = 'Redirecting to Pesapal…';
+      window.location.href = d.redirect_url;
+    } else {
+      showErr((d && (d.error || d.message)) ? ((typeof d.error === 'string') ? d.error : (d.error.message || d.message || 'Payment initiation failed. Please try again.')) + (d.detail ? ('\n\n' + JSON.stringify(d.detail)) : '') : 'Payment initiation failed. Please try again.');
+      btn.disabled = false;
+    }
+  } catch(e) {
+    showErr('Network error. Check your connection and try again.');
+    btn.disabled = false;
+  }
+}
+
+function showErr(t) {
+  var msg = document.getElementById('msg');
+  msg.className = 'msg err'; msg.style.display = 'block'; msg.textContent = t;
+}
+
+document.getElementById('inp-email').addEventListener('keydown', function(e){ if(e.key==='Enter') handlePay(); });
+document.getElementById('inp-phone').addEventListener('keydown', function(e){ if(e.key==='Enter') handlePay(); });
+</script>
+</body>
+</html>
