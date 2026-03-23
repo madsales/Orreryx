@@ -2797,11 +2797,7 @@ function wizGo(step) {
 }
 function wizSkip(step) {
   if (step === 0) {
-    // Skip payment - go to AI key step directly
-    document.getElementById('wz-s1').style.display = 'none';
-    document.getElementById('wz-s2').style.display = 'block';
-    document.getElementById('wz1').classList.add('done');
-    document.getElementById('wz2').classList.add('active');
+    window.location.href = '/login?plan=' + (wizPlan || 's');
     return;
   }
   if (step === 2) {
