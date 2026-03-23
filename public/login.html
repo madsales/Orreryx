@@ -125,12 +125,18 @@ body::after{content:'';position:fixed;top:35%;left:50%;transform:translate(-50%,
 </div>
 
 <script>
-// Redirect if already paid
+// Redirect only if a valid paid session exists
 (function(){
-  var v = localStorage.getItem('orrery_paid_verified');
-  if(v){ try{ var p=v.split('|'); if(['s','a','c'].includes(p[0])&&Date.now()-parseInt(p[1])<365*24*60*60*1000){ window.location.href='/app'; } }catch(e){} }
+  try {
+    var s = localStorage.getItem('orrery_session');
+    if (!s) return;
+    var obj = JSON.parse(s);
+    if (obj && ['s','a','c'].includes(obj.plan) && obj.expires && Date.now() < obj.expires) {
+      window.location.href = '/app';
+    }
+  } catch(e) {}
 })();
-
+  
 // Show error from URL param
 (function(){
   var err = new URLSearchParams(location.search).get('error');
