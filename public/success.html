@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Payment Confirmed — Orrery</title>
+<title>Payment Status — Orrery</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
@@ -13,40 +13,67 @@
   --brd:rgba(255,255,255,.07);--brd2:rgba(255,255,255,.13);
   --grn:#3ab860;--grn2:rgba(58,184,96,.12);
   --gld:#d4a843;--gld2:rgba(212,168,67,.12);
-  --red:#e03836;
+  --red:#e03836;--red2:rgba(224,56,54,.08);
+  --ylw:#d4a843;--ylw2:rgba(212,168,67,.12);
   --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
 }
 body{background:var(--bg);color:var(--txt);font-family:var(--sans);display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
 body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(ellipse 70% 70% at 50% 50%,black 20%,transparent 100%);pointer-events:none;z-index:0}
 .card{background:var(--bg2);border:1px solid var(--brd2);border-radius:12px;padding:44px 52px;max-width:500px;width:100%;text-align:center;position:relative;z-index:1}
-.check-ring{width:64px;height:64px;border-radius:50%;background:var(--grn2);border:1px solid rgba(58,184,96,.35);display:flex;align-items:center;justify-content:center;margin:0 auto 22px;animation:pop .4s cubic-bezier(.34,1.56,.64,1) both}
+.state-ring{width:64px;height:64px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 22px;animation:pop .4s cubic-bezier(.34,1.56,.64,1) both}
 @keyframes pop{from{transform:scale(0);opacity:0}to{transform:scale(1);opacity:1}}
-.check-ring svg{width:28px;height:28px;stroke:var(--grn);fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.state-ring svg{width:28px;height:28px;fill:none;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+.ring-pending{background:var(--ylw2);border:1px solid rgba(212,168,67,.35)}
+.ring-pending svg{stroke:var(--ylw)}
+.ring-success{background:var(--grn2);border:1px solid rgba(58,184,96,.35)}
+.ring-success svg{stroke:var(--grn)}
+.ring-error{background:var(--red2);border:1px solid rgba(224,56,54,.35)}
+.ring-error svg{stroke:var(--red)}
 h1{font:700 22px/1.2 var(--mono);color:var(--txt);margin-bottom:8px;letter-spacing:-.02em}
 .sub{font:400 14px/1.7 var(--sans);color:var(--txt2);margin-bottom:26px}
 .plan-pill{display:inline-block;background:var(--gld2);border:1px solid rgba(212,168,67,.3);color:var(--gld);font:700 11px/1 var(--mono);letter-spacing:.08em;padding:6px 16px;border-radius:4px;margin-bottom:28px}
 .status{font:400 10px/1 var(--mono);color:var(--txt3);margin-bottom:20px;letter-spacing:.06em}
 .progress-bar{height:2px;background:var(--bg3);border-radius:2px;overflow:hidden;margin-bottom:24px}
-.progress-fill{height:100%;background:var(--grn);border-radius:2px;animation:fill 2.5s linear infinite}
+.progress-fill{height:100%;background:var(--ylw);border-radius:2px;width:35%;transition:width .25s ease}
+.progress-fill.loading{animation:fill 2.5s linear infinite}
+.progress-fill.success{background:var(--grn);width:100%}
+.progress-fill.error{background:var(--red);width:100%}
 @keyframes fill{from{width:0}to{width:100%}}
 .btn{display:block;background:var(--txt);color:var(--bg);font:700 10px/1 var(--mono);letter-spacing:.07em;text-transform:uppercase;padding:14px;border-radius:6px;text-decoration:none;transition:opacity .15s}
 .btn:hover{opacity:.86}
-.error-msg{display:none;color:var(--red);font:400 12px/1.5 var(--mono);margin-top:14px;padding:12px;background:rgba(224,56,54,.08);border:1px solid rgba(224,56,54,.2);border-radius:4px}
+.btn.hidden{display:none}
+.error-msg,.info-msg{display:none;font:400 12px/1.5 var(--mono);margin-top:14px;padding:12px;border-radius:4px}
+.error-msg{color:var(--red);background:rgba(224,56,54,.08);border:1px solid rgba(224,56,54,.2)}
+.info-msg{color:var(--gld);background:rgba(212,168,67,.08);border:1px solid rgba(212,168,67,.2)}
 .debug{display:none;margin-top:16px;padding:10px;background:var(--bg3);border:1px solid var(--brd);border-radius:4px;font:400 9px/1.6 var(--mono);color:var(--txt3);text-align:left}
+.retry-btn{margin-top:12px;background:transparent;border:1px solid var(--brd2);color:var(--txt2);font:700 10px/1 var(--mono);letter-spacing:.07em;text-transform:uppercase;padding:12px 14px;border-radius:6px;cursor:pointer}
+.retry-btn.hidden{display:none}
 </style>
 </head>
 <body>
 <div class="card">
-  <div class="check-ring">
-    <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+  <div class="state-ring ring-pending" id="state-ring">
+    <svg id="state-icon" viewBox="0 0 24 24">
+      <path d="M12 6v6l4 2"/>
+      <circle cx="12" cy="12" r="8"/>
+    </svg>
   </div>
-  <h1>Payment confirmed</h1>
-  <p class="sub">Your Orrery subscription is being verified. You’ll enter the platform as soon as payment is confirmed.</p>
+
+  <h1 id="title">Verifying payment</h1>
+  <p class="sub" id="subtitle">We’re checking the payment result with the gateway before activating your Orrery subscription.</p>
+
   <div class="plan-pill" id="plan-badge">Verifying…</div>
   <p class="status" id="status-msg">VERIFYING PAYMENT…</p>
-  <div class="progress-bar"><div class="progress-fill"></div></div>
-  <a href="/app" class="btn" id="go-btn">OPEN ORRERY →</a>
+
+  <div class="progress-bar">
+    <div class="progress-fill loading" id="progress-fill"></div>
+  </div>
+
+  <a href="/app" class="btn hidden" id="go-btn">OPEN ORRERY →</a>
+  <button class="retry-btn hidden" id="retry-btn" type="button">Refresh status</button>
+
   <div class="error-msg" id="error-msg"></div>
+  <div class="info-msg" id="info-msg"></div>
   <div class="debug" id="debug-box"></div>
 </div>
 
@@ -55,18 +82,94 @@ h1{font:700 22px/1.2 var(--mono);color:var(--txt);margin-bottom:8px;letter-spaci
   var params = new URLSearchParams(location.search);
   var orderId = params.get('order') || params.get('orderId') || params.get('OrderMerchantReference') || '';
   var planParam = params.get('plan') || '';
+  var modeParam = (params.get('mode') || params.get('env') || '').toLowerCase();
 
   var dbg = document.getElementById('debug-box');
+  var maxAttempts = 10;
+  var retryDelay = 3000;
+  var attempts = 0;
+  var retryTimer = null;
+
   function log(msg) {
     console.log('[success]', msg);
     dbg.style.display = 'block';
     dbg.innerHTML += msg + '<br>';
   }
 
-  function showError(message, status) {
-    document.getElementById('error-msg').style.display = 'block';
-    document.getElementById('error-msg').textContent = message;
-    if (status) document.getElementById('status-msg').textContent = status;
+  function setText(id, text) {
+    document.getElementById(id).textContent = text;
+  }
+
+  function showBox(id, message) {
+    var el = document.getElementById(id);
+    el.style.display = 'block';
+    el.textContent = message;
+  }
+
+  function hideBox(id) {
+    document.getElementById(id).style.display = 'none';
+  }
+
+  function setState(state, opts) {
+    opts = opts || {};
+    var ring = document.getElementById('state-ring');
+    var icon = document.getElementById('state-icon');
+    var progress = document.getElementById('progress-fill');
+    var goBtn = document.getElementById('go-btn');
+    var retryBtn = document.getElementById('retry-btn');
+
+    hideBox('error-msg');
+    hideBox('info-msg');
+
+    if (state === 'pending') {
+      ring.className = 'state-ring ring-pending';
+      icon.innerHTML = '<path d="M12 6v6l4 2"/><circle cx="12" cy="12" r="8"/>';
+      setText('title', opts.title || 'Verifying payment');
+      setText('subtitle', opts.subtitle || 'We’re checking the payment result with the gateway before activating your Orrery subscription.');
+      setText('status-msg', opts.status || 'VERIFYING PAYMENT…');
+      progress.className = 'progress-fill loading';
+      goBtn.classList.add('hidden');
+      retryBtn.classList.add('hidden');
+      if (opts.info) showBox('info-msg', opts.info);
+      return;
+    }
+
+    if (state === 'success') {
+      ring.className = 'state-ring ring-success';
+      icon.innerHTML = '<polyline points="20 6 9 17 4 12"></polyline>';
+      setText('title', 'Payment confirmed');
+      setText('subtitle', 'Your Orrery subscription has been verified and activated.');
+      setText('status-msg', opts.status || 'PAYMENT VERIFIED');
+      progress.className = 'progress-fill success';
+      goBtn.classList.remove('hidden');
+      retryBtn.classList.add('hidden');
+      return;
+    }
+
+    if (state === 'failed') {
+      ring.className = 'state-ring ring-error';
+      icon.innerHTML = '<path d="M8 8l8 8M16 8l-8 8"></path><circle cx="12" cy="12" r="8"></circle>';
+      setText('title', 'Payment not completed');
+      setText('subtitle', 'The gateway did not confirm a successful charge for this order.');
+      setText('status-msg', opts.status || 'PAYMENT FAILED');
+      progress.className = 'progress-fill error';
+      goBtn.classList.add('hidden');
+      retryBtn.classList.remove('hidden');
+      if (opts.error) showBox('error-msg', opts.error);
+      return;
+    }
+
+    if (state === 'error') {
+      ring.className = 'state-ring ring-error';
+      icon.innerHTML = '<path d="M12 7v6"/><circle cx="12" cy="16.5" r=".7"></circle><circle cx="12" cy="12" r="8"></circle>';
+      setText('title', 'Could not verify payment yet');
+      setText('subtitle', 'We could not confirm the payment status right now. You can refresh and try again.');
+      setText('status-msg', opts.status || 'VERIFICATION ERROR');
+      progress.className = 'progress-fill error';
+      goBtn.classList.add('hidden');
+      retryBtn.classList.remove('hidden');
+      if (opts.error) showBox('error-msg', opts.error);
+    }
   }
 
   function normPlan(p) {
@@ -78,15 +181,36 @@ h1{font:700 22px/1.2 var(--mono);color:var(--txt);margin-bottom:8px;letter-spaci
     return null;
   }
 
-  function planLabel(code) {
-    if (code === 'c') return '⬛ Command Plan — Active';
-    if (code === 'a') return '★ Analyst Plan — Active';
-    return '✦ Starter Plan — Active';
+  function planLabel(code, verified) {
+    var suffix = verified ? 'Active' : 'Pending';
+    if (code === 'c') return '⬛ Command Plan — ' + suffix;
+    if (code === 'a') return '★ Analyst Plan — ' + suffix;
+    if (code === 's') return '✦ Starter Plan — ' + suffix;
+    return 'Verifying…';
+  }
+
+  function isTruthy(value) {
+    return value === true || value === 'true' || value === 1 || value === '1';
+  }
+
+  function normalizeStatus(data) {
+    if (!data) return 'unknown';
+
+    var status = String(data.status || data.payment_status || data.orderStatus || '').toLowerCase();
+    var paid = isTruthy(data.paid);
+
+    if (paid) return 'paid';
+    if (['paid','captured','success','completed'].indexOf(status) !== -1) return 'paid';
+    if (['failed','cancelled','canceled','expired','declined'].indexOf(status) !== -1) return 'failed';
+    if (['pending','processing','created','authorized','requires_action'].indexOf(status) !== -1) return 'pending';
+
+    return 'unknown';
   }
 
   var planCode = normPlan(planParam);
   log('URL plan param: ' + JSON.stringify(planParam));
   log('URL order id: ' + JSON.stringify(orderId));
+  log('URL mode/env: ' + JSON.stringify(modeParam));
   log('Normalised plan: ' + planCode);
 
   if (!planCode && orderId) {
@@ -97,64 +221,149 @@ h1{font:700 22px/1.2 var(--mono);color:var(--txt);margin-bottom:8px;letter-spaci
     log('Plan from order: ' + planCode);
   }
 
+  document.getElementById('plan-badge').textContent = planLabel(planCode, false);
+
   if (!orderId) {
-    showError('Order ID is missing. Please contact support with your payment details.', 'ORDER ID MISSING');
+    setState('error', {
+      status: 'ORDER ID MISSING',
+      error: 'Order ID is missing. Please contact support with your payment details.'
+    });
     return;
   }
 
   async function verifyAndActivate() {
+    clearTimeout(retryTimer);
+    attempts += 1;
+
+    setState('pending', {
+      status: attempts === 1 ? 'VERIFYING PAYMENT…' : 'RECHECKING PAYMENT…',
+      info: attempts > 1 ? 'Attempt ' + attempts + ' of ' + maxAttempts : ''
+    });
+
     try {
-      const r = await fetch('/api/order-status?orderId=' + encodeURIComponent(orderId));
-      const d = await r.json();
-      log('order-status response: ' + JSON.stringify(d));
+      const r = await fetch('/api/order-status?orderId=' + encodeURIComponent(orderId), {
+        credentials: 'include',
+        headers: { 'Accept': 'application/json' }
+      });
+
+      let d = null;
+      try {
+        d = await r.json();
+      } catch (jsonErr) {
+        log('json parse error: ' + jsonErr.message);
+      }
+
+      log('order-status response code: ' + r.status);
+      log('order-status response body: ' + JSON.stringify(d));
 
       if (!r.ok) {
-        showError(d && d.error ? d.error : 'Could not verify payment yet. Please wait a moment and refresh.', 'VERIFYING PAYMENT…');
-        setTimeout(verifyAndActivate, 3000);
+        if (attempts < maxAttempts) {
+          retryTimer = setTimeout(verifyAndActivate, retryDelay);
+          setState('pending', {
+            status: 'VERIFYING PAYMENT…',
+            info: 'Status service is not ready yet. Retrying automatically...'
+          });
+        } else {
+          setState('error', {
+            status: 'VERIFICATION UNAVAILABLE',
+            error: (d && d.error) ? d.error : 'Could not verify payment yet. Please refresh and try again.'
+          });
+        }
         return;
       }
 
-      if (!d || !d.paid) {
-        document.getElementById('status-msg').textContent = 'PAYMENT STILL PROCESSING…';
-        setTimeout(verifyAndActivate, 3000);
+      var finalStatus = normalizeStatus(d);
+
+      if (finalStatus === 'paid') {
+        var finalPlan = normPlan(d && d.plan) || planCode;
+
+        if (!finalPlan) {
+          setState('error', {
+            status: 'PLAN RESOLUTION FAILED',
+            error: 'Payment was found, but the plan could not be determined. Please contact support with Order ID: ' + orderId
+          });
+          return;
+        }
+
+        var timestamp = Date.now();
+        localStorage.setItem('orrery_paid_verified', finalPlan + '|' + timestamp);
+
+        var session = {
+          plan: finalPlan,
+          verified: true,
+          paidAt: timestamp,
+          orderId: orderId,
+          expires: timestamp + (365 * 24 * 60 * 60 * 1000)
+        };
+
+        var emailParam = params.get('email');
+        var pendingEmail = localStorage.getItem('orrery_pending_email');
+        session.email = emailParam ? decodeURIComponent(emailParam) : (pendingEmail || '');
+
+        localStorage.setItem('orrery_session', JSON.stringify(session));
+        localStorage.removeItem('orrery_plan');
+        localStorage.removeItem('orrery_pending_plan');
+
+        document.getElementById('plan-badge').textContent = planLabel(finalPlan, true);
+
+        setState('success', {
+          status: 'PAYMENT VERIFIED — OPENING PLATFORM…'
+        });
+
+        setTimeout(function(){ window.location.href = '/app'; }, 1800);
         return;
       }
 
-      var finalPlan = normPlan(d.plan) || planCode;
-      if (!finalPlan) {
-        showError('Payment was found, but the plan could not be determined. Please contact support with Order ID: ' + orderId, 'PLAN RESOLUTION FAILED');
+      if (finalStatus === 'failed') {
+        document.getElementById('plan-badge').textContent = planLabel(planCode, false);
+        setState('failed', {
+          status: 'PAYMENT FAILED',
+          error: 'The payment was not completed or was not captured by the gateway.'
+        });
         return;
       }
 
-      var timestamp = Date.now();
-      localStorage.setItem('orrery_paid_verified', finalPlan + '|' + timestamp);
+      var sandboxHint = '';
+      if (modeParam === 'sandbox' || modeParam === 'test' || (d && (d.env === 'sandbox' || d.mode === 'sandbox'))) {
+        sandboxHint = 'Sandbox/test mode detected. Test cards usually do not activate a real paid subscription.';
+      }
 
-      var session = {
-        plan: finalPlan,
-        verified: true,
-        paidAt: timestamp,
-        orderId: orderId,
-        expires: timestamp + (365 * 24 * 60 * 60 * 1000)
-      };
+      document.getElementById('plan-badge').textContent = planLabel(planCode, false);
 
-      var emailParam = params.get('email');
-      var pendingEmail = localStorage.getItem('orrery_pending_email');
-      session.email = emailParam ? decodeURIComponent(emailParam) : (pendingEmail || '');
-
-      localStorage.setItem('orrery_session', JSON.stringify(session));
-      localStorage.removeItem('orrery_plan');
-      localStorage.removeItem('orrery_pending_plan');
-
-      document.getElementById('plan-badge').textContent = planLabel(finalPlan);
-      document.getElementById('status-msg').textContent = 'PAYMENT VERIFIED — OPENING PLATFORM…';
-
-      setTimeout(function(){ window.location.href = '/app'; }, 1800);
+      if (attempts < maxAttempts) {
+        setState('pending', {
+          status: 'PAYMENT STILL PROCESSING…',
+          info: sandboxHint || 'Payment has not been marked as paid yet. We’ll check again automatically.'
+        });
+        retryTimer = setTimeout(verifyAndActivate, retryDelay);
+      } else {
+        setState('error', {
+          status: 'PAYMENT NOT VERIFIED',
+          error: sandboxHint || 'Payment was not verified after multiple checks. Refresh later or contact support with your Order ID.'
+        });
+      }
     } catch (e) {
       log('verify error: ' + (e && e.message ? e.message : String(e)));
-      document.getElementById('status-msg').textContent = 'VERIFYING PAYMENT…';
-      setTimeout(verifyAndActivate, 3000);
+
+      if (attempts < maxAttempts) {
+        setState('pending', {
+          status: 'VERIFYING PAYMENT…',
+          info: 'Network hiccup while verifying. Retrying automatically...'
+        });
+        retryTimer = setTimeout(verifyAndActivate, retryDelay);
+      } else {
+        setState('error', {
+          status: 'NETWORK ERROR',
+          error: 'We could not verify the payment because of a network or API error. Please refresh and try again.'
+        });
+      }
     }
   }
+
+  document.getElementById('retry-btn').addEventListener('click', function(){
+    attempts = 0;
+    verifyAndActivate();
+  });
 
   verifyAndActivate();
 })();
