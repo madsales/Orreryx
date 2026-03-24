@@ -333,7 +333,7 @@ h1{font:700 22px/1.2 var(--mono);color:var(--txt);margin-bottom:8px;letter-spaci
       if (attempts < maxAttempts) {
         setState('pending', {
           status: 'PAYMENT STILL PROCESSING…',
-          info: sandboxHint || 'Payment has not been marked as paid yet. We’ll check again automatically.'
+          info: sandboxHint || "Payment has not been marked as paid yet. We'll check again automatically."
         });
         retryTimer = setTimeout(verifyAndActivate, retryDelay);
       } else {
