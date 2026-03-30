@@ -1,1 +1,0 @@
-Upload these at repo root: public/, api/, vercel.json, package.json. In Vercel, set Output Directory to public if your deployment only publishes public assets. Then redeploy.
