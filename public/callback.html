@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="X-Frame-Options" content="DENY">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<title>Orrery — Verifying Payment…</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090b;--bg2:#111116;--bg3:#18181f;
+  --brd:rgba(255,255,255,.07);--brd2:rgba(255,255,255,.13);
+  --txt:#f0f0ec;--txt2:#b0b0aa;--txt3:#666670;
+  --grn:#3ab860;--grn2:rgba(58,184,96,.12);
+  --red:#e03836;--red2:rgba(224,56,54,.12);
+  --amb:#d4961e;
+  --mono:'IBM Plex Mono',monospace;
+}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--mono)}
+body{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+.card{background:var(--bg2);border:1px solid var(--brd2);border-radius:8px;padding:40px 44px;width:100%;max-width:420px;text-align:center}
+.logo{display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:32px;text-decoration:none}
+.logo-name{font:700 14px/1 var(--mono);color:var(--txt);letter-spacing:.04em}
+.state{display:none}
+.state.active{display:block}
+.spinner-wrap{margin:0 auto 24px;width:52px;height:52px}
+.spinner{width:52px;height:52px;border:2px solid var(--brd2);border-top-color:var(--txt);border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.status-icon{font-size:48px;margin-bottom:20px;display:block}
+.state-title{font:700 16px/1.3 var(--mono);color:var(--txt);margin-bottom:8px}
+.state-sub{font:400 11px/1.6 var(--mono);color:var(--txt3);margin-bottom:24px}
+.progress-wrap{height:2px;background:var(--brd);border-radius:1px;margin-bottom:20px;overflow:hidden}
+.progress-bar{height:100%;background:var(--txt);border-radius:1px;width:0%;transition:width .4s ease}
+.steps{display:flex;flex-direction:column;gap:8px;margin-bottom:28px;text-align:left}
+.step{display:flex;align-items:center;gap:10px;font:400 10px/1 var(--mono);color:var(--txt3);transition:color .2s}
+.step.done{color:var(--grn)}.step.active{color:var(--txt)}.step.error{color:var(--red)}
+.step-dot{width:6px;height:6px;border-radius:50%;background:currentColor;flex-shrink:0}
+.step-dot.spin{background:transparent;border:1.5px solid currentColor;border-top-color:transparent;animation:spin .6s linear infinite;border-radius:50%}
+.btn{display:inline-block;font:700 10px/1 var(--mono);letter-spacing:.07em;padding:12px 24px;border-radius:3px;text-decoration:none;cursor:pointer;border:none;transition:opacity .15s;margin-top:8px}
+.btn-primary{background:var(--txt);color:var(--bg)}.btn-primary:hover{opacity:.87}
+.btn-ghost{background:transparent;border:1px solid var(--brd2);color:var(--txt3)}.btn-ghost:hover{color:var(--txt)}
+.plan-badge{display:inline-flex;align-items:center;gap:6px;background:var(--grn2);border:1px solid rgba(58,184,96,.25);border-radius:3px;padding:6px 12px;font:600 9px/1 var(--mono);color:var(--grn);letter-spacing:.08em;margin-bottom:20px}
+.plan-dot{width:6px;height:6px;border-radius:50%;background:var(--grn);animation:blink 1.4s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.err-detail{background:var(--red2);border:1px solid rgba(224,56,54,.25);border-radius:4px;padding:10px 12px;font:400 9.5px/1.55 var(--mono);color:#f09090;margin-bottom:18px;text-align:left;word-break:break-all}
+.retry-txt{font:400 9px/1 var(--mono);color:var(--txt3);margin-top:12px}
+.btn-wrap{display:flex;flex-direction:column;gap:8px}
+</style>
+</head>
+<body>
+<div class="card">
+  <a href="/" class="logo">
+    <svg width="22" height="22" viewBox="0 0 32 32"><rect width="32" height="32" rx="4" fill="#f0f0ec"/><ellipse cx="16" cy="16" rx="10" ry="4" fill="none" stroke="#09090a" stroke-width="1" transform="rotate(-30,16,16)"/><ellipse cx="16" cy="16" rx="6.5" ry="2.5" fill="none" stroke="rgba(9,9,10,.4)" stroke-width=".8" stroke-dasharray="3 2" transform="rotate(-30,16,16)"/><circle cx="16" cy="16" r="2" fill="#09090a"/><circle cx="23" cy="11" r="1.5" fill="#09090a"/><circle cx="12" cy="20" r="1" fill="#e03836"/></svg>
+    <div class="logo-name">Orrery</div>
+  </a>
+
+  <!-- VERIFYING -->
+  <div class="state active" id="state-verifying">
+    <div class="spinner-wrap"><div class="spinner"></div></div>
+    <div class="state-title">Verifying payment…</div>
+    <div class="state-sub">Confirming your transaction. This takes just a moment.</div>
+    <div class="progress-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+    <div class="steps">
+      <div class="step active" id="step-1"><div class="step-dot spin"></div>Reading payment reference</div>
+      <div class="step" id="step-2"><div class="step-dot"></div>Verifying with PayPal</div>
+      <div class="step" id="step-3"><div class="step-dot"></div>Activating your plan</div>
+      <div class="step" id="step-4"><div class="step-dot"></div>Opening platform</div>
+    </div>
+  </div>
+
+  <!-- SUCCESS -->
+  <div class="state" id="state-success">
+    <span class="status-icon">✓</span>
+    <div id="plan-badge-wrap"></div>
+    <div class="state-title">Payment confirmed</div>
+    <div class="state-sub" id="success-sub">Your plan is now active. Opening platform…</div>
+    <div class="progress-wrap"><div class="progress-bar" id="redirect-bar" style="transition:width 3s linear"></div></div>
+    <a href="/app" class="btn btn-primary">OPEN PLATFORM →</a>
+    <div class="retry-txt">Redirecting automatically in 3 seconds…</div>
+  </div>
+
+  <!-- PENDING -->
+  <div class="state" id="state-pending">
+    <span class="status-icon">⏳</span>
+    <div class="state-title">Payment processing</div>
+    <div class="state-sub">Your payment is being confirmed by your bank or mobile money provider. This can take up to 2 minutes.</div>
+    <div class="progress-wrap"><div class="progress-bar" id="pending-bar" style="width:0%"></div></div>
+    <div class="retry-txt" id="pending-countdown">Checking again in 10s…</div>
+  </div>
+
+  <!-- FAILED -->
+  <div class="state" id="state-failed">
+    <span class="status-icon">✕</span>
+    <div class="state-title">Payment not completed</div>
+    <div class="state-sub">We couldn't verify a successful payment for this transaction.</div>
+    <div class="err-detail" id="err-detail">Payment was not completed.</div>
+    <div class="btn-wrap">
+      <a href="/login" class="btn btn-primary">TRY AGAIN →</a>
+      <a href="mailto:support@orreryx.io" class="btn btn-ghost">CONTACT SUPPORT</a>
+    </div>
+  </div>
+
+  <!-- ERROR -->
+  <div class="state" id="state-error">
+    <span class="status-icon">⚠️</span>
+    <div class="state-title">Verification error</div>
+    <div class="state-sub">Something went wrong. Your money has not been taken if payment didn't complete.</div>
+    <div class="err-detail" id="err-msg"></div>
+    <div class="btn-wrap" style="margin-bottom:12px">
+      <button class="btn btn-primary" onclick="startVerification()">RETRY →</button>
+      <a href="/login" class="btn btn-ghost">BACK TO LOGIN</a>
+    </div>
+    <div class="retry-txt" id="retry-count"></div>
+  </div>
+</div>
+
+<script>
+// ── STATE ──
+function showState(id) {
+  document.querySelectorAll('.state').forEach(function(s) { s.classList.remove('active'); });
+  var el = document.getElementById('state-' + id);
+  if (el) el.classList.add('active');
+}
+function setProgress(pct) {
+  var b = document.getElementById('progress-bar');
+  if (b) b.style.width = pct + '%';
+}
+function setStep(n, s) {
+  var el = document.getElementById('step-' + n);
+  if (!el) return;
+  el.className = 'step ' + s;
+  var dot = el.querySelector('.step-dot');
+  if (dot) dot.className = 'step-dot' + (s === 'active' ? ' spin' : '');
+}
+
+// ── URL PARAMS ──
+function getParam(name) {
+  var params = new URLSearchParams(location.search);
+  for (var pair of params.entries()) {
+    if (pair[0].toLowerCase() === name.toLowerCase()) return pair[1];
+  }
+  return '';
+}
+
+var orderId       = getParam('orderId') || getParam('order_id');
+var paypalOrderId = getParam('token');   // PayPal sends their order ID as 'token'
+var retries       = 0;
+var MAX_RETRY     = 6;
+var pollTimer     = null;
+
+// ── PAYPAL CAPTURE ──
+async function capturePayPal() {
+  setStep(1, 'done');
+  setStep(2, 'active');
+  setProgress(35);
+
+  var r = await fetch('/api/paypal?action=capture', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ paypalOrderId: paypalOrderId })
+  });
+  var data = await r.json().catch(function() { return {}; });
+
+  if (!r.ok || !data.paid) {
+    setStep(2, 'error');
+    showFailed(data.error || 'PayPal payment capture failed. Please contact support.');
+    return;
+  }
+
+  setStep(2, 'done');
+  setStep(3, 'active');
+  setProgress(70);
+
+  if (!data.plan || !data.token) {
+    showError('Session data incomplete after payment. Please contact support.', false);
+    return;
+  }
+
+  activateSession(data);
+}
+
+// ── VERIFY ──
+async function startVerification() {
+  showState('verifying');
+  setStep(1, 'active');
+  setProgress(10);
+
+  // Already have a valid session? Skip straight to app.
+  var sess = getExistingSession();
+  if (sess) { activateSession(sess); return; }
+
+  // ── PayPal flow: 'token' param is the PayPal order ID ──
+  if (paypalOrderId) {
+    try {
+      await capturePayPal();
+    } catch (e) {
+      retries++;
+      if (retries <= MAX_RETRY) {
+        var em = document.getElementById('err-msg');
+        if (em) em.textContent = e.message;
+        var rc = document.getElementById('retry-count');
+        if (rc) rc.textContent = 'Attempt ' + retries + ' of ' + MAX_RETRY + '. Retrying in 5s…';
+        showState('error');
+        setTimeout(startVerification, 5000);
+      } else {
+        showError(e.message, false);
+      }
+    }
+    return;
+  }
+
+  showError('No payment reference found. If you just paid, contact support.', false);
+}
+
+// ── ACTIVATE SESSION ──
+function activateSession(data) {
+  setStep(3, 'done');
+  setStep(4, 'active');
+  setProgress(90);
+
+  try {
+    var session = { plan: data.plan, email: data.email || '', token: data.token, expires: data.expires || (Date.now() + 365*24*60*60*1000) };
+    localStorage.setItem('orrery_session', JSON.stringify(session));
+    localStorage.setItem('orrery_paid_verified', data.plan + '|' + Date.now() + '|' + data.token);
+    sessionStorage.removeItem('orrery_pending_email');
+  } catch (e) { console.warn('localStorage write failed:', e.message); }
+
+  setStep(4, 'done');
+  setProgress(100);
+
+  var names = { s: 'Starter', a: 'Analyst', c: 'Command' };
+  var planName = names[data.plan] || 'Starter';
+
+  var badge = document.getElementById('plan-badge-wrap');
+  if (badge) badge.innerHTML = '<div class="plan-badge"><div class="plan-dot"></div>' + planName.toUpperCase() + ' PLAN ACTIVE</div>';
+
+  var sub = document.getElementById('success-sub');
+  if (sub) sub.textContent = 'Welcome to Orrery ' + planName + '. Opening platform…';
+
+  showState('success');
+
+  // Animate progress bar then redirect
+  setTimeout(function() {
+    var bar = document.getElementById('redirect-bar');
+    if (bar) bar.style.width = '100%';
+  }, 50);
+  setTimeout(function() { window.location.replace('/app'); }, 3000);
+}
+
+// ── PENDING POLL ──
+var pollAttempts = 0;
+var MAX_POLLS    = 12; // 12 × 10s = 2 minutes
+
+function startPendingPoll() {
+  showState('pending');
+  pollAttempts = 0;
+  schedulePoll();
+}
+
+function schedulePoll() {
+  if (pollAttempts >= MAX_POLLS) {
+    showFailed('Payment still pending after 2 minutes. If money was deducted, contact support with reference: ' + (orderId || trackingId));
+    return;
+  }
+  pollAttempts++;
+  var countdown = 10;
+  var barEl = document.getElementById('pending-bar');
+  if (barEl) { barEl.style.transition = 'none'; barEl.style.width = '0%'; }
+
+  clearInterval(pollTimer);
+  pollTimer = setInterval(function() {
+    countdown--;
+    var cd = document.getElementById('pending-countdown');
+    if (cd) cd.textContent = 'Checking again in ' + countdown + 's… (attempt ' + pollAttempts + '/' + MAX_POLLS + ')';
+    if (barEl) barEl.style.width = ((10 - countdown) / 10 * 100) + '%';
+    if (countdown <= 0) {
+      clearInterval(pollTimer);
+      doPoll();
+    }
+  }, 1000);
+}
+
+async function doPoll() {
+  try {
+    var data = await checkStatus();
+    if (data.paid === true) {
+      activateSession(data);
+    } else if (data.status === 'failed') {
+      showFailed('Payment failed: ' + (data.error || 'Transaction not completed.'));
+    } else {
+      schedulePoll();
+    }
+  } catch (e) {
+    schedulePoll(); // network error — keep trying
+  }
+}
+
+// ── ERROR / FAILED ──
+function showError(msg, canRetry) {
+  showState('error');
+  var em = document.getElementById('err-msg');
+  if (em) em.textContent = msg || 'Unknown error';
+  var rc = document.getElementById('retry-count');
+  if (rc) rc.textContent = canRetry ? '' : 'Max retries reached. Please contact support.';
+}
+
+function showFailed(msg) {
+  showState('failed');
+  var el = document.getElementById('err-detail');
+  if (el) el.textContent = msg || 'Payment was not completed.';
+}
+
+// ── EXISTING SESSION ──
+function getExistingSession() {
+  try {
+    var s = localStorage.getItem('orrery_session');
+    if (!s) return null;
+    var obj = JSON.parse(s);
+    if (['s','a','c'].includes(obj.plan) && obj.token && obj.expires > Date.now()) return obj;
+  } catch (e) {}
+  return null;
+}
+
+// ── INIT ──
+// Small delay to let page render before starting async work
+setTimeout(startVerification, 300);
+</script>
+</body>
+</html>
