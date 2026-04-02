@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="X-Frame-Options" content="DENY">
+<meta http-equiv="X-Content-Type-Options" content="nosniff">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data:; connect-src 'self' https://api-m.paypal.com https://api-m.sandbox.paypal.com; frame-src 'none';">
+<title>Orrery — Get Access</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090b;--bg2:#111116;--bg3:#18181f;--bg4:#222230;
+  --brd:rgba(255,255,255,.07);--brd2:rgba(255,255,255,.13);
+  --txt:#f0f0ec;--txt2:#b0b0aa;--txt3:#666670;--txt4:#333340;
+  --grn:#3ab860;--grn2:rgba(58,184,96,.12);
+  --red:#e03836;--red2:rgba(224,56,54,.12);
+  --amb:#e0a830;--gld:#d4a843;--gld2:rgba(212,168,67,.12);
+  --blu:#4a8fe0;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+}
+html,body{min-height:100%;background:var(--bg);color:var(--txt);font-family:var(--sans);font-size:14px}
+body{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;min-height:100vh}
+
+/* TOP NAV */
+.nav{position:fixed;top:0;left:0;right:0;background:var(--bg2);border-bottom:1px solid var(--brd);display:flex;align-items:center;justify-content:space-between;padding:0 20px;height:46px;z-index:10}
+.nav-logo{display:flex;align-items:center;gap:7px;text-decoration:none}
+.nav-logo-name{font:700 13px/1 var(--mono);color:var(--txt);letter-spacing:.04em}
+.nav-logo-sub{font:400 7.5px/1 var(--mono);color:var(--txt3);letter-spacing:.1em;text-transform:uppercase}
+.nav-back{font:400 9px/1 var(--mono);color:var(--txt3);text-decoration:none;letter-spacing:.06em;transition:color .15s}
+.nav-back:hover{color:var(--txt)}
+
+/* PLAN TABS */
+.plan-tabs{display:flex;gap:0;background:var(--bg3);border:1px solid var(--brd2);border-radius:5px;padding:3px;margin-bottom:22px;width:100%}
+.plan-tab{flex:1;padding:8px 6px;border-radius:3px;cursor:pointer;text-align:center;transition:all .15s;border:none;background:transparent}
+.plan-tab-name{font:700 8px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px}
+.plan-tab-price{font:600 12px/1 var(--mono)}
+.plan-tab.active-s{background:var(--bg);border:1px solid var(--brd2)}
+.plan-tab.active-s .plan-tab-name{color:var(--txt2)}
+.plan-tab.active-s .plan-tab-price{color:var(--txt)}
+.plan-tab.active-a{background:var(--gld2);border:1px solid rgba(212,168,67,.4)}
+.plan-tab.active-a .plan-tab-name{color:var(--gld)}
+.plan-tab.active-a .plan-tab-price{color:var(--gld)}
+.plan-tab.active-c{background:var(--grn2);border:1px solid rgba(58,184,96,.3)}
+.plan-tab.active-c .plan-tab-name{color:var(--grn)}
+.plan-tab.active-c .plan-tab-price{color:var(--grn)}
+.plan-tab.inactive .plan-tab-name{color:var(--txt4)}
+.plan-tab.inactive .plan-tab-price{color:var(--txt3)}
+
+/* CARD */
+.card{background:var(--bg2);border:1px solid var(--brd2);border-radius:8px;padding:26px 28px;width:100%;max-width:420px}
+.card-logo{display:flex;align-items:center;gap:8px;margin-bottom:20px}
+.card-plan-badge{font:700 7.5px/1 var(--mono);letter-spacing:.1em;padding:3px 9px;border-radius:3px;text-transform:uppercase}
+.badge-s{background:var(--bg3);border:1px solid var(--brd2);color:var(--txt3)}
+.badge-a{background:var(--gld2);border:1px solid rgba(212,168,67,.4);color:var(--gld)}
+.badge-c{background:var(--grn2);border:1px solid rgba(58,184,96,.3);color:var(--grn)}
+.card-title{font:600 18px/1.2 var(--sans);color:var(--txt);margin-bottom:4px}
+.card-sub{font:400 11.5px/1.5 var(--sans);color:var(--txt3);margin-bottom:22px}
+.plan-summary{background:var(--bg3);border:1px solid var(--brd);border-radius:5px;padding:12px 14px;margin-bottom:20px}
+.plan-summary-row{display:flex;align-items:center;gap:6px;font:400 10.5px/1 var(--sans);color:var(--txt2);margin-bottom:6px}
+.plan-summary-row:last-child{margin-bottom:0}
+.plan-summary-row .ck{color:var(--grn);font-size:9px;flex-shrink:0}
+.plan-summary-price{display:flex;align-items:baseline;gap:6px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid var(--brd)}
+.plan-summary-amt{font:700 24px/1 var(--mono);color:var(--txt)}
+.plan-summary-per{font:400 10px/1 var(--mono);color:var(--txt3)}
+
+/* FORM */
+.field{margin-bottom:13px}
+.field-lbl{font:700 7px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--txt3);display:block;margin-bottom:5px}
+.field-inp{width:100%;background:var(--bg3);border:1px solid var(--brd2);border-radius:4px;padding:10px 11px;font:400 13px/1 var(--sans);color:var(--txt);outline:none;transition:border .15s}
+.field-inp:focus{border-color:var(--txt3)}
+.field-inp::placeholder{color:var(--txt4)}
+.field-inp.err{border-color:var(--red)}
+.field-err{font:400 8.5px/1 var(--mono);color:var(--red);margin-top:4px;display:none}
+
+/* PAYMENT METHODS */
+.pay-methods{display:flex;align-items:center;gap:8px;margin:14px 0;flex-wrap:wrap}
+.pay-badge{font:600 7.5px/1 var(--mono);padding:3px 8px;border-radius:3px;background:var(--bg3);border:1px solid var(--brd);color:var(--txt3);letter-spacing:.04em}
+
+/* SUBMIT BTN */
+.submit-btn{width:100%;background:var(--txt);border:none;border-radius:4px;color:var(--bg);font:700 9.5px/1 var(--mono);letter-spacing:.08em;padding:13px;cursor:pointer;transition:opacity .15s;margin-top:4px}
+.submit-btn:hover{opacity:.87}
+.submit-btn:disabled{opacity:.35;cursor:not-allowed}
+.submit-btn.plan-a{background:var(--gld);color:#000}
+.submit-btn.plan-c{background:var(--grn);color:#000}
+
+/* ERRORS & STATUS */
+.form-err{background:var(--red2);border:1px solid rgba(224,56,54,.3);border-radius:4px;padding:10px 12px;font:400 11px/1.5 var(--sans);color:#f09090;margin-bottom:12px;display:none}
+.form-success{background:var(--grn2);border:1px solid rgba(58,184,96,.3);border-radius:4px;padding:10px 12px;font:400 11px/1.5 var(--sans);color:var(--grn);margin-bottom:12px;display:none}
+.footer-note{font:400 9px/1.5 var(--mono);color:var(--txt4);text-align:center;margin-top:14px}
+.footer-note a{color:var(--txt3);text-decoration:none}
+.footer-note a:hover{color:var(--txt)}
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid rgba(0,0,0,.3);border-top-color:#000;border-radius:50%;animation:spin .7s linear infinite;margin-right:6px;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+/* TERMS CHECKBOX */
+.terms-wrap{display:flex;align-items:flex-start;gap:10px;background:var(--bg3);border:1px solid var(--brd2);border-radius:4px;padding:11px 13px;margin-bottom:14px;cursor:pointer;transition:border-color .15s}
+.terms-wrap:hover{border-color:var(--txt3)}
+.terms-wrap.terms-err-state{border-color:var(--red)!important;background:var(--red2)}
+.terms-chk{width:15px;height:15px;flex-shrink:0;margin-top:1px;accent-color:var(--grn);cursor:pointer}
+.terms-lbl{font:400 10.5px/1.6 var(--sans);color:var(--txt3);cursor:pointer;user-select:none}
+.terms-lbl a{color:var(--txt2);text-decoration:underline;text-underline-offset:2px}
+.terms-lbl a:hover{color:var(--txt)}
+.terms-field-err{font:400 8.5px/1 var(--mono);color:var(--red);margin-top:5px;display:none;padding-left:1px}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="/" class="nav-logo">
+    <svg width="22" height="22" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <rect width="32" height="32" rx="4" fill="#f0f0ec"/>
+      <ellipse cx="16" cy="16" rx="10" ry="4" fill="none" stroke="#09090a" stroke-width="1" transform="rotate(-30,16,16)"/>
+      <ellipse cx="16" cy="16" rx="6.5" ry="2.5" fill="none" stroke="rgba(9,9,10,.4)" stroke-width=".8" stroke-dasharray="3 2" transform="rotate(-30,16,16)"/>
+      <circle cx="16" cy="16" r="2" fill="#09090a"/>
+      <circle cx="23" cy="11" r="1.5" fill="#09090a"/>
+      <circle cx="12" cy="20" r="1" fill="#e03836"/>
+    </svg>
+    <div><div class="nav-logo-name">Orrery</div><div class="nav-logo-sub">Intel Platform</div></div>
+  </a>
+  <a href="/" class="nav-back">← Back to home</a>
+</nav>
+
+<div style="margin-top:70px;width:100%;max-width:420px">
+
+  <!-- PLAN TABS -->
+  <div class="plan-tabs" id="plan-tabs">
+    <button class="plan-tab inactive" id="tab-s" onclick="selectPlan('s')">
+      <div class="plan-tab-name">Starter</div>
+      <div class="plan-tab-price">$0.99</div>
+    </button>
+    <button class="plan-tab inactive" id="tab-a" onclick="selectPlan('a')">
+      <div class="plan-tab-name">Analyst</div>
+      <div class="plan-tab-price">$14.99</div>
+    </button>
+    <button class="plan-tab inactive" id="tab-c" onclick="selectPlan('c')">
+      <div class="plan-tab-name">Command</div>
+      <div class="plan-tab-price">$34.99</div>
+    </button>
+  </div>
+
+  <div class="card">
+    <!-- HEADER -->
+    <div class="card-logo">
+      <span id="plan-badge" class="card-plan-badge badge-s">Starter Plan</span>
+    </div>
+    <div class="card-title" id="card-title">Start tracking now</div>
+    <div class="card-sub">Enter your details to pay via PayPal and unlock the platform instantly.</div>
+
+    <!-- CURRENCY SELECTOR -->
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+      <span style="font:700 7px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--txt3)">Display currency</span>
+      <div id="currency-wrap"></div>
+    </div>
+
+    <!-- PLAN SUMMARY -->
+    <div class="plan-summary" id="plan-summary">
+      <div class="plan-summary-price">
+        <span class="plan-summary-amt" id="summary-price">$0.99</span>
+        <span class="plan-summary-per">/ month · cancel anytime</span>
+      </div>
+      <div id="summary-features"></div>
+    </div>
+
+    <!-- FORM ERRORS -->
+    <div class="form-err" id="form-err"></div>
+    <div class="form-success" id="form-success"></div>
+
+    <!-- FORM -->
+    <div class="field">
+      <label class="field-lbl" for="inp-name">Full Name</label>
+      <input class="field-inp" id="inp-name" type="text" placeholder="John Doe" autocomplete="name">
+      <div class="field-err" id="err-name">Please enter your full name.</div>
+    </div>
+    <div class="field">
+      <label class="field-lbl" for="inp-email">Email Address</label>
+      <input class="field-inp" id="inp-email" type="email" placeholder="you@example.com" autocomplete="email">
+      <div class="field-err" id="err-email">Please enter a valid email address.</div>
+    </div>
+    <div class="field">
+      <label class="field-lbl" for="inp-phone">Phone Number</label>
+      <input class="field-inp" id="inp-phone" type="tel" placeholder="+256 700 000000" autocomplete="tel">
+      <div class="field-err" id="err-phone">Please enter your phone number.</div>
+    </div>
+
+    <div class="pay-methods">
+      <span class="pay-badge">PayPal</span>
+      <span class="pay-badge">Visa</span>
+      <span class="pay-badge">Mastercard</span>
+      <span class="pay-badge">Debit Card</span>
+    </div>
+
+    <!-- TERMS AGREEMENT -->
+    <div id="terms-field">
+      <label class="terms-wrap" id="terms-wrap" for="terms-chk">
+        <input type="checkbox" class="terms-chk" id="terms-chk" onchange="clearTermsErr()">
+        <span class="terms-lbl">I have read and agree to the
+          <a href="/" onclick="event.stopPropagation();window.open('/','_blank');return false">Terms of Service</a>
+          and
+          <a href="/" onclick="event.stopPropagation();window.open('/','_blank');return false">Privacy Policy</a>.
+          I understand that all payments are final and non-refundable.</span>
+      </label>
+      <div class="terms-field-err" id="terms-field-err">✕ You must agree to the Terms of Service to continue.</div>
+    </div>
+
+    <button class="submit-btn" id="submit-btn" onclick="submitPayment()">
+      PAY &amp; GET ACCESS →
+    </button>
+
+    <div class="footer-note" style="margin-top:16px">
+      Secured by <a href="https://paypal.com" target="_blank" rel="noopener">PayPal</a><br>
+      Charged in USD · PayPal accepts cards, debit &amp; PayPal balance<br>
+      We never see or store card details.
+    </div>
+  </div>
+
+  <div class="footer-note" style="margin-top:14px">
+    Already paid? <a href="/app" style="color:var(--txt2)">Open platform →</a>
+  </div>
+
+</div>
+
+<script>
+// ── PLAN CONFIG ──
+const PLAN_FEATURES = {
+  s: ['Full crisis intel feed — 30+ events','AI Intel Console — unlimited queries','18 war stocks + 18 global indices','Global screener + calculators','IPO tracker, brokers, learning hub'],
+  a: ['Everything in Starter','🌍 Live world map — 150+ cities','● Live exchange data — 36 symbols','7-day crisis history archive','Stock charts — 1W to 5Y'],
+  c: ['Everything in Analyst','● Unlimited live data — no cutoff','₿ Live crypto — 12 assets + war scores','30-day history archive','CSV export · Priority support']
+};
+const PLAN_BADGES   = { s:'badge-s', a:'badge-a', c:'badge-c' };
+const PLAN_NAMES    = { s:'Starter Plan', a:'Analyst Plan', c:'Command Plan' };
+const PLAN_BTNCLS   = { s:'', a:'plan-a', c:'plan-c' };
+const USD_PRICES    = { s:0.99, a:14.99, c:34.99 };
+
+let currentPlan = 's';
+let currentCurrency = 'USD';
+let liveRates = null;
+
+// ── CURRENCY STATE ──
+// Detect user's likely currency from browser locale
+function detectCurrency() {
+  try {
+    const locale = navigator.language || 'en-US';
+    const region = new Intl.NumberFormat(locale, {style:'currency',currency:'USD'})
+      .resolvedOptions().locale.split('-')[1] || 'US';
+    const map = {
+      UG:'UGX',KE:'KES',TZ:'TZS',NG:'NGN',GH:'GHS',ZA:'ZAR',ET:'ETB',RW:'RWF',
+      ZM:'ZMW',MA:'MAD',EG:'EGP',DZ:'DZD',AE:'AED',SA:'SAR',QA:'QAR',KW:'KWD',
+      GB:'GBP',EU:'EUR',DE:'EUR',FR:'EUR',IT:'EUR',ES:'EUR',JP:'JPY',CN:'CNY',
+      IN:'INR',BR:'BRL',MX:'MXN',CA:'CAD',AU:'AUD',CH:'CHF',KR:'KRW',SG:'SGD',
+      HK:'HKD',NO:'NOK',SE:'SEK',DK:'DKK',NZ:'NZD',TR:'TRY',PL:'PLN',PH:'PHP',
+      TH:'THB',MY:'MYR',ID:'IDR',PK:'PKR',BD:'BDT',IL:'ILS',AR:'ARS',CL:'CLP',
+      CO:'COP',PE:'PEN',SN:'XOF',CI:'XOF',CM:'XAF'
+    };
+    return map[region] || 'USD';
+  } catch(e) { return 'USD'; }
+}
+
+
+// ── PRICE DISPLAY ──
+function getPriceDisplay(plan, currency) {
+  if (liveRates && liveRates.prices && liveRates.prices[plan]) {
+    const p = liveRates.prices[plan];
+    if (p.currency === currency) return p.formatted;
+  }
+  // USD fallback
+  return '$' + USD_PRICES[plan].toFixed(2);
+}
+function getBtnText(plan, currency) {
+  const price = getPriceDisplay(plan, currency);
+  const names = {s:'ACCESS',a:'ANALYST',c:'COMMAND'};
+  return `PAY ${price} — GET ${names[plan]} →`;
+}
+
+// ── UPDATE UI ──
+function updatePriceDisplay() {
+  ['s','a','c'].forEach(p => {
+    const tab = document.getElementById('tab-' + p);
+    if (tab) {
+      const priceEl = tab.querySelector('.plan-tab-price');
+      if (priceEl) priceEl.textContent = getPriceDisplay(p, currentCurrency);
+    }
+  });
+  // Update current plan display
+  const priceEl = document.getElementById('summary-price');
+  if (priceEl) priceEl.textContent = getPriceDisplay(currentPlan, currentCurrency);
+  // Update button
+  const btn = document.getElementById('submit-btn');
+  if (btn && !btn.disabled) btn.textContent = getBtnText(currentPlan, currentCurrency);
+}
+
+// ── CURRENCY SELECTOR ──
+function buildCurrencySelector() {
+  const wrap = document.getElementById('currency-wrap');
+  if (!wrap) return;
+  // Common currencies first, then all others
+  const common = ['USD','EUR','GBP','UGX','KES','NGN','GHS','ZAR','INR','AED','CAD','AUD','JPY','CNY','BRL','SGD'];
+  const others = Object.keys(FALLBACK_CURRENCIES).filter(c => !common.includes(c)).sort();
+  const all = [...common, '---', ...others];
+
+  const sel = document.createElement('select');
+  sel.id = 'currency-sel';
+  sel.style.cssText = 'background:var(--bg3);border:1px solid var(--brd2);border-radius:3px;color:var(--txt2);font:400 10px/1 var(--mono);padding:5px 8px;cursor:pointer;outline:none;';
+  all.forEach(c => {
+    if (c === '---') { const opt = document.createElement('option'); opt.disabled = true; opt.textContent = '──────────'; sel.appendChild(opt); return; }
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c + (FALLBACK_CURRENCIES[c] ? ' — ' + FALLBACK_CURRENCIES[c] : '');
+    if (c === currentCurrency) opt.selected = true;
+    sel.appendChild(opt);
+  });
+  sel.addEventListener('change', function() {
+    currentCurrency = this.value;
+    updatePriceDisplay();
+  });
+  wrap.innerHTML = '';
+  wrap.appendChild(sel);
+}
+
+// Minimal currency name map for selector display
+const FALLBACK_CURRENCIES = {
+  USD:'US Dollar',EUR:'Euro',GBP:'British Pound',JPY:'Japanese Yen',CAD:'Canadian Dollar',
+  AUD:'Australian Dollar',CHF:'Swiss Franc',CNY:'Chinese Yuan',INR:'Indian Rupee',
+  MXN:'Mexican Peso',BRL:'Brazilian Real',KRW:'South Korean Won',SGD:'Singapore Dollar',
+  HKD:'Hong Kong Dollar',NOK:'Norwegian Krone',SEK:'Swedish Krona',DKK:'Danish Krone',
+  NZD:'New Zealand Dollar',ZAR:'South African Rand',AED:'UAE Dirham',SAR:'Saudi Riyal',
+  THB:'Thai Baht',MYR:'Malaysian Ringgit',IDR:'Indonesian Rupiah',PHP:'Philippine Peso',
+  TRY:'Turkish Lira',PLN:'Polish Zloty',CZK:'Czech Koruna',HUF:'Hungarian Forint',
+  RON:'Romanian Leu',UGX:'Ugandan Shilling',KES:'Kenyan Shilling',TZS:'Tanzanian Shilling',
+  GHS:'Ghanaian Cedi',NGN:'Nigerian Naira',ETB:'Ethiopian Birr',RWF:'Rwandan Franc',
+  ZMW:'Zambian Kwacha',MAD:'Moroccan Dirham',EGP:'Egyptian Pound',DZD:'Algerian Dinar',
+  QAR:'Qatari Riyal',KWD:'Kuwaiti Dinar',BHD:'Bahraini Dinar',ILS:'Israeli Shekel',
+  PKR:'Pakistani Rupee',BDT:'Bangladeshi Taka',LKR:'Sri Lankan Rupee',
+  ARS:'Argentine Peso',CLP:'Chilean Peso',COP:'Colombian Peso',PEN:'Peruvian Sol',
+  XOF:'West African CFA',XAF:'Central African CFA',MZN:'Mozambican Metical',BWP:'Botswanan Pula'
+};
+
+// ── TERMS ERROR CLEAR ──
+function clearTermsErr() {
+  const wrap  = document.getElementById('terms-wrap');
+  const errEl = document.getElementById('terms-field-err');
+  if (wrap)  wrap.classList.remove('terms-err-state');
+  if (errEl) errEl.style.display = 'none';
+}
+
+// ── SELECT PLAN ──
+function selectPlan(p) {
+  if (!PLAN_FEATURES[p]) return;
+  currentPlan = p;
+  ['s','a','c'].forEach(x => {
+    const tab = document.getElementById('tab-'+x);
+    if (tab) tab.className = 'plan-tab '+(x===p ? 'active-'+x : 'inactive');
+  });
+  const badge = document.getElementById('plan-badge');
+  if (badge) { badge.textContent = PLAN_NAMES[p]; badge.className = 'card-plan-badge '+PLAN_BADGES[p]; }
+  document.getElementById('summary-price').textContent = getPriceDisplay(p, currentCurrency);
+  document.getElementById('summary-features').innerHTML =
+    PLAN_FEATURES[p].map(f => `<div class="plan-summary-row"><span class="ck">✓</span><span>${escHtml(f)}</span></div>`).join('');
+  const btn = document.getElementById('submit-btn');
+  if (btn) { btn.textContent = getBtnText(p, currentCurrency); btn.className = 'submit-btn'+(PLAN_BTNCLS[p]?' '+PLAN_BTNCLS[p]:''); }
+  try { history.replaceState({},'','/login?plan='+p); } catch(e) {}
+}
+
+function escHtml(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// ── FORM ERRORS ──
+function showErr(msg) {
+  const el = document.getElementById('form-err');
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
+  document.getElementById('form-success').style.display = 'none';
+}
+function clearErrors() {
+  const el = document.getElementById('form-err');
+  if (el) el.style.display = 'none';
+  clearTermsErr();
+  ['name','email','phone'].forEach(f => {
+    document.getElementById('inp-'+f)?.classList.remove('err');
+    const e = document.getElementById('err-'+f); if (e) e.style.display = 'none';
+  });
+}
+function fieldErr(field, msg) {
+  document.getElementById('inp-'+field)?.classList.add('err');
+  const el = document.getElementById('err-'+field);
+  if (el) { el.textContent = msg; el.style.display = 'block'; }
+}
+
+// ── SUBMIT ──
+async function submitPayment() {
+  clearErrors();
+  const name  = document.getElementById('inp-name').value.trim();
+  const email = document.getElementById('inp-email').value.trim();
+  const phone = document.getElementById('inp-phone').value.trim();
+  const btn   = document.getElementById('submit-btn');
+
+  const termsChecked = document.getElementById('terms-chk')?.checked;
+  let valid = true;
+  if (!name)  { fieldErr('name','Please enter your full name.'); valid=false; }
+  if (!email||!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { fieldErr('email','Please enter a valid email address.'); valid=false; }
+  if (!phone) { fieldErr('phone','Please enter your phone number.'); valid=false; }
+  if (!termsChecked) {
+    const wrap = document.getElementById('terms-wrap');
+    const errEl = document.getElementById('terms-field-err');
+    if (wrap)  { wrap.classList.add('terms-err-state'); }
+    if (errEl) { errEl.style.display = 'block'; }
+    valid = false;
+    document.getElementById('terms-field')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  if (!valid) return;
+
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>CONNECTING TO PAYPAL…';
+
+  const plan    = currentPlan;
+  const parts   = name.split(' ');
+  const orderId = 'orrery_'+plan+'_'+Date.now();
+
+  try { sessionStorage.setItem('orrery_pending_email', email); } catch(e) {}
+
+  try {
+    const r = await fetch('/api/paypal?action=create', {
+      method:'POST', headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({ plan, email, phone, orderId,
+        firstName: parts[0]||name,
+        lastName:  parts.slice(1).join(' ')||parts[0]||name
+      })
+    });
+
+    // Read JSON body first regardless of status — error body contains the real message
+    const d = await r.json().catch(() => ({}));
+
+    if (!r.ok) {
+      showErr(d.error || ('Payment error ' + r.status + '. Please try again or contact support.'));
+      btn.disabled=false; btn.textContent=getBtnText(plan,currentCurrency);
+      return;
+    }
+
+    if (d.redirect_url) {
+      let safe = false;
+      try {
+        const u = new URL(d.redirect_url);
+        safe = ['paypal.com'].some(h=>u.hostname===h||u.hostname.endsWith('.'+h));
+      } catch(e) {}
+      if (!safe) { showErr('Payment gateway returned an invalid redirect. Please try again.'); btn.disabled=false; btn.textContent=getBtnText(plan,currentCurrency); return; }
+      btn.innerHTML = '<span class="spinner"></span>REDIRECTING…';
+      window.location.href = d.redirect_url;
+    } else {
+      showErr(d.error||'Payment gateway error. Please try again.');
+      btn.disabled=false; btn.textContent=getBtnText(plan,currentCurrency);
+    }
+  } catch(e) {
+    showErr('Connection failed — could not reach the server. Check your internet and try again.');
+    btn.disabled=false; btn.textContent=getBtnText(plan,currentCurrency);
+  }
+}
+
+// ── INIT ──
+(async function init() {
+  const p = new URLSearchParams(location.search).get('plan') || 's';
+  currentPlan = ['s','a','c'].includes(p) ? p : 's';
+  currentCurrency = detectCurrency();
+
+  // Build currency selector
+  buildCurrencySelector();
+
+  // Render plan with correct prices
+  selectPlan(currentPlan);
+
+  // Enter key submits
+  document.querySelectorAll('.field-inp').forEach(inp => {
+    inp.addEventListener('keydown', e => { if (e.key==='Enter') submitPayment(); });
+  });
+})();
+</script>
+</body>
+</html>
