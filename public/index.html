@@ -605,7 +605,7 @@ footer{border-top:1px solid var(--brd);padding:32px 48px;display:flex;align-item
         <div class="video-play-btn">
           <svg width="28" height="28" viewBox="0 0 24 24" fill="#09090a"><polygon points="5,3 19,12 5,21"/></svg>
         </div>
-        <div class="video-placeholder-lbl">Watch 30-second demo</div>
+        <div class="video-placeholder-lbl">Watch interactive demo</div>
       </div>
     </div>
     <div class="video-features">
@@ -829,7 +829,7 @@ function loadVideo() {
   var wrap = document.getElementById('video-wrap');
   if (!wrap) return;
   if (!VIDEO_ID) {
-    alert('Demo video coming soon! Check back shortly.');
+    window.open('/demo', '_blank');
     return;
   }
   var iframe = document.createElement('iframe');
