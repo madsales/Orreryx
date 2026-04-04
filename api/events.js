@@ -35,7 +35,7 @@ function gdelt(query, max) {
   return (
     'https://api.gdeltproject.org/api/v2/geo/geo' +
     `?query=${encodeURIComponent(query)}` +
-    `&format=geojson&timespan=24h&maxrecords=${max}&MAXPOINTS=${max}`
+    `&format=geojson&timespan=6h&maxrecords=${max}&MAXPOINTS=${max}&sort=DateDesc`
   );
 }
 

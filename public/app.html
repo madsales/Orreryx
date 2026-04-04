@@ -1983,7 +1983,9 @@ function renderIntelFeed() {
     body.innerHTML = `<div class="empty"><div class="empty-icon">📡</div><div class="empty-title">NO EVENTS IN THIS CATEGORY</div><div class="empty-sub">Events will appear here as they fire.</div></div>`;
     return;
   }
-  body.innerHTML = filtered.map(e => buildEventCard(e)).join('');
+  // Always show newest first
+  const sorted = filtered.slice().sort((a, b) => (b.time || 0) - (a.time || 0));
+  body.innerHTML = sorted.map(e => buildEventCard(e)).join('');
 }
 
 function buildEventCard(e) {
@@ -2122,7 +2124,7 @@ async function fetchGNews() {
       .map(a => ({ ...a, time: new Date(a.time || Date.now()), newest: false }));
 
     if (fresh.length > 0) {
-      feedEvents = [...feedEvents, ...fresh].slice(0, 200);
+      feedEvents = [...fresh, ...feedEvents].slice(0, 200);
       const cnt = document.getElementById('event-count');
       if (cnt) cnt.textContent = feedEvents.length;
       const badge = document.getElementById('sb-intel-badge');
