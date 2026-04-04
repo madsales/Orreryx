@@ -1,101 +1,78 @@
 // api/events.js — Orrery Global News Coverage
-// Fetches 4 parallel GDELT topic streams → merges → returns up to 120 geocoded events
-// covering every country: politics, conflict, economy, environment, tech, health, crime, disasters
-// GDELT is free, no API key, updates every 15 minutes.
+// Uses GDELT Article API (mode=artlist) — updates every 15 minutes, NOT the GeoJSON endpoint
+// which can lag 2-3 days. Article API gives real seendate timestamps.
 
-const CACHE_TTL = 5 * 60 * 1000; // 5-minute cache
+const CACHE_TTL = 5 * 60 * 1000;
 let cache = null, cacheTime = 0;
 
-// ── GDELT QUERY TOPICS ─────────────────────────────────────────────────────
-// Each stream targets a different slice of world news. Results are merged and deduped.
 const STREAMS = [
   {
-    // Stream 1 — Conflict / Security / Military
     key: 'conflict',
-    url: gdelt('(war OR military OR attack OR bombing OR airstrike OR coup OR conflict OR rebel OR missile OR troops OR soldier OR armed OR siege OR offensive OR ceasefire OR frontline OR artillery OR drone strike OR sniper OR hostage OR insurgent OR paramilitary)', 50),
+    query: 'war OR military OR attack OR airstrike OR coup OR missile OR frontline OR ceasefire OR troops OR offensive OR bombing OR siege OR insurgent OR drone',
+    max: 30,
   },
   {
-    // Stream 2 — Politics / Government / Diplomacy / Law
     key: 'politics',
-    url: gdelt('(election OR president OR parliament OR government OR minister OR senate OR congress OR vote OR referendum OR resign OR inaugurate OR diplomat OR summit OR treaty OR sanctions OR ambassador OR foreign policy OR UN OR NATO OR G7 OR G20 OR prime minister OR cabinet OR legislation OR supreme court OR protest OR demonstration OR rally)', 50),
+    query: 'election OR president OR parliament OR government OR minister OR sanctions OR summit OR treaty OR protest OR NATO OR "United Nations" OR diplomacy OR rally OR resignation OR congress OR senate',
+    max: 30,
   },
   {
-    // Stream 3 — Economy / Business / Finance / Trade
     key: 'economy',
-    url: gdelt('(economy OR inflation OR recession OR market OR trade OR tariff OR GDP OR investment OR central bank OR interest rate OR stock market OR cryptocurrency OR merger OR acquisition OR bankruptcy OR IPO OR earnings OR export OR import OR supply chain OR unemployment OR poverty OR debt OR bond OR currency OR forex OR commodities OR oil price OR gas price)', 50),
+    query: 'economy OR inflation OR recession OR tariff OR "interest rate" OR "stock market" OR trade OR bankruptcy OR GDP OR cryptocurrency OR "central bank" OR "market crash" OR unemployment',
+    max: 25,
   },
   {
-    // Stream 4 — Environment / Tech / Health / Disasters / Crime / Society
     key: 'society',
-    url: gdelt('(earthquake OR tsunami OR hurricane OR typhoon OR flood OR wildfire OR volcano OR drought OR climate change OR tornado OR avalanche OR technology OR artificial intelligence OR cybersecurity OR space OR disease OR virus OR outbreak OR hospital OR vaccine OR WHO OR pandemic OR crime OR arrest OR court OR corruption OR drug trafficking OR shooting OR explosion OR fire OR accident OR migration OR refugee OR famine OR humanitarian)', 50),
+    query: 'earthquake OR tsunami OR hurricane OR flood OR wildfire OR volcano OR cybersecurity OR "artificial intelligence" OR outbreak OR pandemic OR crime OR explosion OR disaster OR shooting OR nuclear',
+    max: 25,
   },
 ];
 
-function gdelt(query, max) {
+// GDELT Article API — fresh articles, updates every 15 min
+function gdeltUrl(query, max) {
   return (
-    'https://api.gdeltproject.org/api/v2/geo/geo' +
+    'https://api.gdeltproject.org/api/v2/doc/doc' +
     `?query=${encodeURIComponent(query)}` +
-    `&format=geojson&timespan=6h&maxrecords=${max}&MAXPOINTS=${max}&sort=DateDesc`
+    `&mode=artlist&format=json&timespan=4h&maxrecords=${max}&sort=DateDesc&sourcelang=english`
   );
 }
 
-// ── CATEGORISATION ──────────────────────────────────────────────────────────
+// GDELT date format: 20260404T120000Z → 2026-04-04T12:00:00Z
+function parseGdeltDate(s) {
+  if (!s) return null;
+  const m = String(s).match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/);
+  if (m) return `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}Z`;
+  return s;
+}
+
 function categorize(title) {
   const t = (title || '').toLowerCase();
-
-  // Nuclear (highest priority — always override)
   if (/nuclear|nuke|uranium|enrich|warhead|radiolog|plutonium|iaea|atomic/.test(t))
     return { cat: 'nuc', catLabel: 'NUCLEAR',      severity: 'critical' };
-
-  // Cyber / Digital Security
   if (/cyber|hack|ransomware|malware|data.breach|ddos|phish|intrusion|zero.day|spyware/.test(t))
     return { cat: 'cyb', catLabel: 'CYBER',         severity: 'high' };
-
-  // Technology / AI
-  if (/artificial.intelligence|\bai\b|chatgpt|openai|tech.giant|silicon.valley|semiconductor|chip.ban|autonomous|robot|quantum|5g|6g/.test(t))
+  if (/artificial.intelligence|\bai\b|chatgpt|openai|tech.giant|semiconductor|chip.ban|autonomous|robot|quantum|5g/.test(t))
     return { cat: 'tech', catLabel: 'TECHNOLOGY',   severity: 'low' };
-
-  // Natural Disasters
   if (/earthquake|tsunami|hurricane|typhoon|cyclone|flood|wildfire|volcano|eruption|tornado|avalanche|landslide|drought/.test(t))
     return { cat: 'dis', catLabel: 'DISASTER',      severity: 'high' };
-
-  // Environment / Climate
-  if (/climate|global.warming|carbon|emissions|cop\d+|deforestation|glacier|sea.level|pollution|biodiversity|renewable|solar.farm|wind.farm/.test(t))
+  if (/climate|global.warming|carbon|emissions|cop\d+|deforestation|glacier|sea.level|pollution|renewable/.test(t))
     return { cat: 'env', catLabel: 'ENVIRONMENT',   severity: 'medium' };
-
-  // Health / Pandemic
-  if (/disease|virus|epidemic|pandemic|outbreak|health.emergency|vaccine|hospital|who.declares|mpox|cholera|ebola|dengue|cancer|malaria/.test(t))
+  if (/disease|virus|epidemic|pandemic|outbreak|health.emergency|vaccine|hospital|who.declares|mpox|cholera|ebola|dengue/.test(t))
     return { cat: 'hlt', catLabel: 'HEALTH',        severity: 'medium' };
-
-  // Energy
-  if (/\boil\b|\bgas\b|energy.crisis|pipeline|fuel|opec|petroleum|lng|refinery|power.plant|electricity|blackout|nuclear.plant/.test(t))
+  if (/\boil\b|\bgas\b|energy.crisis|pipeline|fuel|opec|petroleum|lng|refinery|power.plant|electricity|blackout/.test(t))
     return { cat: 'nrg', catLabel: 'ENERGY',        severity: 'medium' };
-
-  // Crime / Justice
-  if (/crime|murder|arrest|corruption|trial|court|prison|drug.cartel|trafficking|sentenced|assassination|gang|terrorist|death.penalty/.test(t))
+  if (/crime|murder|arrest|corruption|trial|court|prison|drug.cartel|trafficking|sentenced|assassination|gang|terrorist/.test(t))
     return { cat: 'cri', catLabel: 'CRIME',         severity: 'medium' };
-
-  // Diplomatic / International Relations
   if (/ceasefire|peace.talks|treaty|agreement|ambassador|foreign.minister|un.security|nato|summit|negotiation|sanction|diplomatic/.test(t))
     return { cat: 'dip', catLabel: 'DIPLOMATIC',    severity: 'medium' };
-
-  // Economy / Finance
-  if (/economy|inflation|recession|gdp|market.crash|trade.war|tariff|central.bank|interest.rate|unemployment|bankruptcy|stock|currency|debt.crisis/.test(t))
+  if (/economy|inflation|recession|gdp|market.crash|trade.war|tariff|central.bank|interest.rate|unemployment|bankruptcy|stock|currency|debt/.test(t))
     return { cat: 'eco', catLabel: 'ECONOMIC',      severity: 'medium' };
-
-  // Business / Corporate
-  if (/company|merger|acquisition|ipo|earnings|billion|ceo|corporation|investment|startup|layoff|strike|labor|trade/.test(t))
+  if (/company|merger|acquisition|ipo|earnings|billion|ceo|corporation|investment|startup|layoff|strike|labor/.test(t))
     return { cat: 'biz', catLabel: 'BUSINESS',      severity: 'low' };
-
-  // Military / Conflict
   if (/war|attack|bomb|missile|military|army|troops|combat|airstrike|soldier|armed.forces|offensive|frontline|weapon|shooting/.test(t))
     return { cat: 'mil', catLabel: 'MILITARY',      severity: 'high' };
-
-  // Politics / Government (broad default for news)
-  if (/election|president|parliament|minister|government|vote|political|congress|senate|resign|inaugurate|protest|rally|demonstration/.test(t))
+  if (/election|president|parliament|minister|government|vote|political|congress|senate|resign|protest|rally|demonstration/.test(t))
     return { cat: 'pol', catLabel: 'POLITICS',      severity: 'low' };
-
-  // Default: Politics (most general news is political)
   return { cat: 'pol', catLabel: 'POLITICS', severity: 'low' };
 }
 
@@ -103,58 +80,37 @@ function severityRank(s) {
   return s === 'critical' ? 3 : s === 'high' ? 2 : s === 'medium' ? 1 : 0;
 }
 
-// ── DEDUP: remove events with same title prefix OR same grid cell per category ──
-function dedup(events, gridDeg = 1.0) {
-  const gridSeen  = new Set();
-  const titleSeen = new Set();
-  return events.filter(e => {
-    const gridKey  = `${Math.round(e.lat / gridDeg)},${Math.round(e.lng / gridDeg)},${e.cat}`;
-    const titleKey = e.txt.toLowerCase().replace(/\s+/g, ' ').substring(0, 80);
-    if (gridSeen.has(gridKey) || titleSeen.has(titleKey)) return false;
-    gridSeen.add(gridKey);
-    titleSeen.add(titleKey);
-    return true;
-  });
-}
-
-// ── GDELT dateadded format: 20240404T120000Z (no dashes) → proper ISO ──────
-function parseGdeltDate(s) {
-  if (!s) return null;
-  const m = String(s).match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/);
-  if (m) return `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}Z`;
-  return s; // already ISO or other parseable format
-}
-
-// ── PARSE GDELT GEOJSON → Orrery event format ──────────────────────────────
-function parseFeatures(features, offset) {
-  return (features || [])
-    .filter(f =>
-      f?.geometry?.type === 'Point' &&
-      Array.isArray(f.geometry.coordinates) &&
-      f.properties?.name
-    )
-    .map((f, i) => {
-      const [lng, lat] = f.geometry.coordinates;
-      const title = String(f.properties.name || '').trim();
+function parseArticles(articles, offset) {
+  return (articles || [])
+    .filter(a => a?.title && String(a.title).trim().length > 15)
+    .map((a, i) => {
+      const title = String(a.title).replace(/\s+/g, ' ').trim();
       const { cat, catLabel, severity } = categorize(title);
       return {
         id:       3000 + offset + i,
-        cat,
-        catLabel,
-        severity,
-        lat:      Math.round(parseFloat(lat) * 100) / 100,
-        lng:      Math.round(parseFloat(lng) * 100) / 100,
-        loc:      title.length > 55 ? title.substring(0, 55) + '…' : title,
+        cat, catLabel, severity,
+        lat:      null,
+        lng:      null,
+        loc:      a.domain || 'Global',
         txt:      title,
-        url:      f.properties.url || '',
-        source:   f.properties.domain || '',
+        url:      a.url || '',
+        source:   a.domain || '',
         tags:     [],
-        time:     parseGdeltDate(f.properties.dateadded) || new Date().toISOString(),
+        time:     parseGdeltDate(a.seendate) || new Date().toISOString(),
       };
     });
 }
 
-// ── HANDLER ─────────────────────────────────────────────────────────────────
+function dedup(events) {
+  const titleSeen = new Set();
+  return events.filter(e => {
+    const key = e.txt.toLowerCase().replace(/\s+/g, ' ').substring(0, 80);
+    if (titleSeen.has(key)) return false;
+    titleSeen.add(key);
+    return true;
+  });
+}
+
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
@@ -162,39 +118,29 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // Serve cached result if still fresh
   if (cache && Date.now() - cacheTime < CACHE_TTL) {
     return res.status(200).json(cache);
   }
 
   try {
-    // Fire all 4 streams in parallel
     const results = await Promise.allSettled(
-      STREAMS.map(s =>
-        fetch(s.url, {
+      STREAMS.map((s, i) =>
+        fetch(gdeltUrl(s.query, s.max), {
           headers: { 'User-Agent': 'OrreryIntelligence/1.0 (https://www.orreryx.io)' },
-          signal: AbortSignal.timeout(9000),
+          signal:  AbortSignal.timeout(9000),
         })
-          .then(r => (r.ok ? r.json() : Promise.reject(new Error(`${r.status}`))))
-          .then(j => j.features || [])
-          .catch(() => []) // if one stream fails, return empty — others still used
+          .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
+          .then(j => parseArticles(j.articles, i * 200))
+          .catch(() => [])
       )
     );
 
-    // Merge all features
-    let allEvents = [];
-    results.forEach((r, i) => {
-      const features = r.status === 'fulfilled' ? r.value : [];
-      const parsed   = parseFeatures(features, i * 200);
-      allEvents = allEvents.concat(parsed);
-    });
+    let all = [];
+    results.forEach(r => { if (r.status === 'fulfilled') all = all.concat(r.value); });
 
-    // Sort by severity desc, then deduplicate by ~1° grid per category
-    allEvents.sort((a, b) => severityRank(b.severity) - severityRank(a.severity));
-    const unique = dedup(allEvents, 0.8);
-
-    // Cap at 120 events — spread across categories for global variety
-    const final = unique.slice(0, 120);
+    // Sort newest first, then dedup by title
+    all.sort((a, b) => new Date(b.time) - new Date(a.time));
+    const final = dedup(all).slice(0, 120);
 
     const counts = {};
     final.forEach(e => { counts[e.cat] = (counts[e.cat] || 0) + 1; });
@@ -204,21 +150,16 @@ export default async function handler(req, res) {
       fetched: Date.now(),
       count:   final.length,
       bycat:   counts,
-      source:  'gdelt',
+      source:  'gdelt-articles',
     };
     cacheTime = Date.now();
 
-    console.log(`[Events] GDELT: ${final.length} events across ${Object.keys(counts).length} categories`);
+    console.log(`[Events] GDELT Articles: ${final.length} events, newest: ${final[0]?.time || 'n/a'}`);
     return res.status(200).json(cache);
 
   } catch (err) {
-    console.error('[Events] Fatal error:', err.message);
-    return res.status(200).json({
-      events:  [],
-      error:   err.message,
-      source:  'fallback',
-      fetched: Date.now(),
-    });
+    console.error('[Events] Fatal:', err.message);
+    return res.status(200).json({ events: [], error: err.message, source: 'fallback', fetched: Date.now() });
   }
 }
 
