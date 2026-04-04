@@ -1976,9 +1976,14 @@ function renderIntelFeed() {
   const body = document.getElementById('intel-feed-body');
   if (!body) return;
 
-  // Once real news loads, hide demo WAR_EVENTS from the feed (keep for globe dots)
+  // Show loading state until real news arrives — never show fictional WAR_EVENTS to user
   const hasReal = feedEvents.some(e => !e.isDemo);
-  const base    = hasReal ? feedEvents.filter(e => !e.isDemo) : feedEvents;
+  if (!hasReal) {
+    body.innerHTML = `<div class="empty"><div class="empty-icon" style="font-size:28px">📡</div><div class="empty-title" style="margin-top:10px">FETCHING LIVE FEED…</div><div class="empty-sub">Loading latest breaking news from BBC, Reuters, AP and global sources.</div></div>`;
+    return;
+  }
+
+  const base = feedEvents.filter(e => !e.isDemo);
 
   const cnt = document.getElementById('event-count');
   if (cnt) cnt.textContent = base.length;
@@ -1992,9 +1997,7 @@ function renderIntelFeed() {
 
   const filtered = activeFilter === 'all' ? base : base.filter(e => e.cat === activeFilter);
   if (filtered.length === 0) {
-    body.innerHTML = hasReal
-      ? `<div class="empty"><div class="empty-icon">📡</div><div class="empty-title">NO EVENTS IN THIS CATEGORY</div><div class="empty-sub">Events will appear here as they fire.</div></div>`
-      : `<div class="empty"><div class="empty-icon">📡</div><div class="empty-title">LOADING LIVE FEED…</div><div class="empty-sub">Fetching latest news from global sources.</div></div>`;
+    body.innerHTML = `<div class="empty"><div class="empty-icon">📡</div><div class="empty-title">NO EVENTS IN THIS CATEGORY</div><div class="empty-sub">Events will appear here as they fire.</div></div>`;
     return;
   }
   // Always show newest first
@@ -2139,14 +2142,11 @@ async function fetchGNews() {
 
     if (fresh.length > 0) {
       feedEvents = [...fresh, ...feedEvents].slice(0, 200);
-      const cnt = document.getElementById('event-count');
-      if (cnt) cnt.textContent = feedEvents.length;
-      const badge = document.getElementById('sb-intel-badge');
-      if (badge) badge.textContent = feedEvents.length;
-      renderIntelFeed();
     }
+    // Always re-render — clears loading state even if no new events
+    renderIntelFeed();
   } catch(e) {
-    // silently ignore — Google News is supplementary
+    // silently ignore — RSS feeds are supplementary
   }
 }
 
@@ -2168,13 +2168,10 @@ async function fetchLiveEvents() {
       const newOnes = fresh.filter(e => !existingIds.has(e.id));
       if (newOnes.length > 0) {
         feedEvents = [...newOnes, ...feedEvents].slice(0, 120);
-        const cnt = document.getElementById('event-count');
-        if (cnt) cnt.textContent = feedEvents.length;
-        const badge = document.getElementById('sb-intel-badge');
-        if (badge) badge.textContent = feedEvents.length;
-        renderIntelFeed();
-        updateGlobePoints();
       }
+      // Always re-render — clears loading state even if no new events
+      renderIntelFeed();
+      updateGlobePoints();
     }
   } catch (e) {
     // Silently fall back to built-in WAR_EVENTS — no user-visible error
