@@ -117,6 +117,14 @@ function dedup(events, gridDeg = 1.0) {
   });
 }
 
+// ── GDELT dateadded format: 20240404T120000Z (no dashes) → proper ISO ──────
+function parseGdeltDate(s) {
+  if (!s) return null;
+  const m = String(s).match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/);
+  if (m) return `${m[1]}-${m[2]}-${m[3]}T${m[4]}:${m[5]}:${m[6]}Z`;
+  return s; // already ISO or other parseable format
+}
+
 // ── PARSE GDELT GEOJSON → Orrery event format ──────────────────────────────
 function parseFeatures(features, offset) {
   return (features || [])
@@ -141,7 +149,7 @@ function parseFeatures(features, offset) {
         url:      f.properties.url || '',
         source:   f.properties.domain || '',
         tags:     [],
-        time:     f.properties.dateadded || new Date().toISOString(),
+        time:     parseGdeltDate(f.properties.dateadded) || new Date().toISOString(),
       };
     });
 }
