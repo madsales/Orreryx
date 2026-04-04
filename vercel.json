@@ -12,6 +12,7 @@
     { "src": "/api/verify-magic(.*)", "dest": "/api/verify-magic.js" },
     { "src": "/api/track",           "dest": "/api/track.js" },
     { "src": "/api/admin(.*)",       "dest": "/api/admin.js" },
+    { "src": "/demo",                 "dest": "/demo.html" },
     { "src": "/callback",            "dest": "/callback.html" },
     { "src": "/app",                 "dest": "/app.html" },
     { "src": "/login",               "dest": "/login.html" },
