@@ -19,6 +19,7 @@ async function redisCmd(...args) {
 function normPlan(p) {
   if (p === 'command' || p === 'c') return 'c';
   if (p === 'analyst'  || p === 'a') return 'a';
+  if (p === 'free'     || p === 'f') return 'f';
   return 's';
 }
 
@@ -42,14 +43,20 @@ export default async function handler(req, res) {
     await redisCmd('DEL', `magic:${token}`); // single-use — consume immediately
 
     const planCode     = normPlan(data.plan);
+    const isFree       = planCode === 'f';
     const sessionToken = crypto.randomBytes(32).toString('hex');
+    const SESSION_TTL  = isFree
+      ? 3 * 24 * 60 * 60 * 1000          // 3 days for free trial
+      : 365 * 24 * 60 * 60 * 1000;       // 1 year for paid
+
     const session = {
       email:     data.email,
       plan:      planCode,
       token:     sessionToken,   // required by hasPaid() in app.html
-      expires:   Date.now() + 365 * 24 * 60 * 60 * 1000,
+      expires:   Date.now() + SESSION_TTL,
       createdAt: Date.now(),
       verified:  true,
+      ...(isFree && { freeTrialExpires: Date.now() + SESSION_TTL }),
     };
 
     const sessionStr = encodeURIComponent(JSON.stringify(session));

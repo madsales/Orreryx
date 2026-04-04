@@ -118,6 +118,16 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;height:52px;padding:0 48px;d
 .video-play-btn:hover{opacity:.84}
 .video-play-btn svg{margin-left:4px}
 .video-placeholder-lbl{font-family:var(--mono);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:var(--txt3)}
+.demo-thumb{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.demo-thumb-bg{position:absolute;inset:0;background:radial-gradient(ellipse at 60% 40%,#0d0d20 0%,#09090a 70%)}
+.demo-thumb-content{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;text-align:center}
+.demo-thumb-title{font-family:'IBM Plex Mono',monospace;font-size:clamp(28px,5vw,56px);font-weight:700;letter-spacing:-.03em;color:#f0f0ec;line-height:1}
+.demo-thumb-sub{font-family:'IBM Plex Mono',monospace;font-size:clamp(7px,1.1vw,11px);color:#484844;letter-spacing:.22em;text-transform:uppercase;margin-top:8px}
+.demo-thumb-pill{display:inline-flex;align-items:center;gap:7px;background:rgba(224,56,54,.13);border:1px solid rgba(224,56,54,.3);border-radius:3px;padding:4px 12px;font-family:'IBM Plex Mono',monospace;font-size:clamp(6px,0.9vw,9px);font-weight:600;color:#e03836;letter-spacing:.1em;margin-top:20px}
+.demo-thumb-dot{width:6px;height:6px;border-radius:50%;background:#e03836;animation:lp 1.4s infinite;flex-shrink:0}
+.demo-thumb-overlay{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;background:rgba(9,9,10,.45);opacity:0;transition:opacity .2s;cursor:pointer}
+.demo-thumb:hover .demo-thumb-overlay{opacity:1}
+.video-wrap iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
 .video-features{display:flex;justify-content:center;gap:32px;margin-top:32px;flex-wrap:wrap}
 .vf{display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:9.5px;color:var(--txt2)}
 .vf-dot{width:6px;height:6px;border-radius:50%;background:var(--red);flex-shrink:0}
@@ -275,7 +285,7 @@ footer{border-top:1px solid var(--brd);padding:32px 48px;display:flex;align-item
     <a href="#pricing" class="nav-a">PRICING</a>
     <a href="#faq" class="nav-a">FAQ</a>
     <a href="/login" class="nav-signin">SIGN IN</a>
-    <a href="/login?plan=s" class="nav-cta">SIGN UP →</a>
+    <a href="/login?plan=f" class="nav-cta" style="background:#38bc78;color:#000">FREE TRIAL →</a>
   </div>
 </nav>
 
@@ -298,11 +308,11 @@ footer{border-top:1px solid var(--brd);padding:32px 48px;display:flex;align-item
     <h1>The Intelligence Platform<br>for <em>Crisis Markets</em></h1>
     <p class="hero-sub">Breaking news from BBC, Reuters, AP, Guardian and 100+ sources — mapped as it happens. AI briefings every 60 seconds. Live indices, war equities, crypto. Know before the market does.</p>
     <div class="hero-btns">
-      <a href="/login?plan=s" class="btn-p">SIGN UP — FROM $0.99/MO →</a>
-      <a href="/login" class="btn-s">SIGN IN →</a>
+      <a href="/login?plan=f" class="btn-p" style="background:#38bc78;color:#000">START FREE — 3 DAYS, NO CARD →</a>
+      <a href="/login?plan=s" class="btn-s">PLANS FROM $0.99/MO →</a>
     </div>
     <div style="margin-top:14px;font-family:var(--mono);font-size:9px;color:var(--txt3);letter-spacing:.05em">
-      New here? Pick a plan below. Already have access? Sign in above.
+      Try free for 3 days — no credit card required. Upgrade anytime.
     </div>
     <div class="hero-stats">
       <div class="hst"><div class="hst-v">6<span>+</span></div><div class="hst-l">Live News Feeds</div></div>
@@ -466,7 +476,25 @@ footer{border-top:1px solid var(--brd);padding:32px 48px;display:flex;align-item
       <h2 class="section-h" style="text-align:center;font-size:clamp(22px,3vw,38px)">Simple, transparent access</h2>
       <p style="font-family:var(--mono);font-size:11px;color:var(--txt3);margin-top:8px">Billed monthly · Cancel anytime · PayPal payments · Instant access</p>
     </div>
-    <div class="pricing-grid">
+    <div class="pricing-grid" style="grid-template-columns:repeat(4,1fr)">
+      <!-- FREE TRIAL -->
+      <div class="plan" style="border-left:none">
+        <div style="display:inline-block;background:rgba(56,188,120,.12);border:1px solid rgba(56,188,120,.3);border-radius:3px;padding:3px 9px;font-family:var(--mono);font-size:7px;font-weight:700;color:#38bc78;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px">NO CREDIT CARD</div>
+        <div class="plan-name" style="color:#38bc78">Free Trial</div>
+        <div class="plan-price"><span class="plan-curr" style="color:#38bc78;font-size:13px">FREE</span></div>
+        <div class="plan-tagline">3 days · instant access · no card needed.</div>
+        <div class="plan-div"></div>
+        <ul class="plan-feats">
+          <li class="pf"><span class="pf-yes" style="color:#38bc78">✓</span>Crisis intel feed — live news</li>
+          <li class="pf"><span class="pf-yes" style="color:#38bc78">✓</span>War stocks panel (40+ equities)</li>
+          <li class="pf"><span class="pf-yes" style="color:#38bc78">✓</span>Global indices dashboard</li>
+          <li class="pf"><span class="pf-yes" style="color:#38bc78">✓</span>Stock screener</li>
+          <li class="pf off"><span class="pf-no">🔒</span>AI Intel Console</li>
+          <li class="pf off"><span class="pf-no">🔒</span>Calculators &amp; tools</li>
+          <li class="pf off"><span class="pf-no">🔒</span>Live world map</li>
+        </ul>
+        <a href="/login?plan=f" class="plan-btn" style="background:rgba(56,188,120,.15);border:1px solid rgba(56,188,120,.4);color:#38bc78;display:block;width:100%;padding:11px;text-align:center;border-radius:3px;font-family:var(--mono);font-size:10.5px;font-weight:700;letter-spacing:.07em;text-decoration:none">START FREE — 3 DAYS →</a>
+      </div>
       <!-- STARTER -->
       <div class="plan">
         <div class="plan-name">Starter</div>
@@ -600,12 +628,31 @@ footer{border-top:1px solid var(--brd);padding:32px 48px;display:flex;align-item
     <h2 class="section-h">See Orrery in action</h2>
     <p class="section-sub" style="margin:0 auto">Watch how Orrery tracks live geopolitical crises, fires AI briefs, and surfaces market intelligence in real time — all in 30 seconds.</p>
     <div class="video-wrap" id="video-wrap">
-      <!-- Replace the src below with your YouTube embed URL e.g. https://www.youtube.com/embed/YOUR_VIDEO_ID -->
       <div class="video-placeholder" id="video-placeholder" onclick="loadVideo()">
-        <div class="video-play-btn">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="#09090a"><polygon points="5,3 19,12 5,21"/></svg>
+        <!-- Thumbnail: mini replica of demo splash -->
+        <div class="demo-thumb">
+          <div class="demo-thumb-bg"></div>
+          <div class="demo-thumb-content">
+            <svg width="42" height="42" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" style="margin-bottom:12px">
+              <rect width="80" height="80" rx="12" fill="#f0f0ec"/>
+              <ellipse cx="40" cy="40" rx="26" ry="10" fill="none" stroke="#09090a" stroke-width="2.5" transform="rotate(-30,40,40)"/>
+              <ellipse cx="40" cy="40" rx="17" ry="6.5" fill="none" stroke="rgba(9,9,10,.35)" stroke-width="2" stroke-dasharray="5 4" transform="rotate(-30,40,40)"/>
+              <circle cx="40" cy="40" r="5" fill="#09090a"/>
+              <circle cx="57" cy="28" r="4" fill="#09090a"/>
+              <circle cx="30" cy="50" r="3" fill="#e03836"/>
+            </svg>
+            <div class="demo-thumb-title">Orrery</div>
+            <div class="demo-thumb-sub">Geopolitical Market Intelligence</div>
+            <div class="demo-thumb-pill"><span class="demo-thumb-dot"></span>LIVE · BBC · REUTERS · AP · GUARDIAN</div>
+          </div>
+          <!-- Play overlay -->
+          <div class="demo-thumb-overlay">
+            <div class="video-play-btn">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="#09090a"><polygon points="5,3 19,12 5,21"/></svg>
+            </div>
+            <div class="video-placeholder-lbl">Watch interactive demo</div>
+          </div>
         </div>
-        <div class="video-placeholder-lbl">Watch interactive demo</div>
       </div>
     </div>
     <div class="video-features">
@@ -828,16 +875,18 @@ var VIDEO_ID = ''; // e.g. 'dQw4w9WgXcQ'
 function loadVideo() {
   var wrap = document.getElementById('video-wrap');
   if (!wrap) return;
-  if (!VIDEO_ID) {
-    window.open('/demo', '_blank');
-    return;
-  }
-  var iframe = document.createElement('iframe');
-  iframe.src = 'https://www.youtube.com/embed/' + VIDEO_ID + '?autoplay=1&rel=0';
-  iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-  iframe.allowFullscreen = true;
-  iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0';
   var placeholder = document.getElementById('video-placeholder');
+  var iframe = document.createElement('iframe');
+  if (VIDEO_ID) {
+    iframe.src = 'https://www.youtube.com/embed/' + VIDEO_ID + '?autoplay=1&rel=0';
+    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+    iframe.allowFullscreen = true;
+  } else {
+    iframe.src = '/demo';
+    iframe.allow = 'autoplay; speech; microphone';
+    iframe.allowFullscreen = true;
+  }
+  iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0';
   if (placeholder) placeholder.remove();
   wrap.appendChild(iframe);
 }
