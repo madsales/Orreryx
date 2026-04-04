@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Orrery — Platform Demo</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#09090a;--bg2:#111113;--bg3:#18181b;--bg4:#222226;
+  --txt:#f0f0ec;--txt2:#a0a09a;--txt3:#484844;--txt4:#2a2a2e;
+  --brd:#222226;--brd2:#343438;
+  --red:#e03836;--red2:rgba(224,56,54,.13);
+  --amb:#d87818;--grn:#3ab860;--grn2:rgba(58,184,96,.12);
+  --gld:#d4a843;--blu:#4878e8;
+  --mono:'IBM Plex Mono',monospace;--sans:'IBM Plex Sans',sans-serif;
+}
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap');
+html,body{width:1280px;height:720px;overflow:hidden;background:var(--bg);color:var(--txt);font-family:var(--sans)}
+
+/* ── PROGRESS BAR ── */
+#progress-bar{position:fixed;bottom:0;left:0;height:3px;background:var(--red);transition:width .3s linear;z-index:999}
+
+/* ── CONTROLS ── */
+#controls{position:fixed;bottom:12px;right:16px;display:flex;gap:8px;z-index:999}
+.ctrl-btn{background:rgba(9,9,10,.85);border:1px solid var(--brd2);color:var(--txt2);font-family:var(--mono);font-size:9px;padding:5px 11px;border-radius:3px;cursor:pointer;letter-spacing:.07em;transition:all .14s}
+.ctrl-btn:hover{color:var(--txt);border-color:var(--txt)}
+
+/* ── SCENE BASE ── */
+.scene{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .7s ease}
+.scene.active{opacity:1;pointer-events:all}
+
+/* ── SCENE 1: SPLASH ── */
+#s1{background:var(--bg);text-align:center}
+.s1-logo{width:80px;height:80px;margin:0 auto 28px;animation:spinIn .9s cubic-bezier(.34,1.56,.64,1) both}
+@keyframes spinIn{from{opacity:0;transform:scale(.4) rotate(-90deg)}to{opacity:1;transform:scale(1) rotate(0)}}
+.s1-word{font-family:var(--mono);font-size:72px;font-weight:700;letter-spacing:-.03em;animation:fadeUp .7s .3s ease both}
+.s1-tag{font-family:var(--mono);font-size:13px;color:var(--txt3);letter-spacing:.25em;text-transform:uppercase;margin-top:10px;animation:fadeUp .7s .55s ease both}
+.s1-pill{display:inline-flex;align-items:center;gap:7px;background:var(--red2);border:1px solid rgba(224,56,54,.35);border-radius:3px;padding:5px 14px;font-family:var(--mono);font-size:9px;font-weight:600;color:var(--red);letter-spacing:.12em;margin-top:32px;animation:fadeUp .7s .8s ease both}
+.pulse{width:7px;height:7px;border-radius:50%;background:var(--red);animation:lp 1.4s infinite}
+@keyframes lp{0%,100%{opacity:1}50%{opacity:.15}}
+@keyframes fadeUp{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── SCENE 2: PROBLEM ── */
+#s2{background:var(--bg);text-align:center;padding:60px}
+.s2-h{font-family:var(--mono);font-size:42px;font-weight:700;letter-spacing:-.02em;line-height:1.15;max-width:780px;animation:fadeUp .7s ease both}
+.s2-h em{font-style:normal;color:var(--red)}
+.s2-sub{font-size:17px;color:var(--txt2);margin-top:22px;max-width:620px;line-height:1.8;animation:fadeUp .7s .25s ease both}
+.s2-stats{display:flex;gap:60px;margin-top:56px;animation:fadeUp .7s .45s ease both}
+.s2-stat{text-align:center}
+.s2-v{font-family:var(--mono);font-size:44px;font-weight:700;color:var(--txt);line-height:1}
+.s2-l{font-family:var(--mono);font-size:9px;color:var(--txt3);letter-spacing:.14em;text-transform:uppercase;margin-top:6px}
+
+/* ── SCENE 3: LIVE FEED ── */
+#s3{background:var(--bg);padding:0;align-items:stretch;flex-direction:row}
+.s3-left{width:440px;flex-shrink:0;padding:56px 48px;display:flex;flex-direction:column;justify-content:center}
+.s3-ey{font-family:var(--mono);font-size:8px;color:var(--txt3);letter-spacing:.2em;text-transform:uppercase;margin-bottom:12px}
+.s3-h{font-family:var(--mono);font-size:32px;font-weight:700;letter-spacing:-.02em;line-height:1.2;margin-bottom:14px}
+.s3-sub{font-size:13px;color:var(--txt2);line-height:1.75;margin-bottom:28px}
+.s3-sources{display:flex;flex-wrap:wrap;gap:7px}
+.src-tag{background:var(--bg3);border:1px solid var(--brd2);border-radius:3px;padding:3px 9px;font-family:var(--mono);font-size:8px;color:var(--txt2);letter-spacing:.05em}
+.s3-right{flex:1;background:var(--bg2);border-left:1px solid var(--brd);display:flex;flex-direction:column;overflow:hidden}
+.feed-hd{padding:10px 16px;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.feed-hd-title{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--txt3)}
+.feed-hd-badge{background:var(--red2);color:var(--red);font-family:var(--mono);font-size:7.5px;font-weight:700;padding:1px 6px;border-radius:2px;letter-spacing:.05em}
+.ev-card{padding:13px 16px;border-bottom:1px solid var(--brd);animation:slideIn .5s ease both}
+@keyframes slideIn{from{opacity:0;transform:translateX(20px)}to{opacity:1;transform:translateX(0)}}
+.ev-top{display:flex;align-items:center;gap:7px;margin-bottom:6px}
+.cat{font-family:var(--mono);font-size:6px;font-weight:700;padding:2px 6px;border-radius:2px;letter-spacing:.1em}
+.c-mil{background:var(--red2);color:var(--red)}
+.c-eco{background:rgba(58,184,96,.12);color:var(--grn)}
+.c-dip{background:rgba(72,120,232,.12);color:var(--blu)}
+.c-dis{background:rgba(216,120,24,.12);color:var(--amb)}
+.c-cyb{background:rgba(48,144,192,.12);color:#3090c0}
+.ev-src{font-family:var(--mono);font-size:7px;color:var(--txt3);margin-left:auto}
+.ev-ts{font-family:var(--mono);font-size:7px;color:var(--txt4)}
+.ev-txt{font-size:11.5px;color:var(--txt);line-height:1.55;margin-bottom:7px}
+.ev-foot{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.tag{font-family:var(--mono);font-size:7.5px;padding:2px 6px;border-radius:2px}
+.tag-up{background:var(--grn2);color:var(--grn)}
+.tag-dn{background:var(--red2);color:var(--red)}
+.tag-src{background:var(--bg4);color:var(--txt3)}
+
+/* ── SCENE 4: GLOBE ── */
+#s4{background:var(--bg);padding:0;flex-direction:row;align-items:stretch}
+.s4-right{width:420px;flex-shrink:0;padding:56px 48px;display:flex;flex-direction:column;justify-content:center;border-left:1px solid var(--brd)}
+.globe-area{flex:1;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden;background:radial-gradient(ellipse at center,#0d0d16 0%,#09090a 100%)}
+.globe-svg{width:500px;height:500px;animation:rotateSlow 20s linear infinite}
+@keyframes rotateSlow{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.event-dot{animation:dotPulse 2s ease-in-out infinite}
+@keyframes dotPulse{0%,100%{opacity:1;r:5}50%{opacity:.5;r:7}}
+.ring{animation:ringPulse 2s ease-out infinite}
+@keyframes ringPulse{0%{opacity:.7;r:8}100%{opacity:0;r:22}}
+
+/* ── SCENE 5: AI ── */
+#s5{background:var(--bg);padding:0;flex-direction:row;align-items:stretch}
+.s5-left{width:420px;flex-shrink:0;padding:56px 48px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--brd)}
+.ai-panel{flex:1;background:var(--bg2);display:flex;flex-direction:column;overflow:hidden}
+.ai-hd{padding:10px 16px;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:8px;flex-shrink:0}
+.ai-hd-title{font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--txt3)}
+.ai-status{display:flex;align-items:center;gap:5px;font-family:var(--mono);font-size:7px;color:var(--grn);margin-left:auto}
+.ai-dot{width:5px;height:5px;border-radius:50%;background:var(--grn)}
+.ai-body{flex:1;padding:20px 18px;overflow:hidden;display:flex;flex-direction:column;gap:14px}
+.ai-msg{padding:12px 14px;border-radius:4px;font-size:11.5px;line-height:1.65}
+.ai-msg.user{background:var(--bg4);color:var(--txt2);align-self:flex-end;max-width:75%;font-family:var(--mono);font-size:10px}
+.ai-msg.bot{background:var(--bg3);border:1px solid var(--brd2);color:var(--txt);max-width:92%}
+.ai-msg.bot strong{color:var(--grn)}
+.ai-chips{display:flex;gap:6px;flex-wrap:wrap;margin-top:4px}
+.chip{background:var(--bg3);border:1px solid var(--brd2);border-radius:3px;padding:4px 10px;font-family:var(--mono);font-size:8px;color:var(--txt2);cursor:pointer}
+.typing{display:flex;gap:5px;align-items:center;padding:10px 14px}
+.dot-type{width:6px;height:6px;border-radius:50%;background:var(--txt3);animation:typing .8s ease infinite}
+.dot-type:nth-child(2){animation-delay:.15s}
+.dot-type:nth-child(3){animation-delay:.3s}
+@keyframes typing{0%,100%{opacity:.3;transform:translateY(0)}50%{opacity:1;transform:translateY(-3px)}}
+
+/* ── SCENE 6: WAR STOCKS ── */
+#s6{background:var(--bg);padding:0;flex-direction:row;align-items:stretch}
+.s6-left{width:400px;flex-shrink:0;padding:56px 44px;display:flex;flex-direction:column;justify-content:center;border-right:1px solid var(--brd)}
+.stocks-panel{flex:1;background:var(--bg2);display:flex;flex-direction:column;overflow:hidden}
+.stocks-hd{padding:10px 16px;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:8px;font-family:var(--mono);font-size:8px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--txt3)}
+.sector-lbl{font-family:var(--mono);font-size:7px;color:var(--amb);letter-spacing:.12em;padding:5px 12px;border-bottom:1px solid var(--brd);background:rgba(216,120,24,.04)}
+.st-row{display:grid;grid-template-columns:48px 1fr 72px 68px 52px;padding:8px 12px;border-bottom:1px solid var(--brd);align-items:center;transition:background .15s}
+.st-row:hover{background:var(--bg3)}
+.st-tick{font-family:var(--mono);font-size:10.5px;font-weight:700;color:var(--txt)}
+.st-name{font-size:9px;color:var(--txt3)}
+.st-price{font-family:var(--mono);font-size:10px;color:var(--txt);text-align:right}
+.st-chg{font-family:var(--mono);font-size:10.5px;font-weight:700;text-align:right}
+.up{color:var(--grn)} .dn{color:var(--red)}
+.war-badge{font-family:var(--mono);font-size:6px;padding:2px 5px;border-radius:2px;text-align:center}
+.war-high{background:var(--grn2);color:var(--grn)}
+.war-med{background:rgba(216,120,24,.1);color:var(--amb)}
+
+/* ── SCENE 7: PRICING ── */
+#s7{background:var(--bg);text-align:center;padding:50px 80px}
+.s7-h{font-family:var(--mono);font-size:40px;font-weight:700;letter-spacing:-.02em;margin-bottom:10px;animation:fadeUp .7s ease both}
+.s7-sub{font-size:13px;color:var(--txt3);font-family:var(--mono);margin-bottom:44px;animation:fadeUp .7s .2s ease both}
+.plans{display:grid;grid-template-columns:repeat(3,1fr);gap:0;border:1px solid var(--brd2);border-radius:6px;overflow:hidden;animation:fadeUp .7s .35s ease both;text-align:left}
+.plan{padding:28px 24px;border-right:1px solid var(--brd2);position:relative;background:var(--bg)}
+.plan:last-child{border-right:none}
+.plan.hot{background:var(--bg2)}
+.plan-pop{position:absolute;top:0;left:50%;transform:translateX(-50%);background:var(--gld);color:var(--bg);font-family:var(--mono);font-size:7px;font-weight:700;padding:3px 14px;border-radius:0 0 4px 4px;letter-spacing:.1em}
+.plan-name{font-family:var(--mono);font-size:8.5px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--txt3);margin-top:14px;margin-bottom:8px}
+.plan-price{display:flex;align-items:baseline;gap:2px;margin-bottom:16px}
+.plan-curr{font-family:var(--mono);font-size:16px;color:var(--txt2);align-self:flex-start;margin-top:4px}
+.plan-val{font-family:var(--mono);font-size:44px;font-weight:700;letter-spacing:-.03em;line-height:1}
+.plan-per{font-family:var(--mono);font-size:11px;color:var(--txt3)}
+.pf{font-size:10.5px;color:var(--txt2);display:flex;gap:6px;align-items:flex-start;margin-bottom:5px;line-height:1.4}
+.pf-y{color:var(--grn);font-size:9px;flex-shrink:0;margin-top:1px}
+
+/* ── SCENE 8: CTA ── */
+#s8{background:var(--bg);text-align:center;padding:60px}
+.s8-logo{width:64px;height:64px;margin:0 auto 24px;animation:fadeUp .7s ease both}
+.s8-h{font-family:var(--mono);font-size:52px;font-weight:700;letter-spacing:-.03em;line-height:1.1;margin-bottom:20px;animation:fadeUp .7s .2s ease both}
+.s8-h em{font-style:normal;color:var(--red)}
+.s8-url{font-family:var(--mono);font-size:20px;color:var(--txt2);letter-spacing:.05em;animation:fadeUp .7s .4s ease both}
+.s8-url span{color:var(--txt);border-bottom:2px solid var(--red)}
+.s8-btns{display:flex;gap:12px;justify-content:center;margin-top:36px;animation:fadeUp .7s .55s ease both}
+.btn-red{background:var(--red);color:#fff;padding:14px 36px;border-radius:3px;font-family:var(--mono);font-size:12px;font-weight:700;letter-spacing:.06em;text-decoration:none}
+.btn-out{background:transparent;border:1px solid var(--brd2);color:var(--txt2);padding:14px 28px;border-radius:3px;font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-decoration:none}
+.s8-note{font-family:var(--mono);font-size:9px;color:var(--txt3);margin-top:20px;animation:fadeUp .7s .7s ease both}
+</style>
+</head>
+<body>
+
+<div id="progress-bar" style="width:0%"></div>
+
+<div id="controls">
+  <button class="ctrl-btn" onclick="togglePause()">⏸ PAUSE</button>
+  <button class="ctrl-btn" onclick="prevScene()">← PREV</button>
+  <button class="ctrl-btn" onclick="nextScene()">NEXT →</button>
+</div>
+
+<!-- ── SCENE 1: SPLASH ── -->
+<div class="scene active" id="s1">
+  <svg class="s1-logo" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect width="80" height="80" rx="12" fill="#f0f0ec"/>
+    <ellipse cx="40" cy="40" rx="26" ry="10" fill="none" stroke="#09090a" stroke-width="2.5" transform="rotate(-30,40,40)"/>
+    <ellipse cx="40" cy="40" rx="17" ry="6.5" fill="none" stroke="rgba(9,9,10,.35)" stroke-width="2" stroke-dasharray="5 4" transform="rotate(-30,40,40)"/>
+    <circle cx="40" cy="40" r="5" fill="#09090a"/>
+    <circle cx="57" cy="28" r="4" fill="#09090a"/>
+    <circle cx="30" cy="50" r="3" fill="#e03836"/>
+  </svg>
+  <div class="s1-word">Orrery</div>
+  <div class="s1-tag">Geopolitical Market Intelligence</div>
+  <div class="s1-pill"><div class="pulse"></div>LIVE — BBC · REUTERS · AP · GUARDIAN · 100+ GLOBAL SOURCES</div>
+</div>
+
+<!-- ── SCENE 2: PROBLEM / VALUE PROP ── -->
+<div class="scene" id="s2">
+  <h1 class="s2-h">Geopolitical events <em>move markets</em>.<br>Are you watching in real time?</h1>
+  <p class="s2-sub">Wars, sanctions, elections, cyber attacks — each one creates winners and losers across defence, energy, airlines and commodities. Orrery gives you the live intelligence edge.</p>
+  <div class="s2-stats">
+    <div class="s2-stat"><div class="s2-v">6+</div><div class="s2-l">Live News Feeds</div></div>
+    <div class="s2-stat"><div class="s2-v">100+</div><div class="s2-l">Global Sources</div></div>
+    <div class="s2-stat"><div class="s2-v">40+</div><div class="s2-l">War Equities</div></div>
+    <div class="s2-stat"><div class="s2-v">60s</div><div class="s2-l">AI Brief Interval</div></div>
+  </div>
+</div>
+
+<!-- ── SCENE 3: CRISIS FEED ── -->
+<div class="scene" id="s3">
+  <div class="s3-left">
+    <div class="s3-ey">Crisis Intel Console</div>
+    <h2 class="s3-h">Breaking news.<br>Instantly categorised.</h2>
+    <p class="s3-sub">Real news from the world's most trusted outlets, arriving within minutes. Every article tagged by category, linked to its original source.</p>
+    <div class="s3-sources">
+      <span class="src-tag">BBC News</span>
+      <span class="src-tag">Reuters</span>
+      <span class="src-tag">The Guardian</span>
+      <span class="src-tag">AP News</span>
+      <span class="src-tag">Sky News</span>
+      <span class="src-tag">DW</span>
+      <span class="src-tag">France24</span>
+      <span class="src-tag">NPR</span>
+      <span class="src-tag">GDELT</span>
+    </div>
+  </div>
+  <div class="s3-right">
+    <div class="feed-hd">
+      <div style="width:6px;height:6px;border-radius:50%;background:var(--red);animation:lp 1.4s infinite"></div>
+      <span class="feed-hd-title">Live Feed</span>
+      <span class="feed-hd-badge">LIVE · 66 EVENTS</span>
+    </div>
+    <div id="feed-items"></div>
+  </div>
+</div>
+
+<!-- ── SCENE 4: GLOBE ── -->
+<div class="scene" id="s4">
+  <div class="globe-area">
+    <svg class="globe-svg" viewBox="0 0 500 500" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <radialGradient id="glow" cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stop-color="#1a1a2e" stop-opacity="1"/>
+          <stop offset="100%" stop-color="#09090a" stop-opacity="1"/>
+        </radialGradient>
+      </defs>
+      <circle cx="250" cy="250" r="220" fill="url(#glow)" stroke="rgba(255,255,255,.05)" stroke-width="1"/>
+      <!-- Latitude lines -->
+      <ellipse cx="250" cy="250" rx="220" ry="55" fill="none" stroke="rgba(255,255,255,.04)" stroke-width=".8"/>
+      <ellipse cx="250" cy="250" rx="220" ry="110" fill="none" stroke="rgba(255,255,255,.04)" stroke-width=".8"/>
+      <ellipse cx="250" cy="250" rx="220" ry="165" fill="none" stroke="rgba(255,255,255,.04)" stroke-width=".8"/>
+      <!-- Longitude lines -->
+      <line x1="250" y1="30" x2="250" y2="470" stroke="rgba(255,255,255,.04)" stroke-width=".8"/>
+      <line x1="30" y1="250" x2="470" y2="250" stroke="rgba(255,255,255,.04)" stroke-width=".8"/>
+      <line x1="90" y1="90" x2="410" y2="410" stroke="rgba(255,255,255,.025)" stroke-width=".8"/>
+      <line x1="410" y1="90" x2="90" y2="410" stroke="rgba(255,255,255,.025)" stroke-width=".8"/>
+      <!-- Event dots -->
+      <circle class="ring" cx="270" cy="195" r="8" fill="none" stroke="#e03836" stroke-width="1.5"/>
+      <circle cx="270" cy="195" r="5" fill="#e03836"/>
+      <circle class="ring" cx="210" cy="220" r="8" fill="none" stroke="#d87818" stroke-width="1.5" style="animation-delay:.4s"/>
+      <circle cx="210" cy="220" r="5" fill="#d87818"/>
+      <circle class="ring" cx="300" cy="150" r="8" fill="none" stroke="#9850d8" stroke-width="1.5" style="animation-delay:.8s"/>
+      <circle cx="300" cy="150" r="5" fill="#9850d8"/>
+      <circle class="ring" cx="160" cy="200" r="8" fill="none" stroke="#4878e8" stroke-width="1.5" style="animation-delay:1.2s"/>
+      <circle cx="160" cy="200" r="4" fill="#4878e8"/>
+      <circle class="ring" cx="350" cy="260" r="8" fill="none" stroke="#3ab860" stroke-width="1.5" style="animation-delay:1.6s"/>
+      <circle cx="350" cy="260" r="4" fill="#3ab860"/>
+      <circle class="ring" cx="240" cy="320" r="8" fill="none" stroke="#e03836" stroke-width="1.5" style="animation-delay:.6s"/>
+      <circle cx="240" cy="320" r="4" fill="#e03836"/>
+      <circle cx="380" cy="190" r="3.5" fill="#3090c0" opacity=".8"/>
+      <circle cx="140" cy="280" r="3.5" fill="#d4a843" opacity=".8"/>
+      <circle cx="310" cy="300" r="3" fill="#e03836" opacity=".7"/>
+      <circle cx="180" cy="140" r="3" fill="#3ab860" opacity=".7"/>
+    </svg>
+  </div>
+  <div class="s4-right">
+    <div class="s3-ey">Live World Map</div>
+    <h2 class="s3-h">Every crisis,<br>plotted as it breaks.</h2>
+    <p class="s3-sub" style="font-size:13px;color:var(--txt2);line-height:1.75;margin-bottom:24px">Events drop as pulsing dots at their exact geographic location. Click any dot for an instant AI market brief on that event.</p>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:10px;color:var(--txt3)"><span style="width:10px;height:10px;border-radius:50%;background:var(--red);display:block;flex-shrink:0"></span>Military / Nuclear</div>
+      <div style="display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:10px;color:var(--txt3)"><span style="width:10px;height:10px;border-radius:50%;background:var(--amb);display:block;flex-shrink:0"></span>Energy / Economic</div>
+      <div style="display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:10px;color:var(--txt3)"><span style="width:10px;height:10px;border-radius:50%;background:var(--blu);display:block;flex-shrink:0"></span>Diplomatic / Political</div>
+      <div style="display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:10px;color:var(--txt3)"><span style="width:10px;height:10px;border-radius:50%;background:#3090c0;display:block;flex-shrink:0"></span>Cyber / Technology</div>
+      <div style="display:flex;align-items:center;gap:10px;font-family:var(--mono);font-size:10px;color:var(--txt3)"><span style="width:10px;height:10px;border-radius:50%;background:var(--grn);display:block;flex-shrink:0"></span>Health / Environment</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SCENE 5: AI ── -->
+<div class="scene" id="s5">
+  <div class="s5-left">
+    <div class="s3-ey">AI Intel Console</div>
+    <h2 class="s3-h">Claude AI briefs you on<br>every event. Instantly.</h2>
+    <p class="s3-sub" style="font-size:13px;color:var(--txt2);line-height:1.75;margin-bottom:22px">The same AI behind Claude.ai analyses each event, identifies affected stocks and sectors, and gives you sharp, specific market intelligence in seconds.</p>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <div style="font-family:var(--mono);font-size:9.5px;color:var(--txt3);display:flex;align-items:center;gap:7px"><span style="color:var(--grn)">✓</span> Auto-brief fires every 60 seconds</div>
+      <div style="font-family:var(--mono);font-size:9.5px;color:var(--txt3);display:flex;align-items:center;gap:7px"><span style="color:var(--grn)">✓</span> Ask anything — unlimited queries</div>
+      <div style="font-family:var(--mono);font-size:9.5px;color:var(--txt3);display:flex;align-items:center;gap:7px"><span style="color:var(--grn)">✓</span> Stock &amp; ETF buy/sell recommendations</div>
+      <div style="font-family:var(--mono);font-size:9.5px;color:var(--txt3);display:flex;align-items:center;gap:7px"><span style="color:var(--grn)">✓</span> Scenario analysis with price ranges</div>
+    </div>
+  </div>
+  <div class="ai-panel">
+    <div class="ai-hd">
+      <span class="ai-hd-title">⊕ AI Intel Console</span>
+      <div class="ai-status"><div class="ai-dot"></div>READY</div>
+    </div>
+    <div class="ai-body" id="ai-body">
+      <div class="ai-msg user" id="ai-q1" style="opacity:0">Which stocks win if NATO escalates?</div>
+      <div class="typing" id="ai-typing" style="display:none">
+        <div class="dot-type"></div><div class="dot-type"></div><div class="dot-type"></div>
+      </div>
+      <div class="ai-msg bot" id="ai-ans1" style="opacity:0">
+        Based on NATO eastern flank activation, the strongest positioning is in <strong>defence</strong>:<br><br>
+        <strong>▲ LMT +2.4%</strong> — Lockheed benefits from F-35 contract acceleration<br>
+        <strong>▲ RTX +1.9%</strong> — Raytheon air-defence systems in high demand<br>
+        <strong>▲ NOC +1.6%</strong> — Northrop radar and drone platforms<br><br>
+        Safe-haven flows also support <strong>GLD +0.8%</strong>. Avoid airlines (DAL, UAL) near affected airspace.<br><br>
+        <em style="color:var(--txt3);font-size:10px">Informational only — not financial advice.</em>
+      </div>
+      <div class="ai-chips" id="ai-chips" style="opacity:0">
+        <span class="chip">Best buy right now?</span>
+        <span class="chip">Scenario analysis</span>
+        <span class="chip">Portfolio positioning</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SCENE 6: WAR STOCKS ── -->
+<div class="scene" id="s6">
+  <div class="s6-left">
+    <div class="s3-ey">War Stocks Panel</div>
+    <h2 class="s3-h">See exactly which<br>stocks each crisis moves.</h2>
+    <p class="s3-sub" style="font-size:13px;color:var(--txt2);line-height:1.75;margin-bottom:22px">40+ equities tracked across defence, energy, airlines, shipping and safe-haven assets. Live prices with war-impact ratings.</p>
+    <div style="display:flex;flex-direction:column;gap:9px">
+      <div style="font-family:var(--mono);font-size:10px;color:var(--txt3);display:flex;gap:8px"><span style="color:var(--grn)">▲</span>Defence stocks gain on every escalation signal</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--txt3);display:flex;gap:8px"><span style="color:var(--grn)">▲</span>Energy rises as supply routes are disrupted</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--txt3);display:flex;gap:8px"><span style="color:var(--red)">▼</span>Airlines fall on fuel costs and airspace closures</div>
+      <div style="font-family:var(--mono);font-size:10px;color:var(--txt3);display:flex;gap:8px"><span style="color:var(--gld)">▲</span>Gold surges on every nuclear or DEFCON signal</div>
+    </div>
+  </div>
+  <div class="stocks-panel">
+    <div class="stocks-hd"><span style="width:6px;height:6px;border-radius:50%;background:var(--grn);display:block;animation:lp 1.4s infinite"></span> War Stocks — Live</div>
+    <div class="sector-lbl">🛡 DEFENCE</div>
+    <div class="st-row"><span class="st-tick">LMT</span><span class="st-name">Lockheed Martin</span><span class="st-price">$492.30</span><span class="st-chg up">+12.4%</span><span class="war-badge war-high">HIGH</span></div>
+    <div class="st-row"><span class="st-tick">RTX</span><span class="st-name">Raytheon</span><span class="st-price">$118.75</span><span class="st-chg up">+9.8%</span><span class="war-badge war-high">HIGH</span></div>
+    <div class="st-row"><span class="st-tick">NOC</span><span class="st-name">Northrop Grumman</span><span class="st-price">$468.20</span><span class="st-chg up">+7.2%</span><span class="war-badge war-high">HIGH</span></div>
+    <div class="sector-lbl">🛢 ENERGY</div>
+    <div class="st-row"><span class="st-tick">XOM</span><span class="st-name">ExxonMobil</span><span class="st-price">$114.60</span><span class="st-chg up">+8.9%</span><span class="war-badge war-high">HIGH</span></div>
+    <div class="st-row"><span class="st-tick">CVX</span><span class="st-name">Chevron</span><span class="st-price">$157.40</span><span class="st-chg up">+6.3%</span><span class="war-badge war-med">MED</span></div>
+    <div class="sector-lbl">✈ AIRLINES</div>
+    <div class="st-row"><span class="st-tick">DAL</span><span class="st-name">Delta Air Lines</span><span class="st-price">$38.20</span><span class="st-chg dn">−13.7%</span><span class="war-badge war-high">HIGH</span></div>
+    <div class="st-row"><span class="st-tick">UAL</span><span class="st-name">United Airlines</span><span class="st-price">$68.90</span><span class="st-chg dn">−11.2%</span><span class="war-badge war-high">HIGH</span></div>
+    <div class="sector-lbl" style="color:var(--gld)">⬡ SAFE HAVEN</div>
+    <div class="st-row"><span class="st-tick">GLD</span><span class="st-name">Gold ETF</span><span class="st-price">$193.80</span><span class="st-chg up">+4.1%</span><span class="war-badge war-high">HIGH</span></div>
+  </div>
+</div>
+
+<!-- ── SCENE 7: PRICING ── -->
+<div class="scene" id="s7">
+  <div class="s3-ey" style="margin-bottom:8px">Pricing</div>
+  <h2 class="s7-h">Start from $0.99 per month</h2>
+  <p class="s7-sub">Billed monthly · Cancel anytime · Instant access · Secured by PayPal</p>
+  <div class="plans">
+    <div class="plan">
+      <div class="plan-name">Starter</div>
+      <div class="plan-price"><span class="plan-curr">$</span><span class="plan-val">0.99</span><span class="plan-per">/mo</span></div>
+      <div class="pf"><span class="pf-y">✓</span>Full crisis intel feed</div>
+      <div class="pf"><span class="pf-y">✓</span>AI Intel Console — unlimited</div>
+      <div class="pf"><span class="pf-y">✓</span>40+ war equities</div>
+      <div class="pf"><span class="pf-y">✓</span>Stock screener — 13 nations</div>
+      <div class="pf"><span class="pf-y">✓</span>Financial calculators</div>
+    </div>
+    <div class="plan hot">
+      <div class="plan-pop">MOST POPULAR</div>
+      <div class="plan-name" style="color:var(--gld)">Analyst</div>
+      <div class="plan-price"><span class="plan-curr" style="color:var(--gld)">$</span><span class="plan-val" style="color:var(--gld)">14.99</span><span class="plan-per">/mo</span></div>
+      <div class="pf"><span class="pf-y">✓</span>Everything in Starter</div>
+      <div class="pf"><span class="pf-y">✓</span><strong style="color:var(--grn)">🌍 Live 3D World Map</strong></div>
+      <div class="pf"><span class="pf-y">✓</span><strong style="color:var(--grn)">● Live exchange data</strong></div>
+      <div class="pf"><span class="pf-y">✓</span>7-day crisis archive</div>
+      <div class="pf"><span class="pf-y">✓</span>Full stock charts 1W–5Y</div>
+    </div>
+    <div class="plan">
+      <div class="plan-name">Command</div>
+      <div class="plan-price"><span class="plan-curr">$</span><span class="plan-val">34.99</span><span class="plan-per">/mo</span></div>
+      <div class="pf"><span class="pf-y">✓</span>Everything in Analyst</div>
+      <div class="pf"><span class="pf-y">✓</span><strong style="color:var(--grn)">● Unlimited live data</strong></div>
+      <div class="pf"><span class="pf-y">✓</span><strong style="color:var(--gld)">₿ Live crypto + war scores</strong></div>
+      <div class="pf"><span class="pf-y">✓</span>30-day history archive</div>
+      <div class="pf"><span class="pf-y">✓</span>CSV export · Priority support</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── SCENE 8: CTA ── -->
+<div class="scene" id="s8">
+  <svg class="s8-logo" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+    <rect width="80" height="80" rx="12" fill="#f0f0ec"/>
+    <ellipse cx="40" cy="40" rx="26" ry="10" fill="none" stroke="#09090a" stroke-width="2.5" transform="rotate(-30,40,40)"/>
+    <ellipse cx="40" cy="40" rx="17" ry="6.5" fill="none" stroke="rgba(9,9,10,.35)" stroke-width="2" stroke-dasharray="5 4" transform="rotate(-30,40,40)"/>
+    <circle cx="40" cy="40" r="5" fill="#09090a"/>
+    <circle cx="57" cy="28" r="4" fill="#09090a"/>
+    <circle cx="30" cy="50" r="3" fill="#e03836"/>
+  </svg>
+  <h2 class="s8-h">Real intelligence.<br>For <em>crisis markets</em>.</h2>
+  <div class="s8-url">Start at <span>orreryx.io</span> — from $0.99/month</div>
+  <div class="s8-btns">
+    <a href="/login?plan=s" class="btn-red">GET STARTED →</a>
+    <a href="/" class="btn-out">LEARN MORE</a>
+  </div>
+  <div class="s8-note">Breaking news from BBC · Reuters · AP · Guardian · Sky News · DW · France24 · NPR</div>
+</div>
+
+<script>
+// ── SCRIPT + VOICEOVER ──────────────────────────────────────────────────────
+const SCENES = [
+  {
+    id: 's1', dur: 7000,
+    voice: "Welcome to Orrery — the intelligence platform built for crisis markets.",
+  },
+  {
+    id: 's2', dur: 11000,
+    voice: "Wars, sanctions, elections, and cyber attacks move markets every single day. Defence stocks surge. Airlines crash. Oil spikes. Gold flies. Orrery gives you live intelligence so you can see what's moving — and why — before the crowd does.",
+  },
+  {
+    id: 's3', dur: 13000,
+    voice: "The Crisis Intel Console is your live breaking news feed. Real articles from BBC, Reuters, AP, The Guardian, Sky News, Deutsche Welle, France 24 and NPR — arriving within minutes of publication. Every story is automatically categorised as military, economic, diplomatic, cyber, or disaster. Click Source to read the full article. Click AI Brief for instant market analysis.",
+    onEnter: buildFeed,
+  },
+  {
+    id: 's4', dur: 10000,
+    voice: "The Live World Map plots every event as a pulsing dot at its exact geographic location. The globe updates in real time as news breaks. Click any dot for an instant AI briefing on that specific event and its market impact.",
+  },
+  {
+    id: 's5', dur: 13000,
+    voice: "The AI Intel Console is powered by Claude — Anthropic's most capable model. Every 60 seconds, it auto-briefs you on the latest event. You can also ask anything — which stocks win from this conflict? Best buy right now? Portfolio positioning for the next 30 days? You get sharp, specific, actionable intelligence in seconds.",
+    onEnter: animateAI,
+  },
+  {
+    id: 's6', dur: 10000,
+    voice: "The War Stocks panel tracks 40 plus equities across defence, energy, airlines, shipping and safe-haven assets. See exactly which stocks each conflict moves — and by how much. Live prices, percentage changes, and war impact ratings all in one view.",
+  },
+  {
+    id: 's7', dur: 10000,
+    voice: "Access starts at just 99 cents per month for the full platform with AI, crisis feed, and all tools. Upgrade to Analyst at 14 99 for the live 3D globe and real exchange data. Command at 34 99 adds unlimited live data, live crypto with war correlation scores, and CSV export.",
+  },
+  {
+    id: 's8', dur: 9000,
+    voice: "Orrery. Real intelligence for crisis markets. Sign up today at orreryx dot io. From 99 cents a month. No setup. Instant access.",
+  },
+];
+
+let current = 0;
+let paused  = false;
+let timer   = null;
+let startMs = 0;
+let elapsed = 0;
+const total  = SCENES.reduce((a, s) => a + s.dur, 0);
+let cumTime  = 0;
+const cumTimes = SCENES.map(s => { const t = cumTime; cumTime += s.dur; return t; });
+
+function goScene(idx) {
+  if (idx < 0 || idx >= SCENES.length) return;
+  // Hide all
+  document.querySelectorAll('.scene').forEach(el => el.classList.remove('active'));
+  // Show current
+  const scene = SCENES[idx];
+  const el = document.getElementById(scene.id);
+  el.classList.add('active');
+  // Voiceover
+  speakScene(scene.voice);
+  // onEnter hook
+  if (scene.onEnter) setTimeout(() => scene.onEnter(), 600);
+  // Timer
+  clearTimeout(timer);
+  startMs = Date.now();
+  if (!paused) {
+    timer = setTimeout(() => { if (!paused) nextScene(); }, scene.dur);
+  }
+}
+
+function nextScene() {
+  if (current < SCENES.length - 1) { current++; goScene(current); }
+}
+
+function prevScene() {
+  speechSynthesis.cancel();
+  if (current > 0) { current--; goScene(current); }
+}
+
+function togglePause() {
+  paused = !paused;
+  document.querySelector('.ctrl-btn').textContent = paused ? '▶ PLAY' : '⏸ PAUSE';
+  if (paused) {
+    clearTimeout(timer);
+    speechSynthesis.cancel();
+  } else {
+    const remaining = SCENES[current].dur - (Date.now() - startMs);
+    timer = setTimeout(() => { if (!paused) nextScene(); }, Math.max(remaining, 500));
+    speakScene(SCENES[current].voice);
+  }
+}
+
+// ── SPEECH ──
+function speakScene(text) {
+  if (!window.speechSynthesis) return;
+  speechSynthesis.cancel();
+  const u = new SpeechSynthesisUtterance(text);
+  u.rate  = 0.92;
+  u.pitch = 1.0;
+  u.volume = 1.0;
+  // Prefer a good English voice
+  const voices = speechSynthesis.getVoices();
+  const preferred = voices.find(v =>
+    /Microsoft.*Natural|Google UK.*Female|Samantha|Alex|Karen|Daniel/i.test(v.name)
+  ) || voices.find(v => v.lang === 'en-US' || v.lang === 'en-GB') || voices[0];
+  if (preferred) u.voice = preferred;
+  speechSynthesis.speak(u);
+}
+
+// ── PROGRESS BAR ──
+function updateProgress() {
+  if (paused) return;
+  const t = cumTimes[current] + (Date.now() - startMs);
+  const pct = Math.min((t / total) * 100, 100);
+  document.getElementById('progress-bar').style.width = pct + '%';
+  requestAnimationFrame(updateProgress);
+}
+
+// ── FEED ANIMATION ──
+const FEED_DATA = [
+  { cat:'mil', cls:'c-mil', label:'MILITARY', time:'2m ago', src:'BBC News',
+    txt:'NATO activates rapid response forces along eastern flank as border tensions escalate.',
+    tags:['LMT +2.1%','RTX +1.8%'] },
+  { cat:'eco', cls:'c-eco', label:'ECONOMIC', time:'4m ago', src:'Reuters',
+    txt:'Federal Reserve signals rate hold as inflation data disappoints market expectations.',
+    tags:['SPY −0.8%','TLT +1.2%'] },
+  { cat:'dip', cls:'c-dip', label:'DIPLOMATIC', time:'7m ago', src:'The Guardian',
+    txt:'G7 emergency summit called after new sanctions trigger currency volatility across Asia.',
+    tags:['GLD +0.6%','USD +0.4%'] },
+  { cat:'cyb', cls:'c-cyb', label:'CYBER', time:'11m ago', src:'Sky News',
+    txt:'Critical infrastructure cyberattack reported across three European nations. ENISA activated.',
+    tags:['CRWD +3.2%','PANW +2.8%'] },
+  { cat:'dis', cls:'c-dis', label:'DISASTER', time:'15m ago', src:'AP News',
+    txt:'Magnitude 6.8 earthquake strikes northern Turkey. Emergency services deployed.',
+    tags:['OIL +0.4%'] },
+];
+
+function buildFeed() {
+  const container = document.getElementById('feed-items');
+  container.innerHTML = '';
+  FEED_DATA.forEach((ev, i) => {
+    setTimeout(() => {
+      const upTags = ev.tags.map(t => {
+        const cls = t.includes('−') || t.includes('-') ? 'tag-dn' : 'tag-up';
+        return `<span class="tag ${cls}">${t}</span>`;
+      }).join('');
+      const div = document.createElement('div');
+      div.className = 'ev-card';
+      div.style.animationDelay = (i * 0.12) + 's';
+      div.innerHTML = `
+        <div class="ev-top">
+          <span class="cat ${ev.cls}">${ev.label}</span>
+          <span class="ev-src">${ev.src}</span>
+          <span class="ev-ts">${ev.time}</span>
+        </div>
+        <div class="ev-txt">${ev.txt}</div>
+        <div class="ev-foot">${upTags}
+          <span class="tag tag-src">🤖 AI Brief →</span>
+          <span class="tag tag-src">🔗 Source →</span>
+        </div>`;
+      container.appendChild(div);
+    }, i * 350);
+  });
+}
+
+// ── AI ANIMATION ──
+function animateAI() {
+  const q1  = document.getElementById('ai-q1');
+  const typ = document.getElementById('ai-typing');
+  const a1  = document.getElementById('ai-ans1');
+  const ch  = document.getElementById('ai-chips');
+  q1.style.transition  = 'opacity .5s';
+  q1.style.opacity     = '1';
+  setTimeout(() => {
+    typ.style.display = 'flex';
+    setTimeout(() => {
+      typ.style.display = 'none';
+      a1.style.transition = 'opacity .6s';
+      a1.style.opacity    = '1';
+      setTimeout(() => {
+        ch.style.transition = 'opacity .5s';
+        ch.style.opacity    = '1';
+      }, 1200);
+    }, 2200);
+  }, 1000);
+}
+
+// ── INIT ──
+window.addEventListener('load', () => {
+  // Load voices (Chrome async)
+  if (window.speechSynthesis) {
+    speechSynthesis.getVoices();
+    speechSynthesis.onvoiceschanged = () => speechSynthesis.getVoices();
+  }
+  setTimeout(() => {
+    goScene(0);
+    updateProgress();
+  }, 600);
+});
+</script>
+</body>
+</html>
