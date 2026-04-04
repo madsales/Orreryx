@@ -409,37 +409,37 @@ html,body{width:1280px;height:720px;overflow:hidden;background:var(--bg);color:v
 const SCENES = [
   {
     id: 's1', dur: 7000,
-    voice: "Welcome to Orrery — the intelligence platform built for crisis markets.",
+    voice: "Welcome to Orrery. The intelligence platform built for crisis markets.",
   },
   {
     id: 's2', dur: 11000,
-    voice: "Wars, sanctions, elections, and cyber attacks move markets every single day. Defence stocks surge. Airlines crash. Oil spikes. Gold flies. Orrery gives you live intelligence so you can see what's moving — and why — before the crowd does.",
+    voice: "Wars move markets. Sanctions crush currencies. Elections flip entire sectors. Every day. Most investors find out too late. Orrery gives you live intelligence the moment news breaks. So you see what is moving, and why, before the crowd does.",
   },
   {
-    id: 's3', dur: 13000,
-    voice: "The Crisis Intel Console is your live breaking news feed. Real articles from BBC, Reuters, AP, The Guardian, Sky News, Deutsche Welle, France 24 and NPR — arriving within minutes of publication. Every story is automatically categorised as military, economic, diplomatic, cyber, or disaster. Click Source to read the full article. Click AI Brief for instant market analysis.",
+    id: 's3', dur: 14000,
+    voice: "This is the Crisis Intel Console. Your live breaking news feed. Real articles from BBC, Reuters, AP, The Guardian, Sky News, and more. Arriving within minutes of publication. Every story is tagged automatically. Military. Economic. Diplomatic. Cyber. Click Source to read the full article. Click AI Brief for instant market analysis.",
     onEnter: buildFeed,
   },
   {
     id: 's4', dur: 10000,
-    voice: "The Live World Map plots every event as a pulsing dot at its exact geographic location. The globe updates in real time as news breaks. Click any dot for an instant AI briefing on that specific event and its market impact.",
+    voice: "The Live World Map plots every event as a pulsing dot at its exact location on the globe. It updates in real time as news breaks. Click any dot for an instant AI briefing on that event, and its market impact.",
   },
   {
-    id: 's5', dur: 13000,
-    voice: "The AI Intel Console is powered by Claude — Anthropic's most capable model. Every 60 seconds, it auto-briefs you on the latest event. You can also ask anything — which stocks win from this conflict? Best buy right now? Portfolio positioning for the next 30 days? You get sharp, specific, actionable intelligence in seconds.",
+    id: 's5', dur: 14000,
+    voice: "The AI Intel Console is powered by Claude. Anthropic's most capable model. Every sixty seconds it auto-briefs you on the latest event. You can also ask anything you like. Which stocks win from this conflict? Best buy right now? Portfolio positioning for the next thirty days? You get sharp, specific, actionable intelligence in seconds.",
     onEnter: animateAI,
   },
   {
     id: 's6', dur: 10000,
-    voice: "The War Stocks panel tracks 40 plus equities across defence, energy, airlines, shipping and safe-haven assets. See exactly which stocks each conflict moves — and by how much. Live prices, percentage changes, and war impact ratings all in one view.",
+    voice: "The War Stocks panel tracks forty plus equities. Defence, energy, airlines, shipping, and safe-haven assets. See exactly which stocks each conflict moves, and by how much. Live prices, percentage changes, and war impact ratings all in one view.",
   },
   {
-    id: 's7', dur: 10000,
-    voice: "Access starts at just 99 cents per month for the full platform with AI, crisis feed, and all tools. Upgrade to Analyst at 14 99 for the live 3D globe and real exchange data. Command at 34 99 adds unlimited live data, live crypto with war correlation scores, and CSV export.",
+    id: 's7', dur: 11000,
+    voice: "Access starts at just ninety nine cents per month. The full platform. AI intel console. Crisis feed. All tools included. Upgrade to Analyst for the live 3D globe and real exchange data. Command plan adds unlimited live data, crypto war scores, and CSV export.",
   },
   {
     id: 's8', dur: 9000,
-    voice: "Orrery. Real intelligence for crisis markets. Sign up today at orreryx dot io. From 99 cents a month. No setup. Instant access.",
+    voice: "Orrery. Real intelligence for crisis markets. Sign up today at orreryx dot io. From ninety nine cents a month. No setup required. Instant access.",
   },
 ];
 
@@ -495,20 +495,43 @@ function togglePause() {
 }
 
 // ── SPEECH ──
+let _bestVoice = null;
+
+function pickVoice() {
+  if (_bestVoice) return _bestVoice;
+  const voices = speechSynthesis.getVoices();
+  // Priority order: Neural/Natural > Google Neural > Google UK > US fallback
+  const tiers = [
+    v => /Microsoft (Guy|Aria|Jenny|Eric|Brian|Ryan).*Natural/i.test(v.name),
+    v => /Microsoft.*Online.*Natural/i.test(v.name),
+    v => /Google UK English (Female|Male)/i.test(v.name),
+    v => /Google US English/i.test(v.name),
+    v => /Microsoft (David|Mark|Zira) Desktop/i.test(v.name),
+    v => /Samantha|Alex|Karen|Daniel|Moira/i.test(v.name),
+    v => v.lang === 'en-GB',
+    v => v.lang === 'en-US',
+  ];
+  for (const test of tiers) {
+    const found = voices.find(test);
+    if (found) { _bestVoice = found; return found; }
+  }
+  return voices[0] || null;
+}
+
 function speakScene(text) {
   if (!window.speechSynthesis) return;
   speechSynthesis.cancel();
-  const u = new SpeechSynthesisUtterance(text);
-  u.rate  = 0.92;
-  u.pitch = 1.0;
-  u.volume = 1.0;
-  // Prefer a good English voice
-  const voices = speechSynthesis.getVoices();
-  const preferred = voices.find(v =>
-    /Microsoft.*Natural|Google UK.*Female|Samantha|Alex|Karen|Daniel/i.test(v.name)
-  ) || voices.find(v => v.lang === 'en-US' || v.lang === 'en-GB') || voices[0];
-  if (preferred) u.voice = preferred;
-  speechSynthesis.speak(u);
+  // Split on sentence boundaries so each utterance sounds natural
+  const sentences = text.match(/[^.!?]+[.!?]*/g) || [text];
+  sentences.forEach((sentence, i) => {
+    const u = new SpeechSynthesisUtterance(sentence.trim());
+    u.rate   = 0.88;
+    u.pitch  = 1.0;
+    u.volume = 1.0;
+    const v = pickVoice();
+    if (v) u.voice = v;
+    speechSynthesis.speak(u);
+  });
 }
 
 // ── PROGRESS BAR ──
