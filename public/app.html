@@ -1930,8 +1930,10 @@ function manualTrigger() { timerSec = 0; }
 
 // ── EVENTS ──
 function buildInitialEvents() {
+  // Mark as demo — hidden from feed once real news loads, kept for globe dots
   feedEvents = WAR_EVENTS.map((e, i) => ({
     ...e,
+    isDemo: true,
     time: new Date(Date.now() - i * 4 * 60 * 1000),
     newest: i === 0
   }));
@@ -1939,9 +1941,14 @@ function buildInitialEvents() {
 }
 
 function fireNextEvent() {
+  // If real news is loaded, skip cycling fictional WAR_EVENTS into the feed
+  if (feedEvents.some(e => !e.isDemo)) {
+    renderIntelFeed();
+    return;
+  }
   const ev = WAR_EVENTS[liveEventIdx % WAR_EVENTS.length];
   liveEventIdx++;
-  const newEv = { ...ev, time: new Date(), newest: true };
+  const newEv = { ...ev, time: new Date(), newest: true, isDemo: true };
   feedEvents.forEach(e => e.newest = false);
   // Remove any existing copy of this event before prepending the refreshed one
   feedEvents = feedEvents.filter(e => e.id !== ev.id);
@@ -1968,19 +1975,26 @@ function fireNextEvent() {
 function renderIntelFeed() {
   const body = document.getElementById('intel-feed-body');
   if (!body) return;
+
+  // Once real news loads, hide demo WAR_EVENTS from the feed (keep for globe dots)
+  const hasReal = feedEvents.some(e => !e.isDemo);
+  const base    = hasReal ? feedEvents.filter(e => !e.isDemo) : feedEvents;
+
   const cnt = document.getElementById('event-count');
-  if (cnt) cnt.textContent = feedEvents.length;
+  if (cnt) cnt.textContent = base.length;
   const badge = document.getElementById('sb-intel-badge');
-  if (badge) badge.textContent = feedEvents.length;
+  if (badge) badge.textContent = base.length;
 
   // Mark active filter button — use filter-btn.active class
   document.querySelectorAll('[id^="ff-"]').forEach(b => b.classList.remove('active', 'btn-solid'));
   const activeBtn = document.getElementById('ff-' + activeFilter);
   if (activeBtn) activeBtn.classList.add('active');
 
-  const filtered = activeFilter === 'all' ? feedEvents : feedEvents.filter(e => e.cat === activeFilter);
+  const filtered = activeFilter === 'all' ? base : base.filter(e => e.cat === activeFilter);
   if (filtered.length === 0) {
-    body.innerHTML = `<div class="empty"><div class="empty-icon">📡</div><div class="empty-title">NO EVENTS IN THIS CATEGORY</div><div class="empty-sub">Events will appear here as they fire.</div></div>`;
+    body.innerHTML = hasReal
+      ? `<div class="empty"><div class="empty-icon">📡</div><div class="empty-title">NO EVENTS IN THIS CATEGORY</div><div class="empty-sub">Events will appear here as they fire.</div></div>`
+      : `<div class="empty"><div class="empty-icon">📡</div><div class="empty-title">LOADING LIVE FEED…</div><div class="empty-sub">Fetching latest news from global sources.</div></div>`;
     return;
   }
   // Always show newest first
