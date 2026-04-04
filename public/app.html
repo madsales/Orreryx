@@ -170,6 +170,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
 .ev-ts{font:400 7.5px/1 var(--mono);color:var(--txt4);margin-left:auto}
 .ev-txt{font:400 12.5px/1.6 var(--sans);color:var(--txt);margin-bottom:7px}
 .ev-foot{display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.ev-src-link{text-decoration:none;color:var(--txt3)!important;background:var(--bg4);}
 /* ── MAP ── */
 .map-wrap{flex:1;display:flex;overflow:hidden;position:relative}
 .map-svg-area{flex:1;background:#090d18;position:relative;overflow:hidden}
@@ -1986,7 +1987,8 @@ function renderIntelFeed() {
 function buildEventCard(e) {
   const timeStr = e.time ? e.time.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) : '';
   const tags = (e.tags || []).map(t => `<span class="tag ${t.up ? 'tag-up' : 'tag-dn'}">${t.t}</span>`).join('');
-  const eid = 'ev-' + e.id + '-' + (e.time ? e.time.getTime() : Math.random().toString(36).slice(2));
+  const srcUrl = e.url || ('https://news.google.com/search?q=' + encodeURIComponent(e.txt.substring(0, 80)));
+  const srcLabel = e.source ? e.source : 'Source';
   return `<div class="ev-card ${e.newest ? 'newest' : ''}" data-evid="${e.id}" onclick="handleEvClick(this)">
     <div class="ev-top">
       <span class="cat c-${e.cat}">${e.catLabel}</span>
@@ -1994,7 +1996,7 @@ function buildEventCard(e) {
       <span class="ev-ts">${timeStr}</span>
     </div>
     <div class="ev-txt">${e.txt}</div>
-    <div class="ev-foot">${tags}<span class="tag" style="background:var(--bg4);color:var(--txt3);cursor:pointer" onclick="event.stopPropagation();handleEvStockClick(this)">🤖 AI Brief →</span></div>
+    <div class="ev-foot">${tags}<span class="tag" style="background:var(--bg4);color:var(--txt3);cursor:pointer" onclick="event.stopPropagation();handleEvStockClick(this)">🤖 AI Brief →</span><a class="tag ev-src-link" href="${srcUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Read original source">🔗 ${srcLabel} →</a></div>
   </div>`;
 }
 
@@ -2113,7 +2115,7 @@ async function fetchLiveEvents() {
       // Merge GDELT events into feedEvents (prepend, capped at 80)
       const fresh = data.events.map((e, i) => ({
         ...e,
-        time:   new Date(Date.now() - i * 2 * 60 * 1000),
+        time:   e.time ? new Date(e.time) : new Date(Date.now() - i * 2 * 60 * 1000),
         newest: i === 0,
       }));
       const existingIds = new Set(feedEvents.map(e => e.id));
