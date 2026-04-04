@@ -1478,10 +1478,11 @@ let fbType = 'bug';
 
 // ── PLAN FEATURES ──
 const PF = {
-  locked: { liveMap:false, liveData:false, history:0, crypto:false, chartYears:1 },
-  s:      { liveMap:false, liveData:false, history:0, crypto:false, chartYears:5 },
-  a:      { liveMap:true,  liveData:true,  history:7, crypto:false, chartYears:5 },
-  c:      { liveMap:true,  liveData:true,  history:30, crypto:true, chartYears:5 }
+  locked: { liveMap:false, liveData:false, history:0, crypto:false, chartYears:1, ai:false, calc:false, ipo:false, brokers:false, learn:false, country:false },
+  f:      { liveMap:false, liveData:false, history:0, crypto:false, chartYears:1, ai:false, calc:false, ipo:false, brokers:false, learn:false, country:false },
+  s:      { liveMap:false, liveData:false, history:0, crypto:false, chartYears:5, ai:true,  calc:true,  ipo:true,  brokers:true,  learn:true,  country:true  },
+  a:      { liveMap:true,  liveData:true,  history:7, crypto:false, chartYears:5, ai:true,  calc:true,  ipo:true,  brokers:true,  learn:true,  country:true  },
+  c:      { liveMap:true,  liveData:true,  history:30, crypto:true, chartYears:5, ai:true,  calc:true,  ipo:true,  brokers:true,  learn:true,  country:true  }
 };
 function can(f) { return PF[PLAN] && PF[PLAN][f]; }
 
@@ -1494,6 +1495,15 @@ function hasPaid() {
     const s = localStorage.getItem('orrery_session');
     if (s) {
       const obj = JSON.parse(s);
+      // Free trial — check freeTrialExpires instead of full expires
+      if (obj.plan === 'f' && obj.token) {
+        const trialExp = obj.freeTrialExpires || obj.expires;
+        if (Date.now() < trialExp)
+          return { paid: true, plan: 'f', email: obj.email, token: obj.token, freeTrialExpires: trialExp };
+        // Trial expired — clear and force upgrade
+        localStorage.removeItem('orrery_session');
+        return { paid: false, trialExpired: true };
+      }
       if (['s','a','c'].includes(obj.plan) && Date.now() < obj.expires && obj.token)
         return { paid: true, plan: obj.plan, email: obj.email, token: obj.token };
     }
@@ -1536,8 +1546,8 @@ function confirmCancel() {
 }
 
 // ── PLAN NAMES ──
-const PLAN_NAMES  = { s:'Starter', a:'Analyst', c:'Command', locked:'Demo' };
-const PLAN_PRICES = { s:'$0.99/mo', a:'$14.99/mo', c:'$34.99/mo' };
+const PLAN_NAMES  = { f:'Free Trial', s:'Starter', a:'Analyst', c:'Command', locked:'Demo' };
+const PLAN_PRICES = { f:'Free · 3 days', s:'$0.99/mo', a:'$14.99/mo', c:'$34.99/mo' };
 
 // ── BOOT ──
 const IS_LOCAL = location.protocol === 'file:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
@@ -1575,8 +1585,15 @@ function boot() {
   if (auth.paid) {
     PLAN = auth.plan || 's';
     SESSION_TOKEN = auth.token || null;
+    if (auth.freeTrialExpires) {
+      window.__freeTrialExpires = auth.freeTrialExpires;
+    }
   } else {
-    window.location.href = '/login';
+    if (auth.trialExpired) {
+      window.location.href = '/login?plan=s&reason=trial_expired';
+    } else {
+      window.location.href = '/login';
+    }
     throw new Error('AUTH_REDIRECT');
   }
 
@@ -1596,7 +1613,8 @@ function initPaywall() {
       <div style="font:700 28px/1 var(--mono);color:var(--txt);margin-bottom:10px;letter-spacing:-.02em">Orrery</div>
       <div style="font:400 13.5px/1.65 var(--sans);color:var(--txt2);margin-bottom:28px">Real-time geopolitical crisis intelligence.<br>Live stocks, crypto, AI briefings from $0.99/month.</div>
       <div style="display:flex;flex-direction:column;gap:9px;max-width:280px;margin:0 auto">
-        <a href="/login?plan=s" style="display:block;background:#f0f0ec;color:#09090b;padding:12px;border-radius:4px;font:700 9.5px/1 var(--mono);letter-spacing:.06em;text-decoration:none;text-align:center">GET STARTED — $0.99/MO →</a>
+        <a href="/login?plan=f" style="display:block;background:#38bc78;color:#000;padding:12px;border-radius:4px;font:700 9.5px/1 var(--mono);letter-spacing:.06em;text-decoration:none;text-align:center">START FREE — 3 DAYS, NO CARD →</a>
+        <a href="/login?plan=s" style="display:block;background:#f0f0ec;color:#09090b;padding:12px;border-radius:4px;font:700 9.5px/1 var(--mono);letter-spacing:.06em;text-decoration:none;text-align:center">GET STARTER — $0.99/MO →</a>
         <a href="/login?plan=a" style="display:block;background:var(--gld2);border:1px solid var(--gld);color:var(--gld);padding:12px;border-radius:4px;font:700 9.5px/1 var(--mono);letter-spacing:.06em;text-decoration:none;text-align:center">ANALYST — $14.99/MO ★</a>
         <a href="/login?plan=c" style="display:block;background:var(--bg3);border:1px solid var(--brd2);color:var(--txt);padding:12px;border-radius:4px;font:700 9.5px/1 var(--mono);letter-spacing:.06em;text-decoration:none;text-align:center">COMMAND — $34.99/MO</a>
       </div>
@@ -1610,10 +1628,53 @@ function applyPlan() {
   const pEl = document.getElementById('sb-plan-name');
   if (pEl) {
     pEl.textContent = pn;
-    pEl.style.color = PLAN === 'c' ? 'var(--grn)' : PLAN === 'a' ? 'var(--gld)' : 'var(--txt)';
+    pEl.style.color = PLAN === 'c' ? 'var(--grn)' : PLAN === 'a' ? 'var(--gld)' : PLAN === 'f' ? '#38bc78' : 'var(--txt)';
   }
   const pbEl = document.getElementById('plan-btn-name');
   if (pbEl) pbEl.textContent = pn.toUpperCase();
+
+  // ── FREE TRIAL BANNER ──
+  const existingBanner = document.getElementById('free-trial-banner');
+  if (existingBanner) existingBanner.remove();
+  if (PLAN === 'f' && window.__freeTrialExpires) {
+    const msLeft = Math.max(0, window.__freeTrialExpires - Date.now());
+    const hoursLeft = Math.ceil(msLeft / (1000 * 60 * 60));
+    const daysLeft  = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
+    const timeStr   = daysLeft > 1 ? `${daysLeft} days` : `${hoursLeft} hours`;
+    const banner = document.createElement('div');
+    banner.id = 'free-trial-banner';
+    banner.style.cssText = 'position:fixed;top:0;left:0;right:0;z-index:9999;background:#38bc78;color:#000;font:700 9px/1 var(--mono);letter-spacing:.1em;text-align:center;padding:7px 16px;display:flex;align-items:center;justify-content:center;gap:12px';
+    banner.innerHTML = `⏱ FREE TRIAL — ${timeStr} remaining <a href="/login?plan=s" style="color:#000;text-decoration:underline;font-weight:700">UPGRADE NOW →</a>`;
+    document.body.prepend(banner);
+    // Push main content down
+    const main = document.querySelector('.main');
+    if (main) main.style.marginTop = '30px';
+    const sb = document.querySelector('.sidebar');
+    if (sb) sb.style.marginTop = '30px';
+  }
+
+  // ── FREE PLAN: lock sidebar items with 🔒 badges ──
+  const isFree = PLAN === 'f';
+  const freeLockItems = ['sb-calc', 'sb-ipo', 'sb-brokers', 'sb-learn', 'sb-country', 'sb-crypto'];
+  freeLockItems.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    let badge = el.querySelector('.free-lock-badge');
+    if (isFree) {
+      if (!badge) {
+        badge = document.createElement('span');
+        badge.className = 'sb-badge lock free-lock-badge';
+        badge.textContent = '🔒';
+        el.appendChild(badge);
+      }
+      el.style.opacity = '0.5';
+      el.style.pointerEvents = 'auto';
+      el.onclick = (e) => { e.stopPropagation(); showPlanModal(); };
+    } else {
+      if (badge) badge.remove();
+      el.style.opacity = '';
+    }
+  });
 
   // Map lock — show overlay for Starter, hide for Analyst/Command
   const ml = document.getElementById('map-lock');

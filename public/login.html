@@ -37,6 +37,9 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 .plan-tab{flex:1;padding:8px 6px;border-radius:3px;cursor:pointer;text-align:center;transition:all .15s;border:none;background:transparent}
 .plan-tab-name{font:700 8px/1 var(--mono);letter-spacing:.06em;text-transform:uppercase;margin-bottom:3px}
 .plan-tab-price{font:600 12px/1 var(--mono)}
+.plan-tab.active-f{background:rgba(56,188,120,.1);border:1px solid rgba(56,188,120,.35)}
+.plan-tab.active-f .plan-tab-name{color:#38bc78}
+.plan-tab.active-f .plan-tab-price{color:#38bc78}
 .plan-tab.active-s{background:var(--bg);border:1px solid var(--brd2)}
 .plan-tab.active-s .plan-tab-name{color:var(--txt2)}
 .plan-tab.active-s .plan-tab-price{color:var(--txt)}
@@ -53,6 +56,7 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 .card{background:var(--bg2);border:1px solid var(--brd2);border-radius:8px;padding:26px 28px;width:100%;max-width:420px}
 .card-logo{display:flex;align-items:center;gap:8px;margin-bottom:20px}
 .card-plan-badge{font:700 7.5px/1 var(--mono);letter-spacing:.1em;padding:3px 9px;border-radius:3px;text-transform:uppercase}
+.badge-f{background:rgba(56,188,120,.1);border:1px solid rgba(56,188,120,.35);color:#38bc78}
 .badge-s{background:var(--bg3);border:1px solid var(--brd2);color:var(--txt3)}
 .badge-a{background:var(--gld2);border:1px solid rgba(212,168,67,.4);color:var(--gld)}
 .badge-c{background:var(--grn2);border:1px solid rgba(58,184,96,.3);color:var(--grn)}
@@ -83,6 +87,7 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 .submit-btn{width:100%;background:var(--txt);border:none;border-radius:4px;color:var(--bg);font:700 9.5px/1 var(--mono);letter-spacing:.08em;padding:13px;cursor:pointer;transition:opacity .15s;margin-top:4px}
 .submit-btn:hover{opacity:.87}
 .submit-btn:disabled{opacity:.35;cursor:not-allowed}
+.submit-btn.plan-f{background:#38bc78;color:#000}
 .submit-btn.plan-a{background:var(--gld);color:#000}
 .submit-btn.plan-c{background:var(--grn);color:#000}
 
@@ -126,6 +131,10 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 
   <!-- PLAN TABS -->
   <div class="plan-tabs" id="plan-tabs">
+    <button class="plan-tab inactive" id="tab-f" onclick="selectPlan('f')">
+      <div class="plan-tab-name" style="color:#38bc78">FREE</div>
+      <div class="plan-tab-price" style="font-size:9px;color:#38bc78">3 Days</div>
+    </button>
     <button class="plan-tab inactive" id="tab-s" onclick="selectPlan('s')">
       <div class="plan-tab-name">Starter</div>
       <div class="plan-tab-price">$0.99</div>
@@ -224,14 +233,15 @@ body{display:flex;flex-direction:column;align-items:center;justify-content:cente
 <script>
 // ── PLAN CONFIG ──
 const PLAN_FEATURES = {
+  f: ['✓ Crisis intel feed — live breaking news','✓ War stocks panel (40+ equities)','✓ Global indices dashboard','✓ Stock screener','🔒 AI Console locked (upgrade to unlock)'],
   s: ['Full crisis intel feed — 30+ events','AI Intel Console — unlimited queries','18 war stocks + 18 global indices','Global screener + calculators','IPO tracker, brokers, learning hub'],
   a: ['Everything in Starter','🌍 Live world map — 150+ cities','● Live exchange data — 36 symbols','7-day crisis history archive','Stock charts — 1W to 5Y'],
   c: ['Everything in Analyst','● Unlimited live data — no cutoff','₿ Live crypto — 12 assets + war scores','30-day history archive','CSV export · Priority support']
 };
-const PLAN_BADGES   = { s:'badge-s', a:'badge-a', c:'badge-c' };
-const PLAN_NAMES    = { s:'Starter Plan', a:'Analyst Plan', c:'Command Plan' };
-const PLAN_BTNCLS   = { s:'', a:'plan-a', c:'plan-c' };
-const USD_PRICES    = { s:0.99, a:14.99, c:34.99 };
+const PLAN_BADGES   = { f:'badge-f', s:'badge-s', a:'badge-a', c:'badge-c' };
+const PLAN_NAMES    = { f:'Free Trial — 3 Days', s:'Starter Plan', a:'Analyst Plan', c:'Command Plan' };
+const PLAN_BTNCLS   = { f:'plan-f', s:'', a:'plan-a', c:'plan-c' };
+const USD_PRICES    = { f:0, s:0.99, a:14.99, c:34.99 };
 
 let currentPlan = 's';
 let currentCurrency = 'USD';
@@ -348,17 +358,55 @@ function clearTermsErr() {
 function selectPlan(p) {
   if (!PLAN_FEATURES[p]) return;
   currentPlan = p;
-  ['s','a','c'].forEach(x => {
+  ['f','s','a','c'].forEach(x => {
     const tab = document.getElementById('tab-'+x);
     if (tab) tab.className = 'plan-tab '+(x===p ? 'active-'+x : 'inactive');
   });
   const badge = document.getElementById('plan-badge');
   if (badge) { badge.textContent = PLAN_NAMES[p]; badge.className = 'card-plan-badge '+PLAN_BADGES[p]; }
-  document.getElementById('summary-price').textContent = getPriceDisplay(p, currentCurrency);
-  document.getElementById('summary-features').innerHTML =
-    PLAN_FEATURES[p].map(f => `<div class="plan-summary-row"><span class="ck">✓</span><span>${escHtml(f)}</span></div>`).join('');
+
+  const isFree = p === 'f';
+
+  // Toggle payment-only fields
+  const nameField    = document.getElementById('inp-name')?.closest('.field');
+  const phoneField   = document.getElementById('inp-phone')?.closest('.field');
+  const currWrap     = document.getElementById('currency-wrap')?.closest('div[style*="justify-content"]');
+  const payMethods   = document.querySelector('.pay-methods');
+  const termsField   = document.getElementById('terms-field');
+  const planSummary  = document.getElementById('plan-summary');
+  const footerNote   = document.querySelector('.footer-note');
+
+  if (nameField)   nameField.style.display   = isFree ? 'none' : '';
+  if (phoneField)  phoneField.style.display  = isFree ? 'none' : '';
+  if (currWrap)    currWrap.style.display    = isFree ? 'none' : '';
+  if (payMethods)  payMethods.style.display  = isFree ? 'none' : '';
+  if (termsField)  termsField.style.display  = isFree ? 'none' : '';
+  if (footerNote)  footerNote.style.display  = isFree ? 'none' : '';
+
+  // Plan summary: show free perks without price row
+  if (isFree) {
+    document.getElementById('plan-summary').innerHTML = `
+      <div style="font:700 10px/1 var(--mono);color:#38bc78;letter-spacing:.08em;margin-bottom:10px">✓ NO CREDIT CARD REQUIRED</div>
+      ${PLAN_FEATURES['f'].map(f=>`<div class="plan-summary-row"><span class="ck" style="color:#38bc78">✓</span><span>${escHtml(f)}</span></div>`).join('')}
+      <div style="margin-top:10px;font:400 9.5px/1.4 var(--mono);color:var(--txt3)">Trial lasts 3 days. Upgrade anytime for full access.</div>`;
+  } else {
+    planSummary.innerHTML = `
+      <div class="plan-summary-price"><span class="plan-summary-amt" id="summary-price">${getPriceDisplay(p, currentCurrency)}</span><span class="plan-summary-per">/ month · cancel anytime</span></div>
+      <div id="summary-features">${PLAN_FEATURES[p].map(f=>`<div class="plan-summary-row"><span class="ck">✓</span><span>${escHtml(f)}</span></div>`).join('')}</div>`;
+  }
+
+  const cardTitle = document.getElementById('card-title');
+  if (cardTitle) cardTitle.textContent = isFree ? 'Start your free 3-day trial' : 'Start tracking now';
+  const cardSub = document.querySelector('.card-sub');
+  if (cardSub) cardSub.textContent = isFree
+    ? 'Enter your email and we\'ll send you an instant access link. No card needed.'
+    : 'Enter your details to pay via PayPal and unlock the platform instantly.';
+
   const btn = document.getElementById('submit-btn');
-  if (btn) { btn.textContent = getBtnText(p, currentCurrency); btn.className = 'submit-btn'+(PLAN_BTNCLS[p]?' '+PLAN_BTNCLS[p]:''); }
+  if (btn) {
+    btn.textContent = isFree ? 'START FREE TRIAL →' : getBtnText(p, currentCurrency);
+    btn.className = 'submit-btn'+(PLAN_BTNCLS[p]?' '+PLAN_BTNCLS[p]:'');
+  }
   try { history.replaceState({},'','/login?plan='+p); } catch(e) {}
 }
 
@@ -390,11 +438,37 @@ function fieldErr(field, msg) {
 // ── SUBMIT ──
 async function submitPayment() {
   clearErrors();
-  const name  = document.getElementById('inp-name').value.trim();
   const email = document.getElementById('inp-email').value.trim();
-  const phone = document.getElementById('inp-phone').value.trim();
   const btn   = document.getElementById('submit-btn');
 
+  // ── FREE TRIAL: just send magic link, no payment ──
+  if (currentPlan === 'f') {
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      fieldErr('email','Please enter a valid email address.');
+      return;
+    }
+    btn.disabled = true;
+    btn.textContent = 'SENDING ACCESS LINK…';
+    try {
+      const r = await fetch('/api/send-magic', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, plan: 'f' })
+      });
+      const d = await r.json().catch(() => ({}));
+      if (!r.ok) { showErr(d.error || 'Could not send link. Please try again.'); btn.disabled=false; btn.textContent='START FREE TRIAL →'; return; }
+      const suc = document.getElementById('form-success');
+      if (suc) { suc.textContent = '✓ Check your inbox — access link sent to ' + email; suc.style.display = 'block'; }
+      btn.textContent = '✓ LINK SENT — CHECK EMAIL';
+    } catch(e) {
+      showErr('Connection failed. Please try again.');
+      btn.disabled=false; btn.textContent='START FREE TRIAL →';
+    }
+    return;
+  }
+
+  const name  = document.getElementById('inp-name').value.trim();
+  const phone = document.getElementById('inp-phone').value.trim();
   const termsChecked = document.getElementById('terms-chk')?.checked;
   let valid = true;
   if (!name)  { fieldErr('name','Please enter your full name.'); valid=false; }
@@ -458,8 +532,8 @@ async function submitPayment() {
 
 // ── INIT ──
 (async function init() {
-  const p = new URLSearchParams(location.search).get('plan') || 's';
-  currentPlan = ['s','a','c'].includes(p) ? p : 's';
+  const p = new URLSearchParams(location.search).get('plan') || 'f';
+  currentPlan = ['f','s','a','c'].includes(p) ? p : 'f';
   currentCurrency = detectCurrency();
 
   // Build currency selector
