@@ -1943,6 +1943,8 @@ function fireNextEvent() {
   liveEventIdx++;
   const newEv = { ...ev, time: new Date(), newest: true };
   feedEvents.forEach(e => e.newest = false);
+  // Remove any existing copy of this event before prepending the refreshed one
+  feedEvents = feedEvents.filter(e => e.id !== ev.id);
   feedEvents.unshift(newEv);
   if (feedEvents.length > 120) feedEvents = feedEvents.slice(0, 120);
   historyEvents.unshift(newEv);
@@ -2098,10 +2100,38 @@ function initGlobe() {
   });
   ro.observe(container);
 
-  // Fetch live GDELT events
+  // Fetch live GDELT events + Google News
   fetchLiveEvents();
+  fetchGNews();
 
   updateGlobePoints();
+}
+
+async function fetchGNews() {
+  try {
+    const r = await fetch('/api/gnews', { signal: AbortSignal.timeout(12000) });
+    if (!r.ok) return;
+    const data = await r.json();
+    if (!data.articles || data.articles.length === 0) return;
+
+    const existingIds   = new Set(feedEvents.map(e => e.id));
+    const existingTitles = new Set(feedEvents.map(e => e.txt.toLowerCase().substring(0, 70)));
+
+    const fresh = data.articles
+      .filter(a => !existingIds.has(a.id) && !existingTitles.has(a.txt.toLowerCase().substring(0, 70)))
+      .map(a => ({ ...a, time: new Date(a.time || Date.now()), newest: false }));
+
+    if (fresh.length > 0) {
+      feedEvents = [...feedEvents, ...fresh].slice(0, 200);
+      const cnt = document.getElementById('event-count');
+      if (cnt) cnt.textContent = feedEvents.length;
+      const badge = document.getElementById('sb-intel-badge');
+      if (badge) badge.textContent = feedEvents.length;
+      renderIntelFeed();
+    }
+  } catch(e) {
+    // silently ignore — Google News is supplementary
+  }
 }
 
 async function fetchLiveEvents() {

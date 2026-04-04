@@ -1,15 +1,19 @@
-import crypto from 'crypto';
-import Redis from 'ioredis';
+// api/send-magic.js — sends magic link email via Resend
+// Uses Upstash REST API directly (no ioredis / npm packages needed)
 
-function getRedis() {
-  const url = process.env.REDIS_URL || '';
-  if (!url) return null;
-  const opts = { maxRetriesPerRequest: 2, connectTimeout: 5000, enableReadyCheck: false, lazyConnect: true };
-  if (url.startsWith('rediss://')) opts.tls = {};
-  return new Redis(url, opts);
-}
-async function closeRedis(redis) {
-  try { await Promise.race([redis.quit(), new Promise(r => setTimeout(r, 1000))]); } catch(_) {}
+import crypto from 'crypto';
+
+const REDIS_URL   = process.env.UPSTASH_REDIS_REST_URL   || '';
+const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN || '';
+
+async function redisCmd(...args) {
+  const r = await fetch(REDIS_URL, {
+    method:  'POST',
+    headers: { Authorization: `Bearer ${REDIS_TOKEN}`, 'Content-Type': 'application/json' },
+    body:    JSON.stringify(args),
+  });
+  const d = await r.json();
+  return d.result;
 }
 
 export default async function handler(req, res) {
@@ -24,50 +28,44 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Valid email required' });
 
   const RESEND_KEY = process.env.RESEND_API_KEY;
-  if (!RESEND_KEY) return res.status(500).json({ error: 'RESEND_API_KEY not configured.' });
+  if (!RESEND_KEY) return res.status(500).json({ error: 'Email service not configured.' });
+  if (!REDIS_URL || !REDIS_TOKEN) return res.status(500).json({ error: 'Redis not configured.' });
 
-  const token   = crypto.randomBytes(32).toString('hex');
-  const expires = Date.now() + 15 * 60 * 1000;
+  const magicToken = crypto.randomBytes(32).toString('hex');
+  const expires    = Date.now() + 15 * 60 * 1000; // 15 minutes
 
-  const redis = getRedis();
-  if (!redis) {
-    return res.status(500).json({ error: 'REDIS_URL not configured. Magic links are unavailable.' });
-  }
   try {
-    await redis.set(`magic:${token}`, JSON.stringify({ email, plan: plan || 's', expires }), 'EX', 900);
+    await redisCmd('SET', `magic:${magicToken}`, JSON.stringify({ email, plan: plan || 's', expires }), 'EX', 900);
   } catch (e) {
-    console.error('[Magic] Redis error:', e.message);
+    console.error('[Magic] Redis write error:', e.message);
     return res.status(500).json({ error: 'Storage error. Please try again.' });
-  } finally {
-    await closeRedis(redis);
   }
 
   const baseUrl   = process.env.PESAPAL_HOST || `https://${process.env.VERCEL_URL}`;
-  const magicLink = `${baseUrl}/api/verify-magic?token=${token}`;
+  const magicLink = `${baseUrl}/api/verify-magic?token=${magicToken}`;
 
   const emailRes = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
+    method:  'POST',
     headers: { Authorization: `Bearer ${RESEND_KEY}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      from: process.env.EMAIL_FROM || 'Orrery <noreply@orreryx.io>',
-      to: [email],
+      from:    process.env.EMAIL_FROM || 'Orrery <noreply@orreryx.io>',
+      to:      [email],
       subject: 'Your Orrery access link',
       html: `<div style="background:#09090b;color:#f0f0ec;padding:40px;max-width:480px;margin:0 auto;border:1px solid rgba(255,255,255,.1);border-radius:8px;font-family:'Helvetica Neue',sans-serif">
-        <div style="margin-bottom:32px;display:flex;align-items:center;gap:10px">
-          <div style="width:32px;height:32px;background:#f0f0ec;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:16px">⊕</div>
-          <strong style="font-size:16px;letter-spacing:.04em">Orrery</strong>
+        <div style="margin-bottom:32px">
+          <strong style="font-size:16px;letter-spacing:.04em">⊕ Orrery</strong>
         </div>
         <div style="font-size:22px;font-weight:700;margin-bottom:10px;letter-spacing:-.01em">Access your platform</div>
         <div style="font-size:13px;color:#a0a09a;margin-bottom:28px;line-height:1.6">Your sign-in link expires in <strong style="color:#f0f0ec">15 minutes</strong> and can only be used once.</div>
         <a href="${magicLink}" style="display:block;background:#f0f0ec;color:#09090b;text-decoration:none;text-align:center;padding:14px;border-radius:4px;font-weight:700;letter-spacing:.04em;font-size:13px">OPEN ORRERY →</a>
-        <div style="margin-top:24px;font-size:11px;color:#484844;line-height:1.6">If you didn't request this, you can safely ignore this email. This link will expire automatically.</div>
+        <div style="margin-top:24px;font-size:11px;color:#484844;line-height:1.6">If you didn't request this, you can safely ignore this email. This link expires automatically.</div>
       </div>`,
     }),
   });
 
   if (!emailRes.ok) {
     const err = await emailRes.json().catch(() => ({}));
-    console.error('[Magic] Resend error:', err);
+    console.error('[Magic] Resend error:', JSON.stringify(err));
     return res.status(500).json({ error: 'Failed to send email. Please try again.' });
   }
 

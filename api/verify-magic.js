@@ -1,19 +1,23 @@
-import Redis from 'ioredis';
+// api/verify-magic.js — validates magic link token and creates session
+// Uses Upstash REST API directly (no ioredis / npm packages needed)
 
-function getRedis() {
-  const url = process.env.REDIS_URL || '';
-  if (!url) return null;
-  const opts = { maxRetriesPerRequest: 2, connectTimeout: 5000, enableReadyCheck: false, lazyConnect: true };
-  if (url.startsWith('rediss://')) opts.tls = {};
-  return new Redis(url, opts);
-}
-async function closeRedis(redis) {
-  try { await Promise.race([redis.quit(), new Promise(r => setTimeout(r, 1000))]); } catch(_) {}
+import crypto from 'crypto';
+
+const REDIS_URL   = process.env.UPSTASH_REDIS_REST_URL   || '';
+const REDIS_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN || '';
+
+async function redisCmd(...args) {
+  const r = await fetch(REDIS_URL, {
+    method:  'POST',
+    headers: { Authorization: `Bearer ${REDIS_TOKEN}`, 'Content-Type': 'application/json' },
+    body:    JSON.stringify(args),
+  });
+  const d = await r.json();
+  return d.result;
 }
 
 function normPlan(p) {
-  if (!p) return 's';
-  if (p === 'command'  || p === 'c') return 'c';
+  if (p === 'command' || p === 'c') return 'c';
   if (p === 'analyst'  || p === 'a') return 'a';
   return 's';
 }
@@ -21,30 +25,31 @@ function normPlan(p) {
 export default async function handler(req, res) {
   const { token } = req.query;
   if (!token) return res.redirect('/login?error=missing_token');
+  if (!REDIS_URL || !REDIS_TOKEN) return res.redirect('/login?error=server_error');
 
-  const redis = getRedis();
-  if (!redis) return res.redirect('/login?error=server_error');
   try {
-    const raw = await redis.get(`magic:${token}`);
+    const raw = await redisCmd('GET', `magic:${token}`);
     if (!raw) return res.redirect('/login?error=invalid_token');
 
     let data;
     try { data = JSON.parse(raw); } catch(e) { return res.redirect('/login?error=server_error'); }
 
     if (Date.now() > data.expires) {
-      await redis.del(`magic:${token}`);
+      await redisCmd('DEL', `magic:${token}`);
       return res.redirect('/login?error=expired');
     }
 
-    await redis.del(`magic:${token}`); // single-use
+    await redisCmd('DEL', `magic:${token}`); // single-use — consume immediately
 
-    const planCode = normPlan(data.plan);
+    const planCode     = normPlan(data.plan);
+    const sessionToken = crypto.randomBytes(32).toString('hex');
     const session = {
-      email: data.email,
-      plan: planCode,
-      expires: Date.now() + 365 * 24 * 60 * 60 * 1000,
+      email:     data.email,
+      plan:      planCode,
+      token:     sessionToken,   // required by hasPaid() in app.html
+      expires:   Date.now() + 365 * 24 * 60 * 60 * 1000,
       createdAt: Date.now(),
-      verified: true,
+      verified:  true,
     };
 
     const sessionStr = encodeURIComponent(JSON.stringify(session));
@@ -53,8 +58,6 @@ export default async function handler(req, res) {
   } catch(e) {
     console.error('[VerifyMagic] Error:', e.message);
     return res.redirect('/login?error=server_error');
-  } finally {
-    await closeRedis(redis);
   }
 }
 
