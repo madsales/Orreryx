@@ -45,7 +45,7 @@ export default async function handler(req, res) {
   const magicLink = `${baseUrl}/api/verify-magic?token=${magicToken}`;
 
   // Use verified custom domain if set, otherwise fall back to Resend's shared domain
-  const FROM_ADDRESS = process.env.EMAIL_FROM || 'Orrery <onboarding@resend.dev>';
+  const FROM_ADDRESS = process.env.EMAIL_FROM || 'Orrery <Hello@www.orrreryx.io>';
 
   const planLabel = plan === 'f' ? 'Free Trial' : plan === 'a' ? 'Analyst' : plan === 'c' ? 'Command' : 'Starter';
   const subject   = plan === 'f' ? 'Your Orrery free trial access link' : 'Your Orrery access link';
