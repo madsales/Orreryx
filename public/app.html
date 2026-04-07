@@ -1656,7 +1656,7 @@ function applyPlan() {
 
   // ── FREE PLAN: lock sidebar items with 🔒 badges ──
   const isFree = PLAN === 'f';
-  const freeLockItems = ['sb-calc', 'sb-ipo', 'sb-brokers', 'sb-learn', 'sb-country', 'sb-crypto'];
+  const freeLockItems = ['sb-calc', 'sb-ipo', 'sb-brokers', 'sb-learn', 'sb-country'];
   freeLockItems.forEach(id => {
     const el = document.getElementById(id);
     if (!el) return;
