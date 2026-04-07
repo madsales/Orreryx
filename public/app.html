@@ -558,7 +558,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
     <div class="sb-item" onclick="goPage('learn')" id="sb-learn"><span class="sb-icon">📚</span>Learning Hub</div>
     <div class="sb-item" onclick="goPage('history')" id="sb-history">
       <span class="sb-icon">🕐</span>History
-      <span class="sb-badge lock" id="sb-hist-badge" style="background:transparent;border:none;font-size:10px;padding:0">🔒</span>
+      <span id="sb-hist-badge" style="margin-left:auto;font-size:10px;opacity:.7;flex-shrink:0"></span>
     </div>
   </div>
   <div class="sb-sec">
@@ -1706,15 +1706,21 @@ function applyPlan() {
   // Crypto sidebar badge
   const cb = document.getElementById('sb-crypto-badge');
   if (cb) {
-    cb.textContent = can('crypto') ? 'LIVE' : 'CMD';
-    cb.className = 'sb-badge ' + (can('crypto') ? 'live' : 'lock');
+    if (can('crypto')) {
+      cb.textContent = 'LIVE'; cb.className = 'sb-badge live'; cb.style.cssText = '';
+    } else {
+      cb.textContent = '🔒'; cb.className = ''; cb.style.cssText = 'margin-left:auto;font-size:10px;opacity:.7;flex-shrink:0;background:none;border:none';
+    }
   }
 
   // History sidebar badge
   const hb = document.getElementById('sb-hist-badge');
   if (hb) {
-    if (can('history')) { hb.textContent = can('history') + 'D'; hb.className = 'sb-badge pro'; }
-    else { hb.textContent = 'LOCK'; hb.className = 'sb-badge lock'; }
+    if (can('history')) {
+      hb.textContent = can('history') + 'D'; hb.className = 'sb-badge pro'; hb.style.cssText = '';
+    } else {
+      hb.textContent = '🔒'; hb.className = ''; hb.style.cssText = 'margin-left:auto;font-size:10px;opacity:.7;flex-shrink:0;background:none;border:none';
+    }
   }
 
   // Upgrade button text
