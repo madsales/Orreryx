@@ -558,7 +558,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
     <div class="sb-item" onclick="goPage('learn')" id="sb-learn"><span class="sb-icon">📚</span>Learning Hub</div>
     <div class="sb-item" onclick="goPage('history')" id="sb-history">
       <span class="sb-icon">🕐</span>History
-      <span class="sb-badge lock" id="sb-hist-badge">LOCK</span>
+      <span class="sb-badge lock" id="sb-hist-badge" style="background:transparent;border:none;font-size:10px;padding:0">🔒</span>
     </div>
   </div>
   <div class="sb-sec">
@@ -1664,12 +1664,14 @@ function applyPlan() {
     if (isFree) {
       if (!badge) {
         badge = document.createElement('span');
-        badge.className = 'sb-badge lock free-lock-badge';
+        badge.className = 'free-lock-badge';
+        badge.style.cssText = 'margin-left:auto;font-size:10px;opacity:.7;flex-shrink:0';
         badge.textContent = '🔒';
         el.appendChild(badge);
       }
-      el.style.opacity = '';  // full visibility — text readable
-      el.onclick = null;       // navigates to page normally; page handles the lock
+      el.style.opacity = '';
+      el.style.pointerEvents = 'auto';
+      el.onclick = (e) => { e.stopPropagation(); showPlanModal(); };
     } else {
       if (badge) badge.remove();
       el.style.opacity = '';
