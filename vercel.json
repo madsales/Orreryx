@@ -13,6 +13,8 @@
     { "src": "/api/track",           "dest": "/api/track.js" },
     { "src": "/api/admin(.*)",       "dest": "/api/admin.js" },
     { "src": "/demo",                 "dest": "/demo.html" },
+    { "src": "/sitemap.xml",          "dest": "/sitemap.xml" },
+    { "src": "/robots.txt",           "dest": "/robots.txt" },
     { "src": "/callback",            "dest": "/callback.html" },
     { "src": "/app",                 "dest": "/app.html" },
     { "src": "/login",               "dest": "/login.html" },
