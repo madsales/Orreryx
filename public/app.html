@@ -1668,9 +1668,8 @@ function applyPlan() {
         badge.textContent = '🔒';
         el.appendChild(badge);
       }
-      el.style.opacity = '0.5';
-      el.style.pointerEvents = 'auto';
-      el.onclick = (e) => { e.stopPropagation(); showPlanModal(); };
+      el.style.opacity = '';  // full visibility — text readable
+      el.onclick = null;       // navigates to page normally; page handles the lock
     } else {
       if (badge) badge.remove();
       el.style.opacity = '';
