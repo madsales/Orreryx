@@ -381,6 +381,28 @@ footer{border-top:1px solid var(--brd);padding:32px 48px;display:flex;align-item
   .hero-stats{flex-direction:column;gap:18px}
   .how-steps{grid-template-columns:1fr 1fr}
 }
+/* GLOBE PREVIEW SECTION */
+.globe-section{padding:90px 48px;border-top:1px solid var(--brd);background:linear-gradient(180deg,var(--bg2) 0%,var(--bg) 100%);overflow:hidden;position:relative}
+.globe-inner{max-width:1100px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:60px;align-items:center}
+.globe-canvas-wrap{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--brd2);box-shadow:0 0 80px rgba(224,56,54,.08),0 32px 80px rgba(0,0,0,.6);background:#09090a;aspect-ratio:1/1;max-width:460px}
+.globe-canvas-wrap canvas{display:block;width:100%!important;height:100%!important}
+.globe-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(58,184,96,.1);border:1px solid rgba(58,184,96,.3);border-radius:3px;padding:4px 12px;font-family:var(--mono);font-size:8px;font-weight:600;color:var(--green);letter-spacing:.12em;margin-bottom:16px}
+.globe-plan-tag{display:inline-block;background:var(--green);color:#000;font-family:var(--mono);font-size:7px;font-weight:700;padding:3px 10px;border-radius:2px;letter-spacing:.1em;text-transform:uppercase;margin-bottom:14px}
+.globe-features{display:flex;flex-direction:column;gap:10px;margin:24px 0}
+.globe-feat{display:flex;align-items:flex-start;gap:10px;font-size:12px;color:var(--txt2);line-height:1.5}
+.globe-feat-icon{color:var(--green);font-size:14px;flex-shrink:0;margin-top:1px}
+.globe-stat-row{display:flex;gap:24px;margin-bottom:28px;flex-wrap:wrap}
+.globe-stat{text-align:left}
+.globe-stat-v{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--green);line-height:1}
+.globe-stat-l{font-size:9px;color:var(--txt3);letter-spacing:.1em;text-transform:uppercase;font-family:var(--mono);margin-top:3px}
+.globe-overlay-label{position:absolute;top:14px;left:14px;background:rgba(9,9,10,.8);border:1px solid var(--brd2);border-radius:4px;padding:6px 10px;font-family:var(--mono);font-size:8px;color:var(--txt3);letter-spacing:.1em;backdrop-filter:blur(4px)}
+.globe-overlay-live{position:absolute;top:14px;right:14px;display:flex;align-items:center;gap:5px;background:rgba(9,9,10,.8);border:1px solid rgba(224,56,54,.3);border-radius:4px;padding:5px 9px;font-family:var(--mono);font-size:7.5px;color:var(--red);letter-spacing:.1em;backdrop-filter:blur(4px)}
+.globe-event-popup{position:absolute;bottom:14px;left:14px;right:14px;background:rgba(9,9,10,.9);border:1px solid var(--brd2);border-radius:6px;padding:10px 12px;backdrop-filter:blur(8px)}
+.gep-tag{font-family:var(--mono);font-size:7px;font-weight:700;color:var(--red);letter-spacing:.12em;text-transform:uppercase;margin-bottom:4px}
+.gep-text{font-size:10.5px;color:var(--txt2);line-height:1.4}
+.gep-stocks{display:flex;gap:8px;margin-top:6px}
+.gep-stock{font-family:var(--mono);font-size:9px;font-weight:600;color:var(--green)}
+@media(max-width:768px){.globe-inner{grid-template-columns:1fr}.globe-canvas-wrap{max-width:100%}}
 </style>
 </head>
 <body>
@@ -584,6 +606,52 @@ footer{border-top:1px solid var(--brd);padding:32px 48px;display:flex;align-item
         </div>
         <div style="font-size:9px;color:var(--txt3);font-family:var(--mono);margin-top:9px;text-align:center">Prices update every 2.5s in the live platform · Simulated from pre-war baseline</div>
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- GLOBE PREVIEW — COMMAND PLAN -->
+<section class="globe-section">
+  <div class="globe-inner">
+    <!-- LEFT: GLOBE -->
+    <div style="display:flex;flex-direction:column;align-items:center">
+      <div class="globe-canvas-wrap" id="globe-wrap">
+        <canvas id="globe-canvas"></canvas>
+        <div class="globe-overlay-label">🌍 LIVE CRISIS MAP</div>
+        <div class="globe-overlay-live"><div class="lpulse"></div>REAL-TIME</div>
+        <div class="globe-event-popup" id="globe-popup">
+          <div class="gep-tag" id="gep-tag">⚡ MILITARY ALERT</div>
+          <div class="gep-text" id="gep-text">NATO activates rapid response forces along eastern flank as border tensions escalate — BBC News</div>
+          <div class="gep-stocks">
+            <span class="gep-stock">LMT +4.2%</span>
+            <span class="gep-stock">RTX +3.8%</span>
+            <span class="gep-stock">GOLD +2.1%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- RIGHT: COPY -->
+    <div>
+      <div class="globe-plan-tag">✦ COMMAND PLAN EXCLUSIVE</div>
+      <h2 class="section-h">Live 3D Crisis Globe</h2>
+      <p class="section-sub">Every geopolitical event — conflict, sanction, election, disaster — drops as a live pulsing marker at its exact location. Click any event for instant AI market analysis.</p>
+      <div class="globe-stat-row">
+        <div class="globe-stat"><div class="globe-stat-v">150+</div><div class="globe-stat-l">Cities Mapped</div></div>
+        <div class="globe-stat"><div class="globe-stat-v">24/7</div><div class="globe-stat-l">Live Monitoring</div></div>
+        <div class="globe-stat"><div class="globe-stat-v">60s</div><div class="globe-stat-l">AI Brief Interval</div></div>
+      </div>
+      <div class="globe-features">
+        <div class="globe-feat"><span class="globe-feat-icon">🔴</span>Live crisis markers pulsing at exact conflict coordinates</div>
+        <div class="globe-feat"><span class="globe-feat-icon">🤖</span>Click any event — Claude AI explains the market impact instantly</div>
+        <div class="globe-feat"><span class="globe-feat-icon">📈</span>See which stocks are moving because of each geo event in real time</div>
+        <div class="globe-feat"><span class="globe-feat-icon">🌐</span>Orbit, zoom and explore 150+ mapped global locations</div>
+        <div class="globe-feat"><span class="globe-feat-icon">⚡</span>Auto-rotates to next live event every 30 seconds</div>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <a href="/login?plan=c" class="btn-p">GET COMMAND — $34.99/MO →</a>
+        <a href="/login?plan=f" class="btn-s" style="border-color:rgba(56,188,120,.4);color:#38bc78">TRY FREE 3 DAYS →</a>
+      </div>
+      <div style="margin-top:12px;font-family:var(--mono);font-size:9px;color:var(--txt3)">Globe also included in Analyst plan ($14.99/mo)</div>
     </div>
   </div>
 </section>
@@ -1041,6 +1109,208 @@ function openLegal(k){
 }
 function closeLegal(){document.getElementById('legal-modal').style.display='none';}
 document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLegal();});
+</script>
+<!-- GLOBE CANVAS -->
+<script>
+(function(){
+  const canvas = document.getElementById('globe-canvas');
+  if (!canvas) return;
+  const wrap = document.getElementById('globe-wrap');
+
+  function resize() {
+    const w = wrap.clientWidth;
+    canvas.width = w * window.devicePixelRatio;
+    canvas.height = w * window.devicePixelRatio;
+    canvas.style.width = w + 'px';
+    canvas.style.height = w + 'px';
+  }
+  resize();
+  window.addEventListener('resize', () => { resize(); });
+
+  const ctx = canvas.getContext('2d');
+  let angle = 0;
+  let tilt = 0.35;
+
+  // Crisis hotspots: [lat, lon, label, category, stocks]
+  const hotspots = [
+    [33.3, 44.4, 'Baghdad', 'MILITARY', ['LMT +4.2%', 'OIL +6.1%']],
+    [51.5, -0.1, 'London', 'ECONOMIC', ['GBP -0.8%', 'FTSE -1.2%']],
+    [35.7, 139.7, 'Tokyo', 'DIPLOMATIC', ['JPY +1.1%', 'GOLD +0.9%']],
+    [55.7, 37.6, 'Moscow', 'MILITARY', ['RTX +3.8%', 'NOC +2.9%']],
+    [39.9, 116.4, 'Beijing', 'ECONOMIC', ['USD/CNY', 'SPY -0.6%']],
+    [30.0, 31.2, 'Cairo', 'MILITARY', ['OIL +3.2%', 'ZIM -8.1%']],
+    [28.6, 77.2, 'New Delhi', 'DIPLOMATIC', ['INR -0.5%', 'SENSEX']],
+    [40.7, -74.0, 'New York', 'ECONOMIC', ['SPY +0.4%', 'TLT -0.3%']],
+    [48.8, 2.3, 'Paris', 'POLITICAL', ['CAC40', 'EUR -0.2%']],
+    [31.8, 35.2, 'Jerusalem', 'MILITARY', ['LMT +5.1%', 'GOLD +2.8%']],
+    [-23.5, -46.6, 'São Paulo', 'ECONOMIC', ['BRL -1.1%', 'EWZ']],
+    [1.3, 103.8, 'Singapore', 'DIPLOMATIC', ['SGD', 'SHIPPING']],
+  ];
+
+  function latLonToXY(lat, lon, r, cx, cy, angle, tilt) {
+    const phi = (90 - lat) * Math.PI / 180;
+    const theta = (lon + angle * 180 / Math.PI) * Math.PI / 180;
+    const x3 = r * Math.sin(phi) * Math.cos(theta);
+    const y3 = r * Math.cos(phi);
+    const z3 = r * Math.sin(phi) * Math.sin(theta);
+    // Apply tilt
+    const y4 = y3 * Math.cos(tilt) - z3 * Math.sin(tilt);
+    const z4 = y3 * Math.sin(tilt) + z3 * Math.cos(tilt);
+    return { x: cx + x3, y: cy - y4, z: z4, visible: z4 > -r * 0.1 };
+  }
+
+  const events = [
+    { tag: '⚡ MILITARY ALERT', text: 'NATO activates rapid response forces along eastern flank — BBC News', stocks: ['LMT +4.2%', 'RTX +3.8%', 'GOLD +2.1%'] },
+    { tag: '🛢 ENERGY CRISIS', text: 'Strait of Hormuz shipping disruption — crude oil spikes 6% — Reuters', stocks: ['XOM +8.9%', 'OIL +6.1%', 'DAL -13%'] },
+    { tag: '💰 ECONOMIC ALERT', text: 'G7 emergency sanctions package announced — currency volatility — AP', stocks: ['USD/JPY', 'GOLD +2.8%', 'CHF +1.4%'] },
+    { tag: '🔴 CONFLICT ZONE', text: 'Airspace closure declared — airlines reroute, fuel costs surge — Guardian', stocks: ['DAL -8.2%', 'LUV -6.1%', 'UAL -7.3%'] },
+  ];
+  let eventIdx = 0;
+  let pulseT = 0;
+
+  function updatePopup() {
+    const ev = events[eventIdx % events.length];
+    const popup = document.getElementById('globe-popup');
+    if (!popup) return;
+    const tagEl = document.getElementById('gep-tag');
+    const textEl = document.getElementById('gep-text');
+    const stocksEl = popup.querySelector('.gep-stocks');
+    if (tagEl) tagEl.textContent = ev.tag;
+    if (textEl) textEl.textContent = ev.text;
+    if (stocksEl) stocksEl.innerHTML = ev.stocks.map(s => `<span class="gep-stock">${s}</span>`).join('');
+    eventIdx++;
+  }
+  setInterval(updatePopup, 4000);
+
+  function draw() {
+    const w = canvas.width;
+    const h = canvas.height;
+    const cx = w / 2;
+    const cy = h / 2;
+    const r = w * 0.38;
+    const dpr = window.devicePixelRatio || 1;
+
+    ctx.clearRect(0, 0, w, h);
+
+    // Background glow
+    const grd = ctx.createRadialGradient(cx, cy, 0, cx, cy, r * 1.3);
+    grd.addColorStop(0, 'rgba(224,56,54,0.04)');
+    grd.addColorStop(0.5, 'rgba(9,9,10,0)');
+    grd.addColorStop(1, 'rgba(9,9,10,0)');
+    ctx.fillStyle = grd;
+    ctx.fillRect(0, 0, w, h);
+
+    // Globe base
+    const globeGrd = ctx.createRadialGradient(cx - r * 0.2, cy - r * 0.2, r * 0.1, cx, cy, r);
+    globeGrd.addColorStop(0, '#1a1a2e');
+    globeGrd.addColorStop(0.4, '#0f0f1a');
+    globeGrd.addColorStop(1, '#060608');
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = globeGrd;
+    ctx.fill();
+
+    // Globe border glow
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(224,56,54,0.2)';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Latitude lines
+    ctx.save();
+    for (let lat = -60; lat <= 60; lat += 30) {
+      const phi = (90 - lat) * Math.PI / 180;
+      const ry = r * Math.cos(phi);
+      const yc = cy - r * Math.cos(phi) * Math.cos(tilt);
+      const rx2 = r * Math.sin(phi);
+      ctx.beginPath();
+      ctx.ellipse(cx, yc, rx2, Math.abs(ry * Math.sin(tilt)), 0, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    }
+    // Longitude lines
+    for (let lon = 0; lon < 180; lon += 30) {
+      const theta1 = (lon + angle * 180 / Math.PI) * Math.PI / 180;
+      const theta2 = theta1 + Math.PI;
+      // Meridian as ellipse segments
+      ctx.beginPath();
+      for (let lat2 = -90; lat2 <= 90; lat2 += 5) {
+        const pos = latLonToXY(lat2, lon, r, cx, cy, angle, tilt);
+        if (lat2 === -90) ctx.moveTo(pos.x, pos.y);
+        else ctx.lineTo(pos.x, pos.y);
+      }
+      ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+      ctx.lineWidth = 0.8;
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    // Equator highlight
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, r, r * Math.abs(Math.sin(tilt)), 0, 0, Math.PI * 2);
+    ctx.strokeStyle = 'rgba(224,56,54,0.12)';
+    ctx.lineWidth = 1;
+    ctx.stroke();
+
+    pulseT += 0.04;
+
+    // Hotspot dots
+    hotspots.forEach(([lat, lon, label, cat, stocks], i) => {
+      const pos = latLonToXY(lat, lon, r, cx, cy, angle, tilt);
+      if (!pos.visible) return;
+
+      const depth = (pos.z + r) / (2 * r);
+      const alpha = 0.3 + depth * 0.7;
+      const dotR = (3 + depth * 3) * dpr;
+
+      // Pulse ring
+      const pulsePhase = (pulseT + i * 0.7) % (Math.PI * 2);
+      const pulseR = dotR + Math.sin(pulsePhase) * dotR * 2;
+      const pulseAlpha = (1 - Math.sin(pulsePhase) * 0.5) * alpha * 0.5;
+
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, pulseR, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(224,56,54,${pulseAlpha})`;
+      ctx.fill();
+
+      // Core dot
+      ctx.beginPath();
+      ctx.arc(pos.x, pos.y, dotR, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(224,56,54,${alpha})`;
+      ctx.fill();
+
+      // Label (only for visible + close to front)
+      if (depth > 0.6 && dpr <= 2) {
+        ctx.fillStyle = `rgba(240,240,236,${alpha * 0.7})`;
+        ctx.font = `${Math.round(9 * dpr)}px IBM Plex Mono, monospace`;
+        ctx.fillText(label, pos.x + dotR + 4, pos.y + 3);
+      }
+    });
+
+    // Globe shine
+    const shineGrd = ctx.createRadialGradient(cx - r * 0.35, cy - r * 0.35, 0, cx, cy, r);
+    shineGrd.addColorStop(0, 'rgba(255,255,255,0.06)');
+    shineGrd.addColorStop(0.5, 'rgba(255,255,255,0)');
+    shineGrd.addColorStop(1, 'rgba(0,0,0,0.2)');
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fillStyle = shineGrd;
+    ctx.fill();
+
+    angle += 0.004;
+    requestAnimationFrame(draw);
+  }
+
+  // Only animate when visible
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => { if (e.isIntersecting) draw(); });
+  }, { threshold: 0.1 });
+  observer.observe(wrap);
+
+  draw();
+})();
 </script>
 </body>
 </html>
