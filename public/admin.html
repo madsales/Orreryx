@@ -125,16 +125,20 @@ tr:hover td{color:var(--txt);background:rgba(255,255,255,.02)}
 .loading-txt{font:400 11px/1 var(--mono);color:var(--txt3);padding:40px;text-align:center}
 
 /* ── TEST ACCESS ── */
-.plan-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:24px}
-@media(max-width:680px){.plan-cards{grid-template-columns:1fr}}
+.plan-cards{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:24px}
+@media(max-width:900px){.plan-cards{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.plan-cards{grid-template-columns:1fr}}
 .plan-card{background:var(--bg2);border:1px solid var(--brd2);border-radius:8px;padding:22px 20px;display:flex;flex-direction:column;gap:10px}
 .plan-card.starter{border-color:rgba(255,255,255,.15)}
 .plan-card.analyst{border-color:var(--gld)}
 .plan-card.command{border-color:var(--grn)}
+.plan-card.free{border-color:#38bc78}
 .plan-card-badge{font:700 7px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;padding:3px 8px;border-radius:2px;width:fit-content}
 .plan-card.starter .plan-card-badge{background:var(--bg4);color:var(--txt3)}
 .plan-card.analyst .plan-card-badge{background:var(--gld2);color:var(--gld)}
 .plan-card.command .plan-card-badge{background:var(--grn2);color:var(--grn)}
+.plan-card.free .plan-card-badge{background:rgba(56,188,120,.12);color:#38bc78}
+.plan-card.free .test-btn{background:#38bc78;color:#000}
 .plan-card-price{font:700 26px/1 var(--mono);color:var(--txt)}
 .plan-card-price span{font-size:12px;color:var(--txt3);font-weight:400}
 .plan-card-feats{list-style:none;display:flex;flex-direction:column;gap:5px;font:400 11px/1.5 var(--sans);color:var(--txt2)}
@@ -269,6 +273,18 @@ tr:hover td{color:var(--txt);background:rgba(255,255,255,.02)}
         <div class="sec-title">Launch Platform as Test User</div>
         <p style="font:400 11.5px/1.7 var(--sans);color:var(--txt3);margin-bottom:18px">Click a plan below to inject a 24-hour test session into your browser and open the platform — no payment, no magic link needed. The session is cleared when you click "Clear Test Session".</p>
         <div class="plan-cards">
+          <div class="plan-card free">
+            <div class="plan-card-badge">Free Trial</div>
+            <div class="plan-card-price">FREE<span> / 3 days</span></div>
+            <ul class="plan-card-feats">
+              <li>Crisis intel feed — live</li>
+              <li>War stocks panel</li>
+              <li>Global indices</li>
+              <li>Stock screener</li>
+            </ul>
+            <button class="test-btn" onclick="launchAs('f')">OPEN AS FREE TRIAL →</button>
+            <div class="test-status" id="ts-f"></div>
+          </div>
           <div class="plan-card starter">
             <div class="plan-card-badge">Starter</div>
             <div class="plan-card-price">$0.99<span>/mo</span></div>
@@ -370,6 +386,21 @@ tr:hover td{color:var(--txt);background:rgba(255,255,255,.02)}
             <div class="page-link-name">Icon Generator</div>
             <div class="page-link-url">orreryx.io/gen-icons.html</div>
           </a>
+          <a href="/demo" target="_blank" class="page-link">
+            <div class="page-link-icon">🎬</div>
+            <div class="page-link-name">Demo</div>
+            <div class="page-link-url">orreryx.io/demo</div>
+          </a>
+          <a href="/smm" target="_blank" class="page-link">
+            <div class="page-link-icon">📱</div>
+            <div class="page-link-name">SMM Week 1</div>
+            <div class="page-link-url">orreryx.io/smm</div>
+          </a>
+          <a href="https://sitemap.xml" target="_blank" class="page-link">
+            <div class="page-link-icon">🗺</div>
+            <div class="page-link-name">Sitemap</div>
+            <div class="page-link-url">orreryx.io/sitemap.xml</div>
+          </a>
         </div>
       </div>
 
@@ -380,6 +411,8 @@ tr:hover td{color:var(--txt);background:rgba(255,255,255,.02)}
           <button class="btn-sm" onclick="window.open('/login?plan=s','_blank')">Test Signup Flow (Starter)</button>
           <button class="btn-sm" onclick="window.open('/login?plan=a','_blank')">Test Signup Flow (Analyst)</button>
           <button class="btn-sm" onclick="window.open('/login?plan=c','_blank')">Test Signup Flow (Command)</button>
+          <button class="btn-sm" onclick="window.open('/login?plan=f','_blank')">Test Free Trial Flow</button>
+          <button class="btn-sm" onclick="launchAs('f');window.open('/app','_blank')">Open App as Free Trial</button>
           <button class="btn-sm danger" onclick="clearTestSession()">Clear Test Session</button>
         </div>
       </div>
@@ -523,14 +556,16 @@ function switchTab(name) {
 }
 
 // ── TEST ACCESS ───────────────────────────────────────────────────────────────
-const PLAN_NAMES = { s: 'Starter', a: 'Analyst', c: 'Command' };
+const PLAN_NAMES = { f: 'Free Trial', s: 'Starter', a: 'Analyst', c: 'Command' };
 function launchAs(plan) {
+  const isFree = plan === 'f';
   const session = {
     plan,
     email: 'admin@orrery.test',
     token: 'admin-test-' + plan + '-' + Date.now(),
     expires: Date.now() + 86400000,
-    isAdmin: true
+    isAdmin: true,
+    ...(isFree && { freeTrialExpires: Date.now() + 3*24*60*60*1000 })
   };
   localStorage.setItem('orrery_session', JSON.stringify(session));
   localStorage.setItem('orrery_paid_verified', plan + '|' + Date.now() + '|' + session.token);
@@ -542,7 +577,7 @@ function launchAs(plan) {
 function clearTestSession() {
   localStorage.removeItem('orrery_session');
   localStorage.removeItem('orrery_paid_verified');
-  ['s','a','c'].forEach(p => {
+  ['f','s','a','c'].forEach(p => {
     const el = document.getElementById('ts-' + p);
     if (el) el.textContent = '';
   });
@@ -633,7 +668,7 @@ function renderStatsCards(d) {
     <div class="stat-card">
       <div class="stat-lbl">Plan Split</div>
       <div class="stat-val">${d.plans.a + d.plans.c}</div>
-      <div class="stat-sub">${d.plans.a} analyst · ${d.plans.c} command · ${d.plans.s} starter</div>
+      <div class="stat-sub">${d.plans.f||0} free · ${d.plans.s} starter · ${d.plans.a} analyst · ${d.plans.c} cmd</div>
     </div>`;
 }
 
@@ -660,10 +695,10 @@ function renderPlansChart(d) {
   plansChart = new Chart(ctx, {
     type: 'doughnut',
     data: {
-      labels: ['Starter', 'Analyst', 'Command'],
-      datasets: [{ data: [d.plans.s, d.plans.a, d.plans.c],
-        backgroundColor: ['rgba(255,255,255,.12)', 'rgba(212,168,67,.5)', 'rgba(58,184,96,.5)'],
-        borderColor: ['rgba(255,255,255,.2)', 'rgba(212,168,67,.8)', 'rgba(58,184,96,.8)'], borderWidth: 1 }]
+      labels: ['Free Trial', 'Starter', 'Analyst', 'Command'],
+      datasets: [{ data: [d.plans.f||0, d.plans.s, d.plans.a, d.plans.c],
+        backgroundColor: ['rgba(56,188,120,.3)', 'rgba(255,255,255,.12)', 'rgba(212,168,67,.5)', 'rgba(58,184,96,.5)'],
+        borderColor: ['rgba(56,188,120,.7)', 'rgba(255,255,255,.2)', 'rgba(212,168,67,.8)', 'rgba(58,184,96,.8)'], borderWidth: 1 }]
     },
     options: { responsive: true, maintainAspectRatio: false,
       plugins: { legend: { position: 'bottom', labels: { color: '#b0b0aa', font: { size: 10 }, padding: 12 } } } }
