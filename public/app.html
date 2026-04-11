@@ -1837,6 +1837,12 @@ function startPlatform() {
   setInterval(updateTopbarPrices, 2500);
   setInterval(rotateCrisisTxt, 5000);
   updateTopbarPrices();
+
+  // ── LIVE NEWS — fetch immediately on start, then every 90 seconds ──
+  // Run for ALL plans (intel feed is available to everyone)
+  setTimeout(() => { fetchLiveEvents(); fetchGNews(); }, 800);
+  setInterval(() => { fetchLiveEvents(); fetchGNews(); }, 90 * 1000);
+
   // Auto-start live feed for Analyst / Command — no user action needed
   if (can('liveData')) {
     setTimeout(() => startLiveFeed(), 300);
@@ -2233,11 +2239,11 @@ function initGlobe() {
   });
   ro.observe(container);
 
-  // Fetch live GDELT events + Google News
+  // Plot whatever events we already have (fetched at startup)
+  // then trigger a fresh fetch so the map is always up to date
+  updateGlobePoints();
   fetchLiveEvents();
   fetchGNews();
-
-  updateGlobePoints();
 }
 
 async function fetchGNews() {
@@ -2265,30 +2271,40 @@ async function fetchGNews() {
 }
 
 async function fetchLiveEvents() {
-  if (liveEventsLoaded) return;
   try {
-    const r = await fetch('/api/events', { signal: AbortSignal.timeout(10000) });
+    const r = await fetch('/api/events', { signal: AbortSignal.timeout(12000) });
     if (!r.ok) return;
     const data = await r.json();
     if (data.events && data.events.length > 0) {
       liveEventsLoaded = true;
-      // Merge GDELT events into feedEvents (prepend, capped at 80)
+      // Strip demo events once real news arrives
+      const realOnly = feedEvents.filter(e => !e.isDemo);
+      const existingIds = new Set(realOnly.map(e => e.id));
       const fresh = data.events.map((e, i) => ({
         ...e,
+        isDemo: false,
         time:   e.time ? new Date(e.time) : new Date(Date.now() - i * 2 * 60 * 1000),
         newest: i === 0,
       }));
-      const existingIds = new Set(feedEvents.map(e => e.id));
+      // Clear newest flag on old events
+      realOnly.forEach(e => e.newest = false);
       const newOnes = fresh.filter(e => !existingIds.has(e.id));
       if (newOnes.length > 0) {
-        feedEvents = [...newOnes, ...feedEvents].slice(0, 120);
+        feedEvents = [...newOnes, ...realOnly].slice(0, 150);
+        // Flash notification for truly new events on re-fetch
+        if (realOnly.length > 0 && newOnes.length > 0) {
+          toast('📡 ' + newOnes.length + ' new event' + (newOnes.length > 1 ? 's' : '') + ' — feed updated');
+        }
+      } else {
+        feedEvents = fresh.concat(realOnly.filter(e => !new Set(fresh.map(f=>f.id)).has(e.id))).slice(0, 150);
       }
-      // Always re-render — clears loading state even if no new events
       renderIntelFeed();
       updateGlobePoints();
+      // Update map sidebar if globe is open
+      if (currentPage === 'map') updateMapSidebar();
     }
   } catch (e) {
-    // Silently fall back to built-in WAR_EVENTS — no user-visible error
+    // Silently fall back — no user-visible error
   }
 }
 
