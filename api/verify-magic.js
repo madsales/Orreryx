@@ -60,7 +60,7 @@ export default async function handler(req, res) {
     };
 
     const sessionStr = encodeURIComponent(JSON.stringify(session));
-    return res.redirect(`/app?session=${sessionStr}&plan=${planCode}`);
+    return res.redirect(`/welcome?session=${sessionStr}&plan=${planCode}`);
 
   } catch(e) {
     console.error('[VerifyMagic] Error:', e.message);

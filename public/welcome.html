@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="robots" content="noindex,nofollow">
+<title>Welcome to Orrery</title>
+<link rel="icon" type="image/svg+xml" href="/icon.svg">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&display=swap" rel="stylesheet">
+<!-- Google Ads conversion event fires here — only real signups reach this page -->
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#09090b;--bg2:#111116;--brd:rgba(255,255,255,.07);--brd2:rgba(255,255,255,.13);--txt:#f0f0ec;--txt2:#b0b0aa;--txt3:#666670;--grn:#3ab860;--grn2:rgba(58,184,96,.12);--red:#e03836;--mono:'IBM Plex Mono',monospace;}
+html,body{height:100%;background:var(--bg);color:var(--txt);font-family:var(--mono)}
+body{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:24px}
+.card{background:var(--bg2);border:1px solid var(--brd2);border-radius:10px;padding:48px 44px;width:100%;max-width:440px;text-align:center}
+.logo{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:36px}
+.logo-name{font:700 16px/1 var(--mono);color:var(--txt);letter-spacing:.04em}
+.check{font-size:52px;margin-bottom:20px;display:block;animation:pop .4s ease both}
+@keyframes pop{from{transform:scale(.5);opacity:0}to{transform:scale(1);opacity:1}}
+.title{font:700 20px/1.2 var(--mono);color:var(--txt);margin-bottom:10px}
+.sub{font:400 11.5px/1.7 var(--mono);color:var(--txt3);margin-bottom:28px}
+.plan-badge{display:inline-flex;align-items:center;gap:7px;border-radius:4px;padding:7px 14px;font:700 9px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;margin-bottom:28px}
+.plan-dot{width:6px;height:6px;border-radius:50%;animation:blink 1.4s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.2}}
+.progress-wrap{height:2px;background:var(--brd);border-radius:1px;margin-bottom:10px;overflow:hidden}
+.progress-bar{height:100%;border-radius:1px;transition:width .1s linear}
+.progress-lbl{font:400 9px/1 var(--mono);color:var(--txt3);margin-bottom:24px}
+.btn{display:block;width:100%;padding:13px;border-radius:4px;font:700 10.5px/1 var(--mono);letter-spacing:.07em;text-decoration:none;cursor:pointer;border:none;transition:opacity .15s;margin-top:12px;text-align:center}
+.btn-primary{background:var(--txt);color:var(--bg)}.btn-primary:hover{opacity:.87}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">
+    <svg width="26" height="26" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+      <rect width="32" height="32" rx="4" fill="#f0f0ec"/>
+      <ellipse cx="16" cy="16" rx="10" ry="4" fill="none" stroke="#09090a" stroke-width="1" transform="rotate(-30,16,16)"/>
+      <ellipse cx="16" cy="16" rx="6.5" ry="2.5" fill="none" stroke="rgba(9,9,10,.4)" stroke-width=".8" stroke-dasharray="3 2" transform="rotate(-30,16,16)"/>
+      <circle cx="16" cy="16" r="2" fill="#09090a"/>
+      <circle cx="23" cy="11" r="1.5" fill="#09090a"/>
+      <circle cx="12" cy="20" r="1" fill="#e03836"/>
+    </svg>
+    <span class="logo-name">Orrery</span>
+  </div>
+
+  <span class="check">✅</span>
+  <div class="title" id="welcome-title">Access Confirmed</div>
+  <p class="sub" id="welcome-sub">Your account is ready. Loading your intelligence platform…</p>
+
+  <div class="plan-badge" id="plan-badge">
+    <div class="plan-dot" id="plan-dot"></div>
+    <span id="plan-name">Loading…</span>
+  </div>
+
+  <div class="progress-wrap">
+    <div class="progress-bar" id="progress-bar" style="width:0%"></div>
+  </div>
+  <div class="progress-lbl" id="progress-lbl">Initialising…</div>
+
+  <a href="/app" class="btn btn-primary" id="launch-btn" style="display:none">OPEN PLATFORM →</a>
+</div>
+
+<script>
+(function () {
+  const PLAN_META = {
+    f: { name: 'Free Trial — 3 Days', color: '#38bc78', bg: 'rgba(56,188,120,.12)', border: 'rgba(56,188,120,.3)', title: 'Free Trial Active', sub: '3 days of live crisis intelligence. No card needed. Loading your platform…' },
+    s: { name: 'Starter Plan',        color: '#f0f0ec', bg: 'rgba(255,255,255,.07)', border: 'rgba(255,255,255,.15)', title: 'Welcome to Orrery', sub: 'Starter plan activated. AI briefings, crisis feed and screener are ready.' },
+    a: { name: 'Analyst Plan',        color: '#d4a843', bg: 'rgba(212,168,67,.12)',  border: 'rgba(212,168,67,.3)',  title: 'Analyst Access Granted', sub: 'Live exchange data, 3D globe and 7-day history archive are unlocked.' },
+    c: { name: 'Command Plan',        color: '#3ab860', bg: 'rgba(58,184,96,.12)',   border: 'rgba(58,184,96,.3)',   title: 'Command Access Granted', sub: 'Full platform unlocked — live data, crypto war scores, unlimited history.' },
+  };
+
+  const params  = new URLSearchParams(window.location.search);
+  const session = params.get('session');
+  const plan    = params.get('plan') || 's';
+  const meta    = PLAN_META[plan] || PLAN_META['s'];
+
+  // Apply plan visuals
+  document.getElementById('welcome-title').textContent = meta.title;
+  document.getElementById('welcome-sub').textContent   = meta.sub;
+  document.getElementById('plan-name').textContent     = meta.name;
+  const badge = document.getElementById('plan-badge');
+  badge.style.background   = meta.bg;
+  badge.style.border       = '1px solid ' + meta.border;
+  badge.style.color        = meta.color;
+  const dot = document.getElementById('plan-dot');
+  dot.style.background     = meta.color;
+  const bar = document.getElementById('progress-bar');
+  bar.style.background     = meta.color;
+
+  // Save session to localStorage
+  if (session) {
+    try {
+      const parsed = JSON.parse(decodeURIComponent(session));
+      localStorage.setItem('orrery_session', JSON.stringify(parsed));
+      localStorage.setItem('orrery_paid_verified', plan + '|' + Date.now() + '|' + (parsed.token || ''));
+    } catch (e) {
+      console.error('Session parse error', e);
+    }
+  }
+
+  // Progress bar + auto-redirect
+  const steps = [
+    'Verifying session…',
+    'Loading crisis feed…',
+    'Connecting live data…',
+    'Launching platform…',
+  ];
+  let pct = 0;
+  let step = 0;
+  const lbl = document.getElementById('progress-lbl');
+
+  const iv = setInterval(() => {
+    pct += 4;
+    bar.style.width = Math.min(pct, 98) + '%';
+    if (pct % 25 === 0 && step < steps.length) {
+      lbl.textContent = steps[step++];
+    }
+    if (pct >= 100) {
+      clearInterval(iv);
+      bar.style.width = '100%';
+      lbl.textContent = 'Ready ✓';
+      // Clean URL before redirect (removes session token from history)
+      window.history.replaceState({}, '', '/welcome');
+      setTimeout(() => { window.location.href = '/app'; }, 300);
+    }
+  }, 80);
+
+  // Fallback manual button after 10s
+  setTimeout(() => {
+    document.getElementById('launch-btn').style.display = 'block';
+  }, 10000);
+})();
+</script>
+</body>
+</html>
