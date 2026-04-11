@@ -80,18 +80,128 @@ function severityRank(s) {
   return s === 'critical' ? 3 : s === 'high' ? 2 : s === 'medium' ? 1 : 0;
 }
 
+// ── GEO LOOKUP — map location names → [lat, lng, displayName] ──
+const GEO = [
+  // Hot-zones first (checked in order — more specific before general)
+  ['gaza',          [31.4,  34.3,  'Gaza']],
+  ['west bank',     [31.9,  35.2,  'West Bank']],
+  ['jerusalem',     [31.8,  35.2,  'Jerusalem']],
+  ['tel aviv',      [32.1,  34.8,  'Tel Aviv']],
+  ['israel',        [31.5,  35.0,  'Israel']],
+  ['kyiv',          [50.4,  30.5,  'Kyiv, Ukraine']],
+  ['ukraine',       [48.5,  31.5,  'Ukraine']],
+  ['moscow',        [55.7,  37.6,  'Moscow, Russia']],
+  ['russia',        [61.5, 105.0,  'Russia']],
+  ['crimea',        [45.0,  34.0,  'Crimea']],
+  ['donbas',        [48.0,  37.5,  'Donbas']],
+  ['zaporizhzhia',  [47.8,  35.2,  'Zaporizhzhia']],
+  ['kharkiv',       [49.9,  36.3,  'Kharkiv']],
+  ['beijing',       [39.9, 116.4,  'Beijing, China']],
+  ['taiwan',        [23.7, 121.0,  'Taiwan']],
+  ['taipei',        [25.0, 121.5,  'Taipei']],
+  ['hong kong',     [22.3, 114.2,  'Hong Kong']],
+  ['south china sea',[12.0,115.0,  'South China Sea']],
+  ['xinjiang',      [41.0,  85.0,  'Xinjiang, China']],
+  ['china',         [35.0, 105.0,  'China']],
+  ['pyongyang',     [39.0, 125.7,  'Pyongyang, N. Korea']],
+  ['north korea',   [40.0, 127.0,  'North Korea']],
+  ['south korea',   [36.0, 128.0,  'South Korea']],
+  ['seoul',         [37.6, 127.0,  'Seoul']],
+  ['tehran',        [35.7,  51.4,  'Tehran, Iran']],
+  ['iran',          [32.0,  53.0,  'Iran']],
+  ['baghdad',       [33.3,  44.4,  'Baghdad, Iraq']],
+  ['iraq',          [33.0,  44.0,  'Iraq']],
+  ['damascus',      [33.5,  36.3,  'Damascus, Syria']],
+  ['syria',         [35.0,  38.0,  'Syria']],
+  ['sanaa',         [15.4,  44.2,  "Sana'a, Yemen"]],
+  ['yemen',         [15.0,  48.0,  'Yemen']],
+  ['red sea',       [20.0,  38.0,  'Red Sea']],
+  ['hormuz',        [26.0,  56.0,  'Strait of Hormuz']],
+  ['kabul',         [34.5,  69.2,  'Kabul, Afghanistan']],
+  ['afghanistan',   [33.0,  66.0,  'Afghanistan']],
+  ['islamabad',     [33.7,  73.1,  'Islamabad, Pakistan']],
+  ['pakistan',      [30.0,  70.0,  'Pakistan']],
+  ['new delhi',     [28.6,  77.2,  'New Delhi, India']],
+  ['india',         [20.0,  78.0,  'India']],
+  ['mumbai',        [19.0,  72.8,  'Mumbai']],
+  ['myanmar',       [17.0,  96.0,  'Myanmar']],
+  ['yangon',        [16.8,  96.2,  'Yangon']],
+  ['khartoum',      [15.6,  32.5,  'Khartoum, Sudan']],
+  ['sudan',         [15.0,  32.0,  'Sudan']],
+  ['addis ababa',   [ 9.0,  38.7,  'Addis Ababa, Ethiopia']],
+  ['ethiopia',      [ 8.0,  38.0,  'Ethiopia']],
+  ['nairobi',       [-1.3,  36.8,  'Nairobi, Kenya']],
+  ['lagos',         [ 6.4,   3.4,  'Lagos, Nigeria']],
+  ['nigeria',       [10.0,   8.0,  'Nigeria']],
+  ['kinshasa',      [-4.3,  15.3,  'Kinshasa, DRC']],
+  ['congo',         [-2.0,  25.0,  'DR Congo']],
+  ['mogadishu',     [ 2.0,  45.3,  'Mogadishu, Somalia']],
+  ['somalia',       [ 5.0,  46.0,  'Somalia']],
+  ['tripoli',       [32.9,  13.2,  'Tripoli, Libya']],
+  ['libya',         [26.0,  17.0,  'Libya']],
+  ['cairo',         [30.0,  31.2,  'Cairo, Egypt']],
+  ['egypt',         [26.0,  30.0,  'Egypt']],
+  ['tunis',         [36.8,  10.2,  'Tunis, Tunisia']],
+  ['caracas',       [10.5, -66.9,  'Caracas, Venezuela']],
+  ['venezuela',     [ 8.0, -65.0,  'Venezuela']],
+  ['haiti',         [18.9, -72.3,  'Haiti']],
+  ['mexico city',   [19.4, -99.1,  'Mexico City']],
+  ['mexico',        [23.0,-102.0,  'Mexico']],
+  ['brasilia',      [-15.8,-47.9,  'Brasília, Brazil']],
+  ['brazil',        [-10.0,-55.0,  'Brazil']],
+  ['washington',    [38.9, -77.0,  'Washington DC, USA']],
+  ['new york',      [40.7, -74.0,  'New York, USA']],
+  ['united states', [38.0, -97.0,  'United States']],
+  [' us ',          [38.0, -97.0,  'United States']],
+  ['london',        [51.5,  -0.1,  'London, UK']],
+  ['britain',       [54.0,  -3.0,  'UK']],
+  ['uk',            [54.0,  -3.0,  'UK']],
+  ['paris',         [48.8,   2.3,  'Paris, France']],
+  ['france',        [46.0,   2.0,  'France']],
+  ['berlin',        [52.5,  13.4,  'Berlin, Germany']],
+  ['germany',       [51.0,  10.0,  'Germany']],
+  ['brussels',      [50.8,   4.4,  'Brussels']],
+  ['nato',          [50.0,  10.0,  'NATO Region']],
+  ['europe',        [50.0,  15.0,  'Europe']],
+  ['singapore',     [ 1.3, 103.8,  'Singapore']],
+  ['jakarta',       [-6.2, 106.8,  'Jakarta, Indonesia']],
+  ['indonesia',     [-5.0, 120.0,  'Indonesia']],
+  ['manila',        [14.6, 120.9,  'Manila, Philippines']],
+  ['bangkok',       [13.8, 100.5,  'Bangkok, Thailand']],
+  ['tokyo',         [35.7, 139.7,  'Tokyo, Japan']],
+  ['japan',         [36.0, 138.0,  'Japan']],
+  ['middle east',   [28.0,  40.0,  'Middle East']],
+  ['persian gulf',  [26.0,  53.0,  'Persian Gulf']],
+  ['africa',        [ 0.0,  20.0,  'Africa']],
+  ['asia',          [30.0,  90.0,  'Asia']],
+];
+
+function geolocate(title) {
+  const t = ' ' + title.toLowerCase() + ' ';
+  for (const [kw, [lat, lng, name]] of GEO) {
+    if (t.includes(kw)) return { lat, lng, loc: name };
+  }
+  // Fallback: random scatter across known tension zones so globe always has dots
+  const fallbacks = [
+    [48.5,31.5,'Ukraine'],[31.4,34.3,'Middle East'],[20,38,'Red Sea'],
+    [39.9,116.4,'China'],[35,105,'Asia'],[38,-97,'US'],[50,10,'Europe'],
+  ];
+  const f = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+  return { lat: f[0], lng: f[1], loc: f[2] };
+}
+
 function parseArticles(articles, offset) {
   return (articles || [])
     .filter(a => a?.title && String(a.title).trim().length > 15)
     .map((a, i) => {
       const title = String(a.title).replace(/\s+/g, ' ').trim();
       const { cat, catLabel, severity } = categorize(title);
+      const { lat, lng, loc } = geolocate(title);
       return {
         id:       3000 + offset + i,
         cat, catLabel, severity,
-        lat:      null,
-        lng:      null,
-        loc:      a.domain || 'Global',
+        lat, lng,
+        loc:      loc,
         txt:      title,
         url:      a.url || '',
         source:   a.domain || '',
