@@ -16,6 +16,7 @@
     { "src": "/smm",                  "dest": "/smm-week1.html" },
     { "src": "/sitemap.xml",          "dest": "/sitemap.xml" },
     { "src": "/robots.txt",           "dest": "/robots.txt" },
+    { "src": "/welcome",              "dest": "/welcome.html" },
     { "src": "/callback",            "dest": "/callback.html" },
     { "src": "/app",                 "dest": "/app.html" },
     { "src": "/login",               "dest": "/login.html" },
