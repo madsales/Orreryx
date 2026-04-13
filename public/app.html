@@ -2477,19 +2477,31 @@ function updateGlobePoints() {
 function updateMapSidebar() {
   const mapSb = document.getElementById('map-sb-body');
   const cnt   = document.getElementById('map-event-count');
-  if (cnt) cnt.textContent = feedEvents.length;
+  if (cnt) cnt.textContent = feedEvents.filter(e => !e.isDemo).length;
+
+  // Filter to events WITH coordinates first, then take top 25 — avoids
+  // gnews articles (lat:null) filling all 25 slots and showing nothing
+  const withCoords = feedEvents.filter(e => !e.isDemo && e.lat != null && e.lng != null);
 
   let sbHtml = '';
-  feedEvents.slice(0, 25).forEach(ev => {
-    if (!ev.lat || !ev.lng) return;
+  withCoords.slice(0, 30).forEach(ev => {
+    const timeStr = ev.time ? new Date(ev.time).toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}) : '';
     sbHtml += `<div class="ev-card" style="padding:9px 13px" data-evid="${ev.id}" onclick="goPage('intel');handleEvClick(this)">
       <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
         <span class="cat c-${ev.cat}" style="font-size:6px">${ev.catLabel}</span>
-        <span style="font-size:7px;color:var(--txt3);font-family:var(--mono)">${ev.loc.split(',').slice(-1)[0].trim()}</span>
+        <span style="font-size:7px;color:var(--txt3);font-family:var(--mono)">${(ev.loc||'').split(',')[0].trim()}</span>
+        <span style="font-size:7px;color:var(--txt4);font-family:var(--mono);margin-left:auto">${timeStr}</span>
       </div>
-      <div style="font:400 10.5px/1.5 var(--sans);color:var(--txt2)">${ev.txt.substring(0, 72)}…</div>
+      <div style="font:400 10.5px/1.5 var(--sans);color:var(--txt2)">${ev.txt.substring(0, 80)}…</div>
     </div>`;
   });
+
+  if (!sbHtml) {
+    sbHtml = `<div style="padding:20px 16px;color:var(--txt3);font:400 11px/1.6 var(--sans);text-align:center">
+      <div style="font-size:24px;margin-bottom:8px">📡</div>
+      Loading events… They will appear here as the live feed updates.
+    </div>`;
+  }
   if (mapSb) mapSb.innerHTML = sbHtml;
 }
 

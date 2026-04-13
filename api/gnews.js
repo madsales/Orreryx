@@ -33,6 +33,52 @@ const FEEDS = [
   { url: 'https://www.france24.com/en/economy/rss',                   source: 'France24 Economy' },
 ];
 
+// Geo lookup — maps headline keywords → [lat, lng, displayName]
+const GEO = [
+  ['gaza',[31.4,34.3,'Gaza']],['west bank',[31.9,35.2,'West Bank']],['israel',[31.5,35.0,'Israel']],
+  ['kyiv',[50.4,30.5,'Kyiv']],['ukraine',[48.5,31.5,'Ukraine']],['russia',[61.5,105.0,'Russia']],
+  ['moscow',[55.7,37.6,'Moscow']],['crimea',[45.0,34.0,'Crimea']],['donbas',[48.0,37.5,'Donbas']],
+  ['beijing',[39.9,116.4,'Beijing']],['taiwan',[23.7,121.0,'Taiwan']],['china',[35.0,105.0,'China']],
+  ['hong kong',[22.3,114.2,'Hong Kong']],['south china sea',[12.0,115.0,'South China Sea']],
+  ['north korea',[40.0,127.0,'North Korea']],['south korea',[36.0,128.0,'South Korea']],
+  ['seoul',[37.6,127.0,'Seoul']],['pyongyang',[39.0,125.7,'Pyongyang']],
+  ['tehran',[35.7,51.4,'Tehran']],['iran',[32.0,53.0,'Iran']],
+  ['baghdad',[33.3,44.4,'Baghdad']],['iraq',[33.0,44.0,'Iraq']],
+  ['damascus',[33.5,36.3,'Damascus']],['syria',[35.0,38.0,'Syria']],
+  ['yemen',[15.0,48.0,'Yemen']],['red sea',[20.0,38.0,'Red Sea']],
+  ['kabul',[34.5,69.2,'Kabul']],['afghanistan',[33.0,66.0,'Afghanistan']],
+  ['pakistan',[30.0,70.0,'Pakistan']],['india',[20.0,78.0,'India']],
+  ['new delhi',[28.6,77.2,'New Delhi']],['mumbai',[19.0,72.8,'Mumbai']],
+  ['myanmar',[17.0,96.0,'Myanmar']],['sudan',[15.0,32.0,'Sudan']],
+  ['ethiopia',[8.0,38.0,'Ethiopia']],['nigeria',[10.0,8.0,'Nigeria']],
+  ['nairobi',[−1.3,36.8,'Nairobi']],['kenya',[0.0,37.0,'Kenya']],
+  ['somalia',[5.0,46.0,'Somalia']],['mogadishu',[2.0,45.3,'Mogadishu']],
+  ['libya',[26.0,17.0,'Libya']],['egypt',[26.0,30.0,'Egypt']],['cairo',[30.0,31.2,'Cairo']],
+  ['venezuela',[8.0,-65.0,'Venezuela']],['haiti',[18.9,-72.3,'Haiti']],
+  ['mexico',[23.0,-102.0,'Mexico']],['brazil',[-10.0,-55.0,'Brazil']],
+  ['washington',[38.9,-77.0,'Washington DC']],['new york',[40.7,-74.0,'New York']],
+  ['united states',[38.0,-97.0,'United States']],[' us ',[38.0,-97.0,'United States']],
+  ['london',[51.5,-0.1,'London']],[' uk ',[54.0,-3.0,'UK']],['britain',[54.0,-3.0,'UK']],
+  ['paris',[48.8,2.3,'Paris']],['france',[46.0,2.0,'France']],
+  ['berlin',[52.5,13.4,'Berlin']],['germany',[51.0,10.0,'Germany']],
+  ['tokyo',[35.7,139.7,'Tokyo']],['japan',[36.0,138.0,'Japan']],
+  ['singapore',[1.3,103.8,'Singapore']],['indonesia',[-5.0,120.0,'Indonesia']],
+  ['philippines',[13.0,122.0,'Philippines']],['thailand',[13.8,100.5,'Thailand']],
+  ['wall street',[40.7,-74.0,'New York']],['nasdaq',[40.7,-74.0,'New York']],
+  ['federal reserve',[38.9,-77.0,'Washington DC']],['nato',[50.0,10.0,'Europe']],
+  ['middle east',[28.0,40.0,'Middle East']],['europe',[50.0,15.0,'Europe']],
+  ['africa',[0.0,20.0,'Africa']],['asia',[30.0,90.0,'Asia']],
+];
+function geolocate(title) {
+  const t = ' ' + (title || '').toLowerCase() + ' ';
+  for (const [kw, coord] of GEO) {
+    if (t.includes(kw)) return { lat: coord[0], lng: coord[1], loc: coord[2] };
+  }
+  const fb = [[48.5,31.5,'Ukraine'],[31.4,34.3,'Middle East'],[35,105,'China'],[38,-97,'US'],[50,10,'Europe']];
+  const f = fb[Math.floor(Math.random() * fb.length)];
+  return { lat: f[0], lng: f[1], loc: f[2] };
+}
+
 function categorize(title) {
   const t = (title || '').toLowerCase();
   if (/nuclear|nuke|uranium|warhead|atomic|iaea/.test(t))                return { cat:'nuc', catLabel:'NUCLEAR',     severity:'critical' };
@@ -94,13 +140,14 @@ function parseRss(xml, fallbackSource) {
     }
 
     const { cat, catLabel, severity } = categorize(title);
+    const { lat, lng, loc: geoLoc } = geolocate(title);
     items.push({
       id:        stableId(rawLink.trim(), title),
       isDemo:    false,
       cat, catLabel, severity,
-      lat:       null,
-      lng:       null,
-      loc:       rawSource.replace(/<[^>]+>/g,'').trim() || fallbackSource,
+      lat,
+      lng,
+      loc:       geoLoc || rawSource.replace(/<[^>]+>/g,'').trim() || fallbackSource,
       txt:       title,
       url:       rawLink.trim(),
       source:    rawSource.replace(/<[^>]+>/g,'').trim() || fallbackSource,
