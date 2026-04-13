@@ -33,8 +33,21 @@ function gdeltUrl(query, max) {
   return (
     'https://api.gdeltproject.org/api/v2/doc/doc' +
     `?query=${encodeURIComponent(query)}` +
-    `&mode=artlist&format=json&timespan=4h&maxrecords=${max}&sort=DateDesc&sourcelang=english`
+    `&mode=artlist&format=json&timespan=6h&maxrecords=${max}&sort=DateDesc&sourcelang=english`
   );
+}
+
+// Stable numeric ID from URL (or title fallback) — same article always same ID,
+// regardless of its position in the response. Avoids false deduplication on re-fetch.
+function stableId(url, title) {
+  const s = (url || title || '').toLowerCase().trim().substring(0, 120);
+  let h = 2166136261; // FNV-1a 32-bit offset basis
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  // Keep in range 100001–9999999 — never collides with WAR_EVENTS (ids 1–99)
+  return (h % 9899999) + 100001;
 }
 
 // GDELT date format: 20260404T120000Z → 2026-04-04T12:00:00Z
@@ -190,18 +203,18 @@ function geolocate(title) {
   return { lat: f[0], lng: f[1], loc: f[2] };
 }
 
-function parseArticles(articles, offset) {
+function parseArticles(articles) {
   return (articles || [])
     .filter(a => a?.title && String(a.title).trim().length > 15)
-    .map((a, i) => {
+    .map(a => {
       const title = String(a.title).replace(/\s+/g, ' ').trim();
       const { cat, catLabel, severity } = categorize(title);
       const { lat, lng, loc } = geolocate(title);
       return {
-        id:       3000 + offset + i,
+        id:       stableId(a.url, title),   // stable — same article = same ID every fetch
         cat, catLabel, severity,
         lat, lng,
-        loc:      loc,
+        loc,
         txt:      title,
         url:      a.url || '',
         source:   a.domain || '',
@@ -234,13 +247,13 @@ export default async function handler(req, res) {
 
   try {
     const results = await Promise.allSettled(
-      STREAMS.map((s, i) =>
+      STREAMS.map(s =>
         fetch(gdeltUrl(s.query, s.max), {
           headers: { 'User-Agent': 'OrreryIntelligence/1.0 (https://www.orreryx.io)' },
           signal:  AbortSignal.timeout(9000),
         })
           .then(r => r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`)))
-          .then(j => parseArticles(j.articles, i * 200))
+          .then(j => parseArticles(j.articles))
           .catch(() => [])
       )
     );
