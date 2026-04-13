@@ -2275,36 +2275,42 @@ async function fetchLiveEvents() {
     const r = await fetch('/api/events', { signal: AbortSignal.timeout(12000) });
     if (!r.ok) return;
     const data = await r.json();
-    if (data.events && data.events.length > 0) {
-      liveEventsLoaded = true;
-      // Strip demo events once real news arrives
-      const realOnly = feedEvents.filter(e => !e.isDemo);
-      const existingIds = new Set(realOnly.map(e => e.id));
-      const fresh = data.events.map((e, i) => ({
-        ...e,
-        isDemo: false,
-        time:   e.time ? new Date(e.time) : new Date(Date.now() - i * 2 * 60 * 1000),
-        newest: i === 0,
-      }));
-      // Clear newest flag on old events
-      realOnly.forEach(e => e.newest = false);
-      const newOnes = fresh.filter(e => !existingIds.has(e.id));
-      if (newOnes.length > 0) {
-        feedEvents = [...newOnes, ...realOnly].slice(0, 150);
-        // Flash notification for truly new events on re-fetch
-        if (realOnly.length > 0 && newOnes.length > 0) {
-          toast('📡 ' + newOnes.length + ' new event' + (newOnes.length > 1 ? 's' : '') + ' — feed updated');
-        }
-      } else {
-        feedEvents = fresh.concat(realOnly.filter(e => !new Set(fresh.map(f=>f.id)).has(e.id))).slice(0, 150);
-      }
-      renderIntelFeed();
-      updateGlobePoints();
-      // Update map sidebar if globe is open
-      if (currentPage === 'map') updateMapSidebar();
+    if (!data.events || data.events.length === 0) return;
+
+    liveEventsLoaded = true;
+
+    // Convert timestamps, mark as real (not demo)
+    const fresh = data.events.map((e, i) => ({
+      ...e,
+      isDemo: false,
+      time:   e.time ? new Date(e.time) : new Date(Date.now() - i * 2 * 60 * 1000),
+      newest: false,
+    }));
+
+    // IDs are now URL-based hashes — same article = same ID every poll.
+    // Find genuinely new articles not seen before.
+    const existingIds = new Set(feedEvents.filter(e => !e.isDemo).map(e => e.id));
+    const newOnes = fresh.filter(e => !existingIds.has(e.id));
+
+    if (newOnes.length > 0) {
+      newOnes[0].newest = true; // mark the single newest for red border highlight
     }
+
+    // Merge: new articles first, then existing real events, strip all demo events
+    const existingReal = feedEvents.filter(e => !e.isDemo && !new Set(fresh.map(f => f.id)).has(e.id));
+    feedEvents = [...fresh, ...existingReal].slice(0, 200);
+
+    // Toast only on re-polls (not first load) when there are new articles
+    if (newOnes.length > 0 && existingIds.size > 0) {
+      toast('📡 ' + newOnes.length + ' new article' + (newOnes.length > 1 ? 's' : '') + ' in feed');
+    }
+
+    renderIntelFeed();
+    updateGlobePoints();
+    if (currentPage === 'map') updateMapSidebar();
+
   } catch (e) {
-    // Silently fall back — no user-visible error
+    // Silently fall back — network errors are non-fatal
   }
 }
 
