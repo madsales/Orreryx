@@ -17,20 +17,38 @@ function stableId(url, title) {
 }
 
 const FEEDS = [
-  // World news
-  { url: 'https://feeds.bbci.co.uk/news/world/rss.xml',               source: 'BBC News' },
-  { url: 'https://www.theguardian.com/world/rss',                      source: 'The Guardian' },
-  { url: 'https://feeds.skynews.com/feeds/rss/world.xml',             source: 'Sky News' },
-  { url: 'https://rss.dw.com/rdf/rss-en-all',                         source: 'Deutsche Welle' },
-  { url: 'https://www.france24.com/en/rss',                           source: 'France 24' },
-  { url: 'https://feeds.npr.org/1004/rss.xml',                        source: 'NPR News' },
-  { url: 'https://www.aljazeera.com/xml/rss/all.xml',                 source: 'Al Jazeera' },
-  { url: 'https://feeds.bbci.co.uk/news/business/rss.xml',            source: 'BBC Business' },
-  // Finance & markets
+  // ── GLOBAL MAJORS ──
+  { url: 'https://feeds.bbci.co.uk/news/world/rss.xml',                       source: 'BBC News' },
+  { url: 'https://www.theguardian.com/world/rss',                             source: 'The Guardian' },
+  { url: 'https://feeds.skynews.com/feeds/rss/world.xml',                     source: 'Sky News' },
+  { url: 'https://rss.dw.com/rdf/rss-en-all',                                 source: 'Deutsche Welle' },
+  { url: 'https://www.france24.com/en/rss',                                   source: 'France 24' },
+  { url: 'https://feeds.npr.org/1004/rss.xml',                                source: 'NPR News' },
+  { url: 'https://www.aljazeera.com/xml/rss/all.xml',                         source: 'Al Jazeera' },
+  { url: 'https://www.rfi.fr/en/rss',                                         source: 'RFI English' },
+  { url: 'https://www3.nhk.or.jp/rss/news/cat0.xml',                         source: 'NHK World' },
+  { url: 'https://www.cbc.ca/cmlink/rss-world',                               source: 'CBC News' },
+  { url: 'https://www.abc.net.au/news/feed/51120/rss.xml',                    source: 'ABC Australia' },
+  { url: 'https://www.arabnews.com/rss.xml',                                  source: 'Arab News' },
+  { url: 'https://www.japantimes.co.jp/feed/topstories/',                     source: 'Japan Times' },
+  { url: 'https://feeds.bbci.co.uk/news/business/rss.xml',                    source: 'BBC Business' },
+  { url: 'https://feeds.bbci.co.uk/news/technology/rss.xml',                  source: 'BBC Technology' },
+  { url: 'https://www.france24.com/en/economy/rss',                           source: 'France24 Economy' },
+
+  // ── INDIA ──
+  { url: 'https://feeds.feedburner.com/ndtvnews-top-stories',                 source: 'NDTV' },
+  { url: 'https://timesofindia.indiatimes.com/rssfeedstopstories.cms',        source: 'Times of India' },
+  { url: 'https://www.thehindu.com/news/national/feeder/default.rss',         source: 'The Hindu' },
+  { url: 'https://economictimes.indiatimes.com/rssfeedstopstories.cms',       source: 'Economic Times' },
+  { url: 'https://www.thehindu.com/business/feeder/default.rss',              source: 'The Hindu Business' },
+  { url: 'https://feeds.feedburner.com/ndtvnews-india-news',                  source: 'NDTV India' },
+  { url: 'https://www.livemint.com/rss/news',                                 source: 'Mint' },
+  { url: 'https://www.business-standard.com/rss/home_page_top_stories.rss',  source: 'Business Standard' },
+  { url: 'https://www.indiatoday.in/rss/home',                                source: 'India Today' },
+
+  // ── FINANCE & MARKETS ──
   { url: 'https://feeds.content.dowjones.io/public/rss/mw_realtimeheadlines', source: 'MarketWatch' },
   { url: 'https://www.reutersagency.com/feed/?best-topics=business-finance&post_type=best', source: 'Reuters Finance' },
-  { url: 'https://feeds.bbci.co.uk/news/technology/rss.xml',          source: 'BBC Technology' },
-  { url: 'https://www.france24.com/en/economy/rss',                   source: 'France24 Economy' },
 ];
 
 // Geo lookup — maps headline keywords → [lat, lng, displayName]
@@ -47,8 +65,24 @@ const GEO = [
   ['damascus',[33.5,36.3,'Damascus']],['syria',[35.0,38.0,'Syria']],
   ['yemen',[15.0,48.0,'Yemen']],['red sea',[20.0,38.0,'Red Sea']],
   ['kabul',[34.5,69.2,'Kabul']],['afghanistan',[33.0,66.0,'Afghanistan']],
-  ['pakistan',[30.0,70.0,'Pakistan']],['india',[20.0,78.0,'India']],
-  ['new delhi',[28.6,77.2,'New Delhi']],['mumbai',[19.0,72.8,'Mumbai']],
+  ['pakistan',[30.0,70.0,'Pakistan']],['islamabad',[33.7,73.1,'Islamabad']],['karachi',[24.9,67.1,'Karachi']],
+  // India — national + major cities + states
+  ['new delhi',[28.6,77.2,'New Delhi']],['delhi',[28.6,77.2,'New Delhi']],
+  ['mumbai',[19.0,72.8,'Mumbai']],['bangalore',[12.9,77.6,'Bengaluru']],['bengaluru',[12.9,77.6,'Bengaluru']],
+  ['hyderabad',[17.4,78.5,'Hyderabad']],['chennai',[13.1,80.3,'Chennai']],['kolkata',[22.6,88.4,'Kolkata']],
+  ['pune',[18.5,73.9,'Pune']],['ahmedabad',[23.0,72.6,'Ahmedabad']],['jaipur',[26.9,75.8,'Jaipur']],
+  ['lucknow',[26.8,80.9,'Lucknow']],['surat',[21.2,72.8,'Surat']],['chandigarh',[30.7,76.8,'Chandigarh']],
+  ['gujarat',[22.3,71.2,'Gujarat']],['rajasthan',[27.0,74.0,'Rajasthan']],['kerala',[10.0,76.5,'Kerala']],
+  ['tamil nadu',[11.0,78.7,'Tamil Nadu']],['maharashtra',[19.8,75.3,'Maharashtra']],
+  ['uttar pradesh',[27.0,80.0,'Uttar Pradesh']],['bihar',[25.1,85.3,'Bihar']],
+  ['west bengal',[22.6,88.4,'West Bengal']],['karnataka',[15.3,75.7,'Karnataka']],
+  ['andhra pradesh',[16.5,79.7,'Andhra Pradesh']],['telangana',[17.4,78.5,'Telangana']],
+  ['punjab',[31.1,75.3,'Punjab, India']],['haryana',[29.1,76.1,'Haryana']],
+  ['kashmir',[34.1,74.8,'Kashmir']],['jammu',[32.7,74.9,'Jammu & Kashmir']],
+  ['manipur',[24.7,93.9,'Manipur']],['assam',[26.2,92.9,'Assam']],['goa',[15.3,74.0,'Goa']],
+  ['india',[20.0,78.0,'India']],['modi',[28.6,77.2,'New Delhi']],
+  ['bse',[19.0,72.8,'Mumbai']],['nse',[19.0,72.8,'Mumbai']],['sensex',[19.0,72.8,'Mumbai']],
+  ['nifty',[19.0,72.8,'Mumbai']],['rbi',[19.0,72.8,'Mumbai']],
   ['myanmar',[17.0,96.0,'Myanmar']],['sudan',[15.0,32.0,'Sudan']],
   ['ethiopia',[8.0,38.0,'Ethiopia']],['nigeria',[10.0,8.0,'Nigeria']],
   ['nairobi',[−1.3,36.8,'Nairobi']],['kenya',[0.0,37.0,'Kenya']],
