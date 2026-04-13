@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+Disallow: /app
+Disallow: /admin
+Disallow: /api/
+Disallow: /callback
+
+# Priority pages for crawling
+Allow: /
+Allow: /login
+Allow: /demo
+
+Sitemap: https://www.orreryx.io/sitemap.xml

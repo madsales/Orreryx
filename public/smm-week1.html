@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orrery — Week 1 Social Media Posts</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #0d0d0d; font-family: 'Segoe UI', system-ui, sans-serif; color: #fff; padding: 40px 20px; }
+
+  h1 { text-align: center; color: #fff; margin-bottom: 8px; font-size: 28px; letter-spacing: 2px; }
+  .subtitle { text-align: center; color: #666; margin-bottom: 40px; font-size: 14px; }
+
+  /* NAV */
+  .day-nav { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 40px; }
+  .day-nav a { background: #1a1a1a; color: #888; padding: 8px 16px; border-radius: 6px; text-decoration: none; font-size: 13px; border: 1px solid #2a2a2a; transition: all .2s; }
+  .day-nav a:hover { background: #e63946; color: #fff; border-color: #e63946; }
+
+  /* DAY SECTION */
+  .day-section { margin-bottom: 60px; }
+  .day-label { font-size: 13px; color: #e63946; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 20px; padding-bottom: 10px; border-bottom: 1px solid #1e1e1e; }
+  .posts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 20px; }
+
+  /* COPY CARD */
+  .copy-card { background: #141414; border: 1px solid #222; border-radius: 12px; padding: 20px; }
+  .platform-tag { display: inline-flex; align-items: center; gap: 6px; font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; padding: 4px 10px; border-radius: 20px; margin-bottom: 14px; }
+  .tag-x { background: #111; color: #fff; border: 1px solid #333; }
+  .tag-ig { background: linear-gradient(135deg, #833ab4, #fd1d1d, #fcb045); color: #fff; border: none; }
+  .tag-li { background: #0a66c2; color: #fff; border: none; }
+  .copy-text { font-size: 13.5px; line-height: 1.7; color: #ccc; white-space: pre-wrap; }
+  .copy-text strong { color: #fff; }
+  .hashtags { margin-top: 10px; font-size: 12px; color: #555; }
+  .copy-btn { margin-top: 14px; background: #1e1e1e; border: 1px solid #333; color: #888; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 12px; transition: all .2s; }
+  .copy-btn:hover { background: #333; color: #fff; }
+
+  /* VISUAL CARD */
+  .visual-section { margin-top: 20px; }
+  .visual-label { font-size: 11px; color: #555; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+
+  /* ===== POST VISUALS ===== */
+
+  /* Square 1080×1080 simulation (scaled) */
+  .post-visual {
+    width: 100%;
+    aspect-ratio: 1/1;
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: transform .2s;
+  }
+  .post-visual:hover { transform: scale(1.01); }
+
+  /* Wide 1200×630 */
+  .post-visual.wide { aspect-ratio: 1200/630; }
+
+  /* ── VISUAL 1: Launch Announcement ── */
+  .v1 {
+    background: linear-gradient(135deg, #050508 0%, #0d0d1a 50%, #0a0505 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 40px;
+  }
+  .v1 .globe { font-size: 64px; margin-bottom: 20px; filter: drop-shadow(0 0 20px rgba(230,57,70,0.5)); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{filter:drop-shadow(0 0 20px rgba(230,57,70,0.4))} 50%{filter:drop-shadow(0 0 35px rgba(230,57,70,0.8))} }
+  .v1 h2 { font-size: 28px; font-weight: 900; letter-spacing: 4px; color: #fff; margin-bottom: 8px; }
+  .v1 .tagline { font-size: 13px; color: #888; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 24px; }
+  .v1 .features { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; }
+  .v1 .feat { background: rgba(230,57,70,0.1); border: 1px solid rgba(230,57,70,0.3); padding: 6px 14px; border-radius: 20px; font-size: 11px; color: #e63946; letter-spacing: 1px; }
+  .v1 .url { position: absolute; bottom: 20px; font-size: 11px; color: #444; letter-spacing: 2px; }
+
+  /* ── VISUAL 2: War Stocks ── */
+  .v2 {
+    background: #060608;
+    display: grid; grid-template-rows: auto 1fr auto;
+    padding: 0; overflow: hidden;
+  }
+  .v2 .v2-header { background: #0a0a0c; padding: 18px 24px; border-bottom: 1px solid #1a1a1a; display: flex; justify-content: space-between; align-items: center; }
+  .v2 .v2-title { font-size: 11px; letter-spacing: 3px; color: #e63946; text-transform: uppercase; }
+  .v2 .v2-live { display: flex; align-items: center; gap: 6px; font-size: 10px; color: #3dc47e; }
+  .v2 .live-dot { width: 6px; height: 6px; background: #3dc47e; border-radius: 50%; animation: blink 1s infinite; }
+  @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+  .v2 .v2-body { padding: 20px 24px; display: flex; flex-direction: column; gap: 10px; }
+  .v2 .stock-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: #0d0d10; border-radius: 8px; border-left: 3px solid transparent; }
+  .v2 .stock-row.up { border-left-color: #3dc47e; }
+  .v2 .stock-row.down { border-left-color: #e63946; }
+  .v2 .s-ticker { font-size: 13px; font-weight: 700; color: #fff; }
+  .v2 .s-name { font-size: 10px; color: #555; margin-top: 2px; }
+  .v2 .s-price { font-size: 14px; font-weight: 700; }
+  .v2 .s-price.up { color: #3dc47e; }
+  .v2 .s-price.down { color: #e63946; }
+  .v2 .s-change { font-size: 10px; }
+  .v2 .v2-footer { padding: 12px 24px; border-top: 1px solid #111; display: flex; justify-content: space-between; align-items: center; }
+  .v2 .v2-brand { font-size: 11px; color: #333; letter-spacing: 2px; }
+  .v2 .v2-cta { font-size: 10px; color: #e63946; border: 1px solid rgba(230,57,70,0.3); padding: 4px 10px; border-radius: 4px; }
+
+  /* ── VISUAL 3: Crisis Alert ── */
+  .v3 {
+    background: radial-gradient(ellipse at center, #120608 0%, #060608 70%);
+    display: flex; flex-direction: column; align-items: flex-start; justify-content: center;
+    padding: 40px; position: relative; overflow: hidden;
+  }
+  .v3::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, #e63946, transparent); }
+  .v3 .alert-tag { background: #e63946; color: #fff; font-size: 10px; letter-spacing: 2px; padding: 4px 10px; border-radius: 4px; margin-bottom: 20px; display: inline-block; }
+  .v3 h2 { font-size: 22px; font-weight: 800; line-height: 1.3; color: #fff; margin-bottom: 16px; max-width: 80%; }
+  .v3 .impact-box { background: rgba(230,57,70,0.08); border: 1px solid rgba(230,57,70,0.2); border-radius: 8px; padding: 14px 18px; margin-bottom: 20px; }
+  .v3 .impact-label { font-size: 10px; color: #e63946; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+  .v3 .impact-stocks { display: flex; gap: 10px; flex-wrap: wrap; }
+  .v3 .i-stock { font-size: 12px; color: #3dc47e; font-weight: 700; }
+  .v3 .v3-brand { position: absolute; bottom: 20px; right: 24px; font-size: 11px; color: #333; letter-spacing: 2px; }
+  .v3 .bg-text { position: absolute; right: -20px; bottom: -10px; font-size: 120px; opacity: 0.03; font-weight: 900; }
+
+  /* ── VISUAL 4: Free Trial ── */
+  .v4 {
+    background: linear-gradient(135deg, #050a07 0%, #060c09 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 40px; position: relative;
+  }
+  .v4::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at center, rgba(61,196,126,0.05) 0%, transparent 70%); }
+  .v4 .badge { background: rgba(61,196,126,0.1); border: 1px solid rgba(61,196,126,0.3); color: #3dc47e; font-size: 11px; letter-spacing: 2px; padding: 6px 16px; border-radius: 20px; margin-bottom: 24px; display: inline-block; }
+  .v4 .big-num { font-size: 80px; font-weight: 900; color: #3dc47e; line-height: 1; margin-bottom: 4px; }
+  .v4 .big-label { font-size: 14px; color: #888; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 28px; }
+  .v4 .perks { display: flex; flex-direction: column; gap: 10px; text-align: left; width: 100%; max-width: 260px; }
+  .v4 .perk { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #ccc; }
+  .v4 .perk-icon { color: #3dc47e; font-size: 16px; flex-shrink: 0; }
+  .v4 .v4-cta { margin-top: 28px; background: #3dc47e; color: #000; font-size: 12px; font-weight: 700; letter-spacing: 2px; padding: 12px 28px; border-radius: 8px; }
+  .v4 .v4-url { margin-top: 14px; font-size: 10px; color: #444; letter-spacing: 2px; }
+
+  /* ── VISUAL 5: Geo Education ── */
+  .v5 {
+    background: #060608;
+    display: flex; flex-direction: column;
+    padding: 0; overflow: hidden;
+  }
+  .v5 .v5-header { padding: 22px 28px; background: #080810; border-bottom: 1px solid #1a1a1a; }
+  .v5 .v5-tag { font-size: 10px; color: #888; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 6px; }
+  .v5 .v5-title { font-size: 18px; font-weight: 800; color: #fff; }
+  .v5 .v5-body { flex: 1; display: flex; flex-direction: column; gap: 0; }
+  .v5 .fact-row { display: flex; align-items: flex-start; gap: 14px; padding: 14px 28px; border-bottom: 1px solid #111; }
+  .v5 .fact-num { font-size: 22px; font-weight: 900; color: #e63946; min-width: 32px; }
+  .v5 .fact-text { font-size: 12px; color: #bbb; line-height: 1.5; padding-top: 4px; }
+  .v5 .fact-text strong { color: #fff; }
+  .v5 .v5-footer { padding: 14px 28px; display: flex; justify-content: space-between; align-items: center; }
+  .v5 .v5-brand { font-size: 11px; color: #333; letter-spacing: 2px; }
+  .v5 .v5-sub { font-size: 10px; color: #e63946; }
+
+  /* ── VISUAL 6: Stats/Social Proof ── */
+  .v6 {
+    background: linear-gradient(160deg, #08080d 0%, #0d0808 100%);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 40px; position: relative;
+  }
+  .v6 .v6-title { font-size: 13px; color: #555; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 32px; }
+  .v6 .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; max-width: 320px; margin-bottom: 32px; }
+  .v6 .stat { background: #0d0d10; border: 1px solid #1e1e1e; border-radius: 10px; padding: 20px; }
+  .v6 .stat-num { font-size: 32px; font-weight: 900; color: #e63946; line-height: 1; }
+  .v6 .stat-label { font-size: 10px; color: #555; margin-top: 6px; letter-spacing: 1px; }
+  .v6 .v6-quote { font-size: 14px; color: #888; font-style: italic; max-width: 300px; line-height: 1.6; }
+  .v6 .v6-brand { position: absolute; bottom: 18px; font-size: 11px; color: #333; letter-spacing: 2px; }
+
+  /* ── VISUAL 7: Weekend Deep Dive ── */
+  .v7 {
+    background: #060608;
+    display: flex; flex-direction: column;
+    padding: 0; overflow: hidden;
+  }
+  .v7 .v7-top { background: #e63946; padding: 22px 28px; }
+  .v7 .v7-week { font-size: 10px; color: rgba(255,255,255,0.6); letter-spacing: 3px; margin-bottom: 4px; }
+  .v7 .v7-title { font-size: 20px; font-weight: 900; color: #fff; }
+  .v7 .v7-body { flex: 1; padding: 24px 28px; display: flex; flex-direction: column; gap: 14px; }
+  .v7 .event-row { display: flex; gap: 14px; }
+  .v7 .event-dot { width: 8px; height: 8px; background: #e63946; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+  .v7 .event-content { }
+  .v7 .event-title { font-size: 13px; font-weight: 700; color: #fff; margin-bottom: 2px; }
+  .v7 .event-impact { font-size: 11px; color: #3dc47e; }
+  .v7 .v7-footer { padding: 16px 28px; background: #0a0a0c; border-top: 1px solid #1a1a1a; display: flex; justify-content: space-between; }
+  .v7 .v7-brand { font-size: 11px; color: #333; letter-spacing: 2px; }
+  .v7 .v7-url { font-size: 11px; color: #e63946; }
+
+  /* SCREENSHOT INSTRUCTIONS */
+  .instructions {
+    background: #0a1a0a;
+    border: 1px solid #1a3a1a;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 40px;
+    text-align: center;
+  }
+  .instructions h3 { color: #3dc47e; margin-bottom: 12px; font-size: 14px; letter-spacing: 2px; }
+  .instructions p { color: #888; font-size: 13px; line-height: 1.7; }
+  .instructions code { background: #111; color: #3dc47e; padding: 2px 8px; border-radius: 4px; font-size: 12px; }
+
+  .screenshot-btn {
+    display: block; width: 100%; margin-top: 12px;
+    background: #1a2a1a; border: 1px solid #3dc47e; color: #3dc47e;
+    padding: 10px; border-radius: 8px; cursor: pointer; font-size: 12px;
+    letter-spacing: 1px; text-align: center; transition: all .2s;
+  }
+  .screenshot-btn:hover { background: #3dc47e; color: #000; }
+
+  /* COPY CAPTION SECTION */
+  .captions { margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+  .caption-box { background: #0d0d0d; border: 1px solid #1e1e1e; border-radius: 8px; padding: 14px; }
+  .caption-platform { font-size: 10px; letter-spacing: 2px; color: #555; text-transform: uppercase; margin-bottom: 6px; }
+  .caption-text { font-size: 12px; color: #bbb; line-height: 1.6; white-space: pre-wrap; }
+  .caption-tags { font-size: 11px; color: #3a3a3a; margin-top: 6px; }
+
+</style>
+</head>
+<body>
+
+<h1>⚡ ORRERY — WEEK 1 SMM</h1>
+<p class="subtitle">7 Days · X · Instagram · LinkedIn · Screenshot-Ready Visuals</p>
+
+<div class="instructions">
+  <h3>📸 HOW TO USE</h3>
+  <p>
+    1. Click any visual card to isolate it<br>
+    2. Right-click → <code>Inspect</code> → find the card div → right-click → <code>Capture node screenshot</code><br>
+    3. Or use <code>Windows Snipping Tool (Win+Shift+S)</code> on each card<br>
+    4. Upload screenshot + copy the caption into Metricool scheduler<br><br>
+    <strong style="color:#3dc47e">Recommended size: zoom browser to 150% before screenshotting for high-res output</strong>
+  </p>
+</div>
+
+<div class="day-nav">
+  <a href="#day1">Day 1 — Launch</a>
+  <a href="#day2">Day 2 — War Stocks</a>
+  <a href="#day3">Day 3 — Crisis Alert</a>
+  <a href="#day4">Day 4 — Free Trial</a>
+  <a href="#day5">Day 5 — Education</a>
+  <a href="#day6">Day 6 — Social Proof</a>
+  <a href="#day7">Day 7 — Weekly Recap</a>
+</div>
+
+<!-- ════════════ DAY 1 ════════════ -->
+<div class="day-section" id="day1">
+  <div class="day-label">📅 Day 1 — Monday · Launch Announcement</div>
+  <div class="posts-grid">
+
+    <!-- VISUAL -->
+    <div>
+      <div class="visual-label">🖼 POST VISUAL (screenshot this)</div>
+      <div class="post-visual v1" id="visual1">
+        <div class="globe">🌍</div>
+        <h2>ORRERY</h2>
+        <div class="tagline">Live Geopolitical Market Intelligence</div>
+        <div class="features">
+          <div class="feat">⚡ CRISIS FEED</div>
+          <div class="feat">📈 WAR STOCKS</div>
+          <div class="feat">🌐 GLOBAL INDICES</div>
+          <div class="feat">🤖 AI BRIEFINGS</div>
+          <div class="feat">📊 SCREENER</div>
+        </div>
+        <div class="url">orreryx.io</div>
+      </div>
+    </div>
+
+    <!-- CAPTIONS -->
+    <div>
+      <div class="captions">
+        <div class="caption-box">
+          <div class="caption-platform">🐦 X (Twitter)</div>
+          <div class="caption-text">We built something the market was missing.
+
+Live crisis intelligence. War stocks. Geopolitical AI briefings. All in one place.
+
+Before news breaks on Bloomberg — it shows here first.
+
+Try Orrery free for 3 days. No card needed.
+👉 orreryx.io</div>
+          <div class="caption-tags">#GeopoliticalRisk #WarStocks #MarketIntelligence #Trading #Fintech</div>
+        </div>
+        <div class="caption-box">
+          <div class="caption-platform">📸 Instagram</div>
+          <div class="caption-text">The world moves fast. Markets move faster. 🌍📈
+
+Orrery gives you live geopolitical intelligence before it hits the headlines.
+
+✅ Live Crisis Feed
+✅ War Stocks Tracker
+✅ Global Indices
+✅ AI Briefings
+✅ Market Screener
+
+Start FREE — 3 days, no credit card.
+Link in bio 👆</div>
+          <div class="caption-tags">#Investing #StockMarket #Geopolitics #Trading #MarketIntelligence #WarStocks #Fintech #GlobalMarkets #Finance #AI</div>
+        </div>
+        <div class="caption-box">
+          <div class="caption-platform">💼 LinkedIn</div>
+          <div class="caption-text">Excited to announce the launch of Orrery — a live geopolitical market intelligence platform for traders and analysts.
+
+In today's environment, geopolitical events move markets before mainstream media reports them. Orrery tracks conflicts, crises, and global events in real time — and maps their direct market impact.
+
+Features:
+• Live conflict zone feed (Reuters, BBC, AP sources)
+• War stocks & defense sector tracker
+• AI-powered market briefings
+• Global indices dashboard
+• Equity screener
+
+3-day free trial · No credit card · orreryx.io
+
+If you work in finance, trading, or macro research — this was built for you.</div>
+          <div class="caption-tags">#MarketIntelligence #Geopolitics #Fintech #Trading #MacroResearch #Finance #AI #Investment</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ════════════ DAY 2 ════════════ -->
+<div class="day-section" id="day2">
+  <div class="day-label">📅 Day 2 — Tuesday · War Stocks Feature</div>
+  <div class="posts-grid">
+
+    <div>
+      <div class="visual-label">🖼 POST VISUAL</div>
+      <div class="post-visual v2">
+        <div class="v2-header">
+          <div class="v2-title">⚔ WAR STOCKS — LIVE</div>
+          <div class="v2-live"><div class="live-dot"></div> REAL-TIME</div>
+        </div>
+        <div class="v2-body">
+          <div class="stock-row up">
+            <div><div class="s-ticker">LMT</div><div class="s-name">Lockheed Martin</div></div>
+            <div style="text-align:right"><div class="s-price up">+4.2%</div><div class="s-change" style="color:#3dc47e">↑ $18.40</div></div>
+          </div>
+          <div class="stock-row up">
+            <div><div class="s-ticker">RTX</div><div class="s-name">Raytheon Technologies</div></div>
+            <div style="text-align:right"><div class="s-price up">+3.8%</div><div class="s-change" style="color:#3dc47e">↑ $5.21</div></div>
+          </div>
+          <div class="stock-row up">
+            <div><div class="s-ticker">NOC</div><div class="s-name">Northrop Grumman</div></div>
+            <div style="text-align:right"><div class="s-price up">+2.9%</div><div class="s-change" style="color:#3dc47e">↑ $12.80</div></div>
+          </div>
+          <div class="stock-row down">
+            <div><div class="s-ticker">BA</div><div class="s-name">Boeing</div></div>
+            <div style="text-align:right"><div class="s-price down">-1.2%</div><div class="s-change" style="color:#e63946">↓ $2.10</div></div>
+          </div>
+        </div>
+        <div class="v2-footer">
+          <div class="v2-brand">ORRERY · orreryx.io</div>
+          <div class="v2-cta">TRACK LIVE →</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="captions">
+        <div class="caption-box">
+          <div class="caption-platform">🐦 X (Twitter)</div>
+          <div class="caption-text">When conflict escalates, defense stocks move.
+
+LMT +4.2% · RTX +3.8% · NOC +2.9%
+
+Most traders find out 2 hours late.
+Orrery users find out first.
+
+Live war stocks tracker → orreryx.io</div>
+          <div class="caption-tags">#WarStocks #DefenseStocks #LMT #RTX #Trading #GeopoliticalRisk</div>
+        </div>
+        <div class="caption-box">
+          <div class="caption-platform">📸 Instagram</div>
+          <div class="caption-text">War moves markets. 📈⚔
+
+While others wait for the news — smart traders are already positioned.
+
+Orrery's War Stocks tracker shows you LIVE how conflicts are moving defense, energy & commodity stocks in real time.
+
+🔴 LMT +4.2%
+🔴 RTX +3.8%
+🔴 NOC +2.9%
+
+This is the edge institutional investors have. Now it's yours.
+
+Try free at orreryx.io → Link in bio</div>
+          <div class="caption-tags">#WarStocks #DefenseStocks #StockMarket #Trading #Investing #GeopoliticalRisk #MarketIntelligence #Finance #Fintech</div>
+        </div>
+        <div class="caption-box">
+          <div class="caption-platform">💼 LinkedIn</div>
+          <div class="caption-text">Geopolitical events don't wait for quarterly reports.
+
+When conflict escalates, defense and energy stocks react within minutes — not days. Orrery's War Stocks tracker monitors these movements live, giving traders and analysts an edge that traditional platforms don't offer.
+
+Real-time data. Conflict-correlated signals. No noise.
+
+See it live at orreryx.io</div>
+          <div class="caption-tags">#DefenseStocks #GeopoliticalRisk #Trading #MarketAnalysis #Finance</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ DAY 3 ════════════ -->
+<div class="day-section" id="day3">
+  <div class="day-label">📅 Day 3 — Wednesday · Crisis Alert Feature</div>
+  <div class="posts-grid">
+
+    <div>
+      <div class="visual-label">🖼 POST VISUAL</div>
+      <div class="post-visual v3">
+        <div class="alert-tag">⚠ CRISIS ALERT</div>
+        <h2>Markets react before headlines break</h2>
+        <div class="impact-box">
+          <div class="impact-label">📈 Market Impact Detected</div>
+          <div class="impact-stocks">
+            <div class="i-stock">OIL +6.1%</div>
+            <div class="i-stock">GOLD +2.8%</div>
+            <div class="i-stock">LMT +4.2%</div>
+            <div class="i-stock">USD/JPY ↓</div>
+          </div>
+        </div>
+        <div style="font-size:12px;color:#666;line-height:1.6">Orrery detects geopolitical triggers<br>and maps market impact in real time</div>
+        <div class="v3-brand">ORRERY · orreryx.io</div>
+        <div class="bg-text">⚡</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="captions">
+        <div class="caption-box">
+          <div class="caption-platform">🐦 X (Twitter)</div>
+          <div class="caption-text">A crisis hits.
+
+Oil spikes. Gold surges. Safe havens flood.
+
+By the time it's on Bloomberg — the move is over.
+
+Orrery's live crisis feed catches it first and maps which assets are moving.
+
+orreryx.io — free 3-day trial</div>
+          <div class="caption-tags">#CrisisTrading #Oil #Gold #GeopoliticalRisk #MarketIntelligence #Trading</div>
+        </div>
+        <div class="caption-box">
+          <div class="caption-platform">📸 Instagram</div>
+          <div class="caption-text">The crisis hits at 2am. ⚡
+
+Oil is up 6%. Gold surging. Defense stocks gapping.
+
+You're asleep. But Orrery isn't. 🌍
+
+Our live crisis feed monitors global conflict zones 24/7 and instantly maps the market impact across:
+
+⚡ Energy & commodities
+⚡ Defense stocks
+⚡ Safe haven assets
+⚡ Currency pairs
+
+Wake up informed. Trade with edge.
+
+Try free → orreryx.io (link in bio)</div>
+          <div class="caption-tags">#CrisisTrading #MarketIntelligence #Gold #Oil #Trading #Investing #GeopoliticalRisk #Fintech #Finance</div>
+        </div>
+        <div class="caption-box">
+          <div class="caption-platform">💼 LinkedIn</div>
+          <div class="caption-text">In event-driven trading, timing is everything.
+
+Geopolitical crises — conflicts, sanctions, elections, coups — trigger predictable market movements. The challenge has always been speed: getting actionable intelligence before the market has priced it in.
+
+Orrery's Crisis Feed monitors global events 24/7 and correlates them with live market movements. For macro traders and risk analysts, this closes the information gap that institutional desks have exploited for decades.
+
+Free trial at orreryx.io</div>
+          <div class="caption-tags">#MacroTrading #EventDriven #GeopoliticalRisk #RiskManagement #Finance #Fintech</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ DAY 4 ════════════ -->
+<div class="day-section" id="day4">
+  <div class="day-label">📅 Day 4 — Thursday · Free Trial Push</div>
+  <div class="posts-grid">
+
+    <div>
+      <div class="visual-label">🖼 POST VISUAL</div>
+      <div class="post-visual v4">
+        <div class="badge">✦ FREE TRIAL</div>
+        <div class="big-num">3</div>
+        <div class="big-label">Days Free · No Card</div>
+        <div class="perks">
+          <div class="perk"><span class="perk-icon">✅</span> Live Crisis Feed</div>
+          <div class="perk"><span class="perk-icon">✅</span> War Stocks Tracker</div>
+          <div class="perk"><span class="perk-icon">✅</span> Global Indices</div>
+          <div class="perk"><span class="perk-icon">✅</span> Market Screener</div>
+          <div class="perk"><span class="perk-icon">✅</span> No credit card required</div>
+        </div>
+        <div class="v4-cta">START FREE →</div>
+        <div class="v4-url">orreryx.io</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="captions">
+        <div class="caption-box">
+          <div class="caption-platform">🐦 X (Twitter)</div>
+          <div class="caption-text">No credit card. No commitment. No excuses.
+
+3 days of live geopolitical market intelligence — completely free.
+
+Crisis Feed ✅
+War Stocks ✅
+Global Indices ✅
+Screener ✅
+
+Start now → orreryx.io</div>
+          <div class="caption-tags">#FreeTrial #Fintech #Trading #MarketIntelligence #GeopoliticalRisk</div>
+        </div>
+        <div class="caption-box">
+          <div class="caption-platform">📸 Instagram</div>
+          <div class="caption-text">What if you could track global crises AND their market impact — for free? 🌍📊
+
+For 3 days, Orrery gives you full access to:
+
+✅ Live Crisis Feed
+✅ War Stocks Tracker
+✅ Global Market Indices
+✅ Equity Screener
+
+No credit card. No hidden fees. Just pure market intelligence.
+
+After 3 days — if you don't see value, walk away. No questions asked.
+
+👉 Start free at orreryx.io (link in bio)</div>
+          <div class="caption-tags">#FreeTrial #Investing #StockMarket #Trading #MarketIntelligence #Fintech #Finance #Geopolitics</div>
+        </div>
+        <div class="caption-box">
+          <div class="caption-platform">💼 LinkedIn</div>
+          <div class="caption-text">We believe the best way to prove value is to let you experience it.
+
+Orrery's 3-day free trial gives you full access to our live crisis intelligence platform — no credit card required.
+
+If geopolitical risk is relevant to your work (and in 2026, it is for almost everyone in finance), this is worth 3 minutes to set up.
+
+orreryx.io → Start Free Trial</div>
+          <div class="caption-tags">#Fintech #Finance #FreeTrial #GeopoliticalRisk #MarketIntelligence</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ DAY 5 ════════════ -->
+<div class="day-section" id="day5">
+  <div class="day-label">📅 Day 5 — Friday · Educational Content</div>
+  <div class="posts-grid">
+
+    <div>
+      <div class="visual-label">🖼 POST VISUAL</div>
+      <div class="post-visual v5">
+        <div class="v5-header">
+          <div class="v5-tag">📚 ORRERY INTELLIGENCE BRIEF</div>
+          <div class="v5-title">5 Ways Geopolitics Moves Markets</div>
+        </div>
+        <div class="v5-body">
+          <div class="fact-row">
+            <div class="fact-num">01</div>
+            <div class="fact-text"><strong>Oil shocks</strong> — Middle East conflicts spike crude 5–15% within hours</div>
+          </div>
+          <div class="fact-row">
+            <div class="fact-num">02</div>
+            <div class="fact-text"><strong>Defense surge</strong> — NATO activations push LMT, RTX, NOC 3–8% in a session</div>
+          </div>
+          <div class="fact-row">
+            <div class="fact-num">03</div>
+            <div class="fact-text"><strong>Safe haven rush</strong> — Gold, JPY, CHF spike as risk-off sentiment floods in</div>
+          </div>
+          <div class="fact-row">
+            <div class="fact-num">04</div>
+            <div class="fact-text"><strong>Sanctions effect</strong> — Commodities tied to sanctioned nations gap hard</div>
+          </div>
+          <div class="fact-row">
+            <div class="fact-num">05</div>
+            <div class="fact-text"><strong>Election risk</strong> — EM currencies crash weeks before unstable elections</div>
+          </div>
+        </div>
+        <div class="v5-footer">
+          <div class="v5-brand">ORRERY · orreryx.io</div>
+          <div class="v5-sub">Track all of this live →</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="captions">
+        <div class="caption-box">
+          <div class="caption-platform">🐦 X (Twitter)</div>
+          <div class="caption-text">5 ways geopolitics moves markets that most traders ignore:
+
+1/ Oil shocks — ME conflicts spike crude 5–15% in hours
+2/ Defense surge — NATO alerts push LMT, RTX +3–8%
+3/ Safe haven rush — Gold & JPY spike on risk-off
+4/ Sanctions — commodities gap hard overnight
+5/ Election risk — EM currencies crash weeks early
+
+Orrery tracks all 5 in real time → orreryx.io</div>
+          <div class="caption-tags">#GeopoliticalRisk #Trading #MacroTrading #Oil #Gold #DefenseStocks #Finance</div>
+        </div>
+        <div class="caption-box">
+          <div class="caption-platform">📸 Instagram</div>
+          <div class="caption-text">Most traders focus on earnings and technicals. 📊
+
+But the biggest market moves in history came from geopolitics.
+
+Here are 5 patterns every trader should know:
+
+1️⃣ Middle East conflict → Oil +5-15% in hours
+2️⃣ NATO activation → Defense stocks surge 3-8%
+3️⃣ Risk-off event → Gold, JPY, CHF spike instantly
+4️⃣ New sanctions → Commodity gaps overnight
+5️⃣ Election instability → EM currencies crash weeks early
+
+These aren't theories. They're repeating patterns.
+
+Orrery tracks every trigger in real time so you never miss the move.
+
+🌍 orreryx.io — free trial, link in bio</div>
+          <div class="caption-tags">#TradingEducation #Geopolitics #StockMarket #MacroTrading #Oil #Gold #Investing #Finance #Fintech #Trading</div>
+        </div>
+        <div class="caption-box">
+          <div class="caption-platform">💼 LinkedIn</div>
+          <div class="caption-text">5 geopolitical patterns that move markets — and how to track them:
+
+1. Oil shocks: Middle East tensions correlate with crude spikes of 5-15% within hours of escalation
+
+2. Defense sector rotation: NATO activations and conflict declarations push LMT, RTX, NOC 3-8% in a single session
+
+3. Safe-haven flows: Gold, JPY, and CHF spike predictably as risk-off sentiment cascades through markets
+
+4. Sanctions impact: Commodity markets tied to sanctioned economies gap hard, often overnight
+
+5. Electoral risk premium: EM currencies begin pricing instability weeks before official election results
+
+These patterns repeat. The traders who profit are those who see them early.
+
+Orrery tracks all of this in real time. orreryx.io</div>
+          <div class="caption-tags">#MacroResearch #GeopoliticalRisk #Trading #Finance #MarketAnalysis #Investment</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ DAY 6 ════════════ -->
+<div class="day-section" id="day6">
+  <div class="day-label">📅 Day 6 — Saturday · Social Proof / Community</div>
+  <div class="posts-grid">
+
+    <div>
+      <div class="visual-label">🖼 POST VISUAL</div>
+      <div class="post-visual v6">
+        <div class="v6-title">WHY TRADERS CHOOSE ORRERY</div>
+        <div class="stats-grid">
+          <div class="stat">
+            <div class="stat-num">24/7</div>
+            <div class="stat-label">LIVE MONITORING</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num">50+</div>
+            <div class="stat-label">CONFLICT ZONES</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num">3</div>
+            <div class="stat-label">NEWS SOURCES</div>
+          </div>
+          <div class="stat">
+            <div class="stat-num">AI</div>
+            <div class="stat-label">BRIEFINGS</div>
+          </div>
+        </div>
+        <div class="v6-quote">"The edge institutional desks have had for decades — now available to everyone."</div>
+        <div class="v6-brand">ORRERY · orreryx.io</div>
+      </div>
+    </div>
+
+    <div>
+      <div class="captions">
+        <div class="caption-box">
+          <div class="caption-platform">🐦 X (Twitter)</div>
+          <div class="caption-text">Institutional traders have had geopolitical intelligence desks for decades.
+
+Now everyone does.
+
+Orrery: 24/7 monitoring · 50+ conflict zones · Reuters/BBC/AP · AI briefings
+
+The edge is no longer exclusive.
+
+orreryx.io — free 3-day trial</div>
+          <div class="caption-tags">#Trading #MarketIntelligence #Fintech #GeopoliticalRisk #AI</div>
+        </div>
+        <div class="caption-box">
+          <div class="caption-platform">📸 Instagram</div>
+          <div class="caption-text">Goldman Sachs has a geopolitical risk desk. 🏦
+
+So does JPMorgan. And Bridgewater.
+
+They pay millions for the intelligence that moves their portfolios before markets react.
+
+We built that — for everyone.
+
+Orrery gives individual traders and analysts the same live geopolitical market intelligence that institutions have kept exclusive.
+
+📊 24/7 monitoring
+🌍 50+ global conflict zones
+📰 Reuters · BBC · AP live feeds
+🤖 AI-powered briefings
+
+The edge is no longer exclusive.
+
+Start free → orreryx.io (link in bio)</div>
+          <div class="caption-tags">#Trading #Investing #MarketIntelligence #Finance #Fintech #AI #Geopolitics #StockMarket #Institutional #Edge</div>
+        </div>
+        <div class="caption-box">
+          <div class="caption-platform">💼 LinkedIn</div>
+          <div class="caption-text">For decades, geopolitical market intelligence was the exclusive domain of institutional trading desks.
+
+The cost of real-time political risk analysis, conflict monitoring, and event-driven signals was prohibitive for individual traders and smaller funds.
+
+We built Orrery to change that.
+
+Live crisis feeds. War stock tracking. AI briefings. Available to anyone, at a fraction of institutional cost.
+
+The information advantage shouldn't be reserved for the largest balance sheets.
+
+orreryx.io</div>
+          <div class="caption-tags">#Fintech #MarketIntelligence #Finance #GeopoliticalRisk #DemocratizingFinance #Trading</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ════════════ DAY 7 ════════════ -->
+<div class="day-section" id="day7">
+  <div class="day-label">📅 Day 7 — Sunday · Weekly Geo Recap</div>
+  <div class="posts-grid">
+
+    <div>
+      <div class="visual-label">🖼 POST VISUAL</div>
+      <div class="post-visual v7">
+        <div class="v7-top">
+          <div class="v7-week">WEEK IN REVIEW · ORRERY INTELLIGENCE</div>
+          <div class="v7-title">This Week's Biggest Geopolitical Market Movers</div>
+        </div>
+        <div class="v7-body">
+          <div class="event-row">
+            <div class="event-dot"></div>
+            <div class="event-content">
+              <div class="event-title">Middle East Tensions Escalate</div>
+              <div class="event-impact">→ Oil +5.8% · Gold +2.1% · LMT +4.2%</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <div class="event-dot"></div>
+            <div class="event-content">
+              <div class="event-title">NATO Emergency Session Called</div>
+              <div class="event-impact">→ Defense sector +3.6% · EUR strengthens</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <div class="event-dot"></div>
+            <div class="event-content">
+              <div class="event-title">Asia-Pacific Maritime Dispute</div>
+              <div class="event-impact">→ Shipping stocks +2.9% · JPY safe-haven bid</div>
+            </div>
+          </div>
+          <div class="event-row">
+            <div class="event-dot"></div>
+            <div class="event-content">
+              <div class="event-title">New Sanctions Package Announced</div>
+              <div class="event-impact">→ Commodity gap · EM currency selloff</div>
+            </div>
+          </div>
+        </div>
+        <div class="v7-footer">
+          <div class="v7-brand">ORRERY · orreryx.io</div>
+          <div class="v7-url">Track live next week →</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="captions">
+        <div class="caption-box">
+          <div class="caption-platform">🐦 X (Twitter)</div>
+          <div class="caption-text">This week in geopolitical markets:
+
+⚡ ME tensions → Oil +5.8%, LMT +4.2%
+⚡ NATO session → Defense sector +3.6%
+⚡ Maritime dispute → Shipping +2.9%
+⚡ Sanctions → EM selloff, commodity gap
+
+Every move. Tracked live. Before the crowd.
+
+Next week → orreryx.io (free trial open)</div>
+          <div class="caption-tags">#WeeklyRecap #GeopoliticalRisk #WarStocks #Oil #Gold #Trading #MarketIntelligence</div>
+        </div>
+        <div class="caption-box">
+          <div class="caption-platform">📸 Instagram</div>
+          <div class="caption-text">This week, geopolitics moved markets again. 🌍📈
+
+Here's what Orrery tracked live while others waited for the morning news:
+
+⚡ Middle East escalation → Oil +5.8%, Gold +2.1%
+⚡ NATO emergency session → Defense stocks +3.6%
+⚡ Asia-Pacific maritime dispute → Shipping +2.9%
+⚡ New sanctions package → EM currency selloff
+
+These weren't surprises. They were patterns.
+
+Orrery users saw them coming. Did you?
+
+Don't miss next week's moves.
+Start your free 3-day trial → orreryx.io (link in bio)</div>
+          <div class="caption-tags">#WeeklyRecap #Geopolitics #Trading #Investing #Oil #Gold #DefenseStocks #MarketIntelligence #Finance #Fintech</div>
+        </div>
+        <div class="caption-box">
+          <div class="caption-platform">💼 LinkedIn</div>
+          <div class="caption-text">This week's geopolitical market summary — tracked live on Orrery:
+
+📍 Middle East tensions: Crude oil +5.8%, Gold +2.1%, Lockheed Martin +4.2%
+📍 NATO emergency session: Defense sector broad +3.6%, EUR strengthened
+📍 Asia-Pacific maritime: Shipping equities +2.9%, JPY safe-haven bid
+📍 Sanctions package: Commodity gap, EM currency pressure
+
+Every one of these signals was visible before it became headline news.
+
+Sharing weekly geopolitical market summaries here. Follow to stay ahead.
+
+Full live intelligence at orreryx.io</div>
+          <div class="caption-tags">#WeeklyMarketUpdate #GeopoliticalRisk #MacroResearch #Finance #Trading #MarketIntelligence</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div style="text-align:center;padding:40px;color:#333;font-size:12px;letter-spacing:2px">
+  ORRERY SMM — WEEK 1 · orreryx.io<br>
+  <span style="color:#1e1e1e">Generated for @orrery · @orreryx · orrery (LinkedIn)</span>
+</div>
+
+<script>
+// Copy caption text on button click
+document.querySelectorAll('.caption-text').forEach(el => {
+  el.style.cursor = 'pointer';
+  el.title = 'Click to copy';
+  el.addEventListener('click', () => {
+    navigator.clipboard.writeText(el.textContent.trim()).then(() => {
+      const orig = el.style.outline;
+      el.style.outline = '1px solid #3dc47e';
+      setTimeout(() => el.style.outline = orig, 800);
+    });
+  });
+});
+</script>
+</body>
+</html>

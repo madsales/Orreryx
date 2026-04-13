@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "orrery",
+      "runtimeExecutable": "C:\\Program Files\\Odoo 17.0.20240319\\python\\python.exe",
+      "runtimeArgs": ["-m", "http.server", "3000", "--directory", "public"],
+      "port": 3000
+    }
+  ]
+}

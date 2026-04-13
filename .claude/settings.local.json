@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Users/HP/.claude/projects/C--Users-HP-Downloads-orreryx/memory//**)",
+      "Read(//c/Users/HP/.claude/projects/C--Users-HP-Downloads-orreryx/memory/**)",
+      "mcp__Claude_Preview__preview_start",
+      "Bash(cmd.exe /c \"where node 2>&1 & node -v 2>&1 & python --version 2>&1 & py --version 2>&1\")",
+      "Bash(cmd.exe /c \"set PATH\")",
+      "Bash(\"/c/Users/HP/AppData/Local/Microsoft/WindowsApps/python.exe\" --version)",
+      "Bash(netstat -ano)",
+      "Bash(findstr :3000)",
+      "Bash(taskkill /PID 30192 /F)",
+      "Bash(taskkill //PID 30192 //F)",
+      "Bash(powershell -command \"Get-Content 'C:\\\\Users\\\\HP\\\\Downloads\\\\orreryx\\\\public\\\\app.html' | Select-Object -Last 5\")",
+      "Bash(powershell -command \"Get-Content 'C:\\\\Users\\\\HP\\\\Downloads\\\\orreryx\\\\public\\\\index.html' | Select-Object -Last 5\")",
+      "Bash(powershell -command \"\\(Get-Content 'C:\\\\Users\\\\HP\\\\Downloads\\\\orreryx\\\\public\\\\index.html'\\).Count; \\(Get-Content 'C:\\\\Users\\\\HP\\\\Downloads\\\\orreryx\\\\public\\\\admin.html'\\).Count\")"
+    ]
+  }
+}
