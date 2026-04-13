@@ -8,23 +8,28 @@ let cache = null, cacheTime = 0;
 const STREAMS = [
   {
     key: 'conflict',
-    query: 'war OR military OR attack OR airstrike OR coup OR missile OR frontline OR ceasefire OR troops OR offensive OR bombing OR siege OR insurgent OR drone',
+    query: 'war OR military OR attack OR airstrike OR coup OR missile OR frontline OR ceasefire OR troops OR offensive OR bombing OR siege OR insurgent OR drone OR weapons OR navy OR airforce',
     max: 30,
   },
   {
     key: 'politics',
-    query: 'election OR president OR parliament OR government OR minister OR sanctions OR summit OR treaty OR protest OR NATO OR "United Nations" OR diplomacy OR rally OR resignation OR congress OR senate',
+    query: 'election OR president OR parliament OR government OR minister OR sanctions OR summit OR treaty OR protest OR NATO OR "United Nations" OR diplomacy OR rally OR resignation OR congress OR senate OR referendum OR coup',
     max: 30,
   },
   {
     key: 'economy',
-    query: 'economy OR inflation OR recession OR tariff OR "interest rate" OR "stock market" OR trade OR bankruptcy OR GDP OR cryptocurrency OR "central bank" OR "market crash" OR unemployment',
+    query: 'economy OR inflation OR recession OR tariff OR "interest rate" OR "stock market" OR trade OR bankruptcy OR GDP OR "central bank" OR "market crash" OR unemployment OR "trade deficit" OR IMF OR "World Bank"',
+    max: 25,
+  },
+  {
+    key: 'finance',
+    query: '"stock market" OR nasdaq OR "S&P 500" OR "wall street" OR "hedge fund" OR "bond yield" OR "interest rate" OR "rate cut" OR "rate hike" OR "federal reserve" OR forex OR cryptocurrency OR bitcoin OR "earnings report" OR IPO OR dividend OR "market rally"',
     max: 25,
   },
   {
     key: 'society',
-    query: 'earthquake OR tsunami OR hurricane OR flood OR wildfire OR volcano OR cybersecurity OR "artificial intelligence" OR outbreak OR pandemic OR crime OR explosion OR disaster OR shooting OR nuclear',
-    max: 25,
+    query: 'earthquake OR tsunami OR hurricane OR flood OR wildfire OR volcano OR cybersecurity OR "artificial intelligence" OR outbreak OR pandemic OR crime OR explosion OR disaster OR shooting OR nuclear OR climate OR drought OR famine',
+    max: 20,
   },
 ];
 
@@ -33,7 +38,7 @@ function gdeltUrl(query, max) {
   return (
     'https://api.gdeltproject.org/api/v2/doc/doc' +
     `?query=${encodeURIComponent(query)}` +
-    `&mode=artlist&format=json&timespan=6h&maxrecords=${max}&sort=DateDesc&sourcelang=english`
+    `&mode=artlist&format=json&timespan=12h&maxrecords=${max}&sort=DateDesc&sourcelang=english`
   );
 }
 
@@ -78,9 +83,11 @@ function categorize(title) {
     return { cat: 'cri', catLabel: 'CRIME',         severity: 'medium' };
   if (/ceasefire|peace.talks|treaty|agreement|ambassador|foreign.minister|un.security|nato|summit|negotiation|sanction|diplomatic/.test(t))
     return { cat: 'dip', catLabel: 'DIPLOMATIC',    severity: 'medium' };
-  if (/economy|inflation|recession|gdp|market.crash|trade.war|tariff|central.bank|interest.rate|unemployment|bankruptcy|stock|currency|debt/.test(t))
+  if (/economy|inflation|recession|gdp|market.crash|trade.war|tariff|central.bank|interest.rate|unemployment|bankruptcy|debt|imf|world.bank/.test(t))
     return { cat: 'eco', catLabel: 'ECONOMIC',      severity: 'medium' };
-  if (/company|merger|acquisition|ipo|earnings|billion|ceo|corporation|investment|startup|layoff|strike|labor/.test(t))
+  if (/nasdaq|s&p.500|wall.street|hedge.fund|bond.yield|rate.cut|rate.hike|federal.reserve|forex|bitcoin|ethereum|crypto|earnings.report|dividend|stock.rally|ipo|market.surge|shares.soar|shares.plunge|fund|equity/.test(t))
+    return { cat: 'fin', catLabel: 'FINANCE',       severity: 'medium' };
+  if (/company|merger|acquisition|ceo|corporation|investment|startup|layoff|strike|labor/.test(t))
     return { cat: 'biz', catLabel: 'BUSINESS',      severity: 'low' };
   if (/war|attack|bomb|missile|military|army|troops|combat|airstrike|soldier|armed.forces|offensive|frontline|weapon|shooting/.test(t))
     return { cat: 'mil', catLabel: 'MILITARY',      severity: 'high' };
@@ -263,7 +270,7 @@ export default async function handler(req, res) {
 
     // Sort newest first, then dedup by title
     all.sort((a, b) => new Date(b.time) - new Date(a.time));
-    const final = dedup(all).slice(0, 120);
+    const final = dedup(all).slice(0, 150);
 
     const counts = {};
     final.forEach(e => { counts[e.cat] = (counts[e.cat] || 0) + 1; });

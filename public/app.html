@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://api-m.paypal.com https://api-m.sandbox.paypal.com wss://ws.twelvedata.com https://api.twelvedata.com https://api.gdeltproject.org https://unpkg.com; worker-src blob:; frame-src 'none';">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com; img-src 'self' data: blob: https:; connect-src 'self' https://api-m.paypal.com https://api-m.sandbox.paypal.com wss://ws.twelvedata.com https://api.twelvedata.com https://api.gdeltproject.org https://unpkg.com https://api.coingecko.com; worker-src blob:; frame-src 'none';">
 <meta http-equiv="X-Frame-Options" content="DENY">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -168,6 +168,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
 .c-cri{background:rgba(120,10,40,.15);color:#d04060}
 .c-hlt{background:rgba(140,20,80,.15);color:#d060a0}
 .c-biz{background:rgba(20,80,50,.15);color:#40b878}
+.c-fin{background:rgba(20,100,160,.15);color:#30a8e0}
 /* ── INTEL FILTER BAR ── */
 .intel-filter-bar{padding:6px 12px;border-bottom:1px solid var(--brd);display:flex;gap:4px;overflow-x:auto;flex-shrink:0;scrollbar-width:none;background:var(--bg2)}
 .intel-filter-bar::-webkit-scrollbar{display:none}
@@ -466,17 +467,57 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
 /* ── PAYWALL ── */
 #paywall-overlay{position:fixed;inset:0;background:rgba(9,9,11,.97);z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px;text-align:center}
 #paywall-overlay button{width:100%;max-width:260px}
+/* ── MOBILE NAV ── */
+.mobile-nav{display:none;position:fixed;bottom:0;left:0;right:0;z-index:300;background:rgba(9,9,11,.97);backdrop-filter:blur(24px);border-top:1px solid var(--brd2);padding:6px 0 calc(6px + env(safe-area-inset-bottom));gap:0}
+.mob-tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--txt3);transition:color .15s;padding:5px 2px;background:transparent;border:none;font-family:var(--sans)}
+.mob-tab:active{opacity:.7}
+.mob-tab.active{color:var(--red)}
+.mob-tab-icon{font-size:20px;line-height:1.1}
+.mob-tab-lbl{font:500 8.5px/1 var(--sans);letter-spacing:.01em}
+/* Mobile menu overlay */
+.mob-menu{display:none;position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.82);backdrop-filter:blur(4px);align-items:flex-end}
+.mob-menu.open{display:flex}
+.mob-menu-sheet{width:100%;background:var(--bg2);border-top:1px solid var(--brd2);border-radius:16px 16px 0 0;padding:16px 16px calc(80px + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.mob-menu-item{display:flex;flex-direction:column;align-items:center;gap:6px;padding:14px 8px;border-radius:var(--radius);background:var(--bg3);border:1px solid var(--brd);cursor:pointer;transition:background .12s;text-align:center}
+.mob-menu-item:active{background:var(--bg4)}
+.mob-menu-item-icon{font-size:24px}
+.mob-menu-item-lbl{font:500 10px/1 var(--sans);color:var(--txt2)}
+.mob-menu-close{grid-column:1/-1;background:var(--bg3);border:1px solid var(--brd);border-radius:var(--radius);padding:12px;font:600 11px/1 var(--sans);color:var(--txt3);cursor:pointer;text-align:center}
+
 /* ── RESPONSIVE ── */
 @media(max-width:900px){
   .app{grid-template-columns:1fr}
-  .sidebar{display:none}
+  .sidebar{display:none!important}
   .intel-layout{grid-template-columns:1fr}
   .ai-panel{display:none}
   .map-sidebar{display:none}
   .g4{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:1fr 1fr}
   .calc-grid{grid-template-columns:1fr}
   .scr-filters{grid-template-columns:1fr 1fr}
   .logo-sub,.sep,.hstat,.crisis-txt,.clk,.live-btn,.plan-btn{display:none!important}
+  .mobile-nav{display:flex}
+  .main{padding-bottom:68px}
+  .ph{padding:10px 14px 8px}
+  .ph-title{font-size:15px}
+  .ph-sub{display:none}
+  .ph-right{gap:4px}
+  .pb{padding:12px 14px}
+  .crypto-grid{grid-template-columns:1fr 1fr}
+  .plan-cards{grid-template-columns:1fr}
+  .topbar{padding:0 10px}
+  .bell-btn{display:flex!important}
+  #cb-panel{width:calc(100vw - 28px);right:14px;bottom:78px}
+  #cb-btn{bottom:78px}
+  .map-wrap{flex-direction:column}
+  .intel-filter-bar{padding:5px 10px}
+}
+@media(max-width:480px){
+  .crypto-grid{grid-template-columns:1fr}
+  .g4{grid-template-columns:1fr}
+  .g3{grid-template-columns:1fr}
+  .scr-filters{grid-template-columns:1fr}
+  .stile-val{font-size:20px}
 }
 /* ── CHATBOT WIDGET ── */
 #cb-btn{position:fixed;bottom:22px;right:22px;width:50px;height:50px;border-radius:50%;background:var(--txt);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 24px rgba(0,0,0,.55);z-index:9100;transition:transform .2s,opacity .2s;font-size:21px;flex-shrink:0}
@@ -649,6 +690,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
         <button class="filter-btn"        onclick="filterFeed('dis')"   id="ff-dis">🌪 DISASTER</button>
         <button class="filter-btn"        onclick="filterFeed('cri')"   id="ff-cri">⚖ CRIME</button>
         <button class="filter-btn"        onclick="filterFeed('biz')"   id="ff-biz">💼 BUSINESS</button>
+        <button class="filter-btn"        onclick="filterFeed('fin')"   id="ff-fin">💹 FINANCE</button>
         <button class="filter-btn"        onclick="filterFeed('pan')"   id="ff-pan">💊 PANDEMIC</button>
       </div>
       <div class="intel-feed-body" id="intel-feed-body"></div>
@@ -1843,6 +1885,10 @@ function startPlatform() {
   setTimeout(() => { fetchLiveEvents(); fetchGNews(); }, 800);
   setInterval(() => { fetchLiveEvents(); fetchGNews(); }, 90 * 1000);
 
+  // ── LIVE CRYPTO PRICES — CoinGecko free API, no key required ──
+  fetchCryptoPrices();
+  setInterval(fetchCryptoPrices, 60 * 1000); // every 60 seconds
+
   // Auto-start live feed for Analyst / Command — no user action needed
   if (can('liveData')) {
     setTimeout(() => startLiveFeed(), 300);
@@ -2156,6 +2202,17 @@ function handleEvStockClick(el) {
   quickAsk('Which specific stocks and ETFs are most affected by this event: ' + e.catLabel + ' in ' + e.loc.split(',')[0] + '? Give buy/sell recommendations with reasoning.');
 }
 
+// ── MOBILE NAV ──
+const MOB_TABS = ['intel','map','stocks','crypto'];
+function updateMobNav(page) {
+  document.querySelectorAll('.mob-tab').forEach(t => t.classList.remove('active'));
+  const tab = document.getElementById('mobt-' + page);
+  if (tab) tab.classList.add('active');
+  else document.getElementById('mobt-more').classList.add('active');
+}
+function openMobMenu() { document.getElementById('mob-menu').classList.add('open'); }
+function closeMobMenu() { document.getElementById('mob-menu').classList.remove('open'); }
+
 function filterFeed(cat) {
   activeFilter = cat;
   document.querySelectorAll('[id^="ff-"]').forEach(b => {
@@ -2244,6 +2301,51 @@ function initGlobe() {
   updateGlobePoints();
   fetchLiveEvents();
   fetchGNews();
+}
+
+// ── LIVE CRYPTO PRICES ──
+async function fetchCryptoPrices() {
+  try {
+    const ids = 'bitcoin,ethereum,solana,ripple,binancecoin,cardano,avalanche-2,chainlink,polkadot,near,cosmos,dogecoin';
+    const r = await fetch(
+      `https://api.coingecko.com/api/v3/simple/price?ids=${ids}&vs_currencies=usd&include_24hr_change=true&include_market_cap=true`,
+      { signal: AbortSignal.timeout(8000) }
+    );
+    if (!r.ok) return;
+    const data = await r.json();
+    const map = {
+      BTC: 'bitcoin', ETH: 'ethereum', SOL: 'solana', XRP: 'ripple',
+      BNB: 'binancecoin', ADA: 'cardano', AVAX: 'avalanche-2', LINK: 'chainlink',
+      DOT: 'polkadot', NEAR: 'near', ATOM: 'cosmos', DOGE: 'dogecoin'
+    };
+    let updated = false;
+    CRYPTO_DATA.forEach(c => {
+      const cgId = map[c.sym];
+      if (!cgId || !data[cgId]) return;
+      const d = data[cgId];
+      if (d.usd) { c.price = d.usd; updated = true; }
+      if (d.usd_24h_change !== undefined) c.change = parseFloat(d.usd_24h_change.toFixed(2));
+    });
+    if (updated) {
+      renderCrypto();
+      // Update BTC in topbar
+      const btcEl = document.getElementById('h-btc');
+      const btc = CRYPTO_DATA.find(c => c.sym === 'BTC');
+      if (btcEl && btc) {
+        btcEl.textContent = '$' + (btc.price >= 1000 ? (btc.price/1000).toFixed(1)+'K' : btc.price.toFixed(0));
+        btcEl.style.color = btc.change >= 0 ? 'var(--grn)' : 'var(--red)';
+      }
+      // Update live button to show we have real data
+      const btn = document.getElementById('live-btn');
+      const txt = document.getElementById('live-txt');
+      if (btn && txt && txt.textContent !== 'LIVE') {
+        btn.className = 'live-btn live';
+        txt.textContent = 'CRYPTO LIVE';
+      }
+    }
+  } catch(e) {
+    // CoinGecko rate-limited or offline — keep simulated prices
+  }
 }
 
 async function fetchGNews() {
@@ -3472,6 +3574,7 @@ function goPage(id) {
   if (pg) pg.classList.add('active');
   const sb = document.getElementById('sb-' + id);
   if (sb) sb.classList.add('active');
+  updateMobNav(id);
   // Re-render map/history on navigation
   if (id === 'map') {
     // Globe needs the container to be visible with real dimensions
@@ -4130,6 +4233,30 @@ window.addEventListener('load', () => {
   }
 });
 </script>
+
+<!-- ── MOBILE NAV ── -->
+<nav class="mobile-nav" id="mobile-nav">
+  <button class="mob-tab active" id="mobt-intel" onclick="goPage('intel')"><span class="mob-tab-icon">📡</span><span class="mob-tab-lbl">Feed</span></button>
+  <button class="mob-tab" id="mobt-map" onclick="goPage('map')"><span class="mob-tab-icon">🌍</span><span class="mob-tab-lbl">Map</span></button>
+  <button class="mob-tab" id="mobt-stocks" onclick="goPage('stocks')"><span class="mob-tab-icon">⚔️</span><span class="mob-tab-lbl">Stocks</span></button>
+  <button class="mob-tab" id="mobt-crypto" onclick="goPage('crypto')"><span class="mob-tab-icon">₿</span><span class="mob-tab-lbl">Crypto</span></button>
+  <button class="mob-tab" id="mobt-more" onclick="openMobMenu()"><span class="mob-tab-icon">☰</span><span class="mob-tab-lbl">More</span></button>
+</nav>
+<!-- ── MOBILE MENU SHEET ── -->
+<div class="mob-menu" id="mob-menu" onclick="if(event.target===this)closeMobMenu()">
+  <div class="mob-menu-sheet">
+    <div class="mob-menu-item" onclick="closeMobMenu();goPage('markets')"><span class="mob-menu-item-icon">📊</span><span class="mob-menu-item-lbl">Indices</span></div>
+    <div class="mob-menu-item" onclick="closeMobMenu();goPage('country')"><span class="mob-menu-item-icon">🌐</span><span class="mob-menu-item-lbl">By Country</span></div>
+    <div class="mob-menu-item" onclick="closeMobMenu();goPage('screener')"><span class="mob-menu-item-icon">🔍</span><span class="mob-menu-item-lbl">Screener</span></div>
+    <div class="mob-menu-item" onclick="closeMobMenu();goPage('ipo')"><span class="mob-menu-item-icon">🚀</span><span class="mob-menu-item-lbl">IPOs</span></div>
+    <div class="mob-menu-item" onclick="closeMobMenu();goPage('calc')"><span class="mob-menu-item-icon">🧮</span><span class="mob-menu-item-lbl">Calc</span></div>
+    <div class="mob-menu-item" onclick="closeMobMenu();goPage('learn')"><span class="mob-menu-item-icon">📚</span><span class="mob-menu-item-lbl">Learn</span></div>
+    <div class="mob-menu-item" onclick="closeMobMenu();goPage('history')"><span class="mob-menu-item-icon">🕐</span><span class="mob-menu-item-lbl">History</span></div>
+    <div class="mob-menu-item" onclick="closeMobMenu();goPage('account')"><span class="mob-menu-item-icon">👤</span><span class="mob-menu-item-lbl">Account</span></div>
+    <div class="mob-menu-item" onclick="closeMobMenu();showPlanModal()"><span class="mob-menu-item-icon">⬆️</span><span class="mob-menu-item-lbl">Upgrade</span></div>
+    <div class="mob-menu-close" onclick="closeMobMenu()">✕ Close</div>
+  </div>
+</div>
 
 <!-- ── CHATBOT WIDGET ── -->
 <button id="cb-btn" onclick="toggleChatbot()" title="Orrery Assistant — Ask anything" aria-label="Open support chat">

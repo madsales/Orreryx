@@ -5,13 +5,32 @@
 const CACHE_TTL = 8 * 60 * 1000; // 8-minute cache
 let cache = null, cacheTime = 0;
 
+// Stable ID from URL — same article always same ID across polls (range 10000001–19999999)
+function stableId(url, title) {
+  const s = (url || title || '').toLowerCase().trim().substring(0, 120);
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) {
+    h ^= s.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return (h % 9999999) + 10000001;
+}
+
 const FEEDS = [
-  { url: 'https://feeds.bbci.co.uk/news/world/rss.xml',         source: 'BBC News' },
-  { url: 'https://www.theguardian.com/world/rss',               source: 'The Guardian' },
-  { url: 'https://feeds.skynews.com/feeds/rss/world.xml',       source: 'Sky News' },
-  { url: 'https://rss.dw.com/rdf/rss-en-all',                   source: 'Deutsche Welle' },
-  { url: 'https://www.france24.com/en/rss',                     source: 'France 24' },
-  { url: 'https://feeds.npr.org/1004/rss.xml',                  source: 'NPR News' },
+  // World news
+  { url: 'https://feeds.bbci.co.uk/news/world/rss.xml',               source: 'BBC News' },
+  { url: 'https://www.theguardian.com/world/rss',                      source: 'The Guardian' },
+  { url: 'https://feeds.skynews.com/feeds/rss/world.xml',             source: 'Sky News' },
+  { url: 'https://rss.dw.com/rdf/rss-en-all',                         source: 'Deutsche Welle' },
+  { url: 'https://www.france24.com/en/rss',                           source: 'France 24' },
+  { url: 'https://feeds.npr.org/1004/rss.xml',                        source: 'NPR News' },
+  { url: 'https://www.aljazeera.com/xml/rss/all.xml',                 source: 'Al Jazeera' },
+  { url: 'https://feeds.bbci.co.uk/news/business/rss.xml',            source: 'BBC Business' },
+  // Finance & markets
+  { url: 'https://feeds.content.dowjones.io/public/rss/mw_realtimeheadlines', source: 'MarketWatch' },
+  { url: 'https://www.reutersagency.com/feed/?best-topics=business-finance&post_type=best', source: 'Reuters Finance' },
+  { url: 'https://feeds.bbci.co.uk/news/technology/rss.xml',          source: 'BBC Technology' },
+  { url: 'https://www.france24.com/en/economy/rss',                   source: 'France24 Economy' },
 ];
 
 function categorize(title) {
@@ -26,13 +45,14 @@ function categorize(title) {
   if (/crime|murder|arrest|corruption|terrorist|cartel|shooting/.test(t))return { cat:'cri', catLabel:'CRIME',       severity:'medium'   };
   if (/ceasefire|peace.talks|treaty|sanction|summit|diplomat/.test(t))   return { cat:'dip', catLabel:'DIPLOMATIC',  severity:'medium'   };
   if (/economy|inflation|recession|gdp|trade.war|tariff|central.bank/.test(t)) return { cat:'eco', catLabel:'ECONOMIC', severity:'medium' };
-  if (/company|merger|ipo|earnings|billion|ceo|startup|layoff/.test(t))  return { cat:'biz', catLabel:'BUSINESS',   severity:'low'      };
+  if (/stock market|nasdaq|s&p|dow jones|wall street|hedge fund|bond yield|interest rate|fed |federal reserve|rate cut|rate hike|forex|currency|treasury|ipo|earnings|dividend|market rally|market crash|bitcoin|crypto/.test(t)) return { cat:'fin', catLabel:'FINANCE', severity:'medium' };
+  if (/company|merger|acquisition|billion|ceo|startup|layoff|strike/.test(t))  return { cat:'biz', catLabel:'BUSINESS',   severity:'low'      };
   if (/war|attack|bomb|missile|military|army|troops|airstrike/.test(t))  return { cat:'mil', catLabel:'MILITARY',   severity:'high'     };
   if (/election|president|parliament|minister|government|vote|protest/.test(t)) return { cat:'pol', catLabel:'POLITICS', severity:'low' };
   return { cat:'pol', catLabel:'POLITICS', severity:'low' };
 }
 
-function parseRss(xml, fallbackSource, idOffset) {
+function parseRss(xml, fallbackSource) {
   const items = [];
   const itemRe = /<item>([\s\S]*?)<\/item>/g;
   let m, i = 0;
@@ -75,7 +95,8 @@ function parseRss(xml, fallbackSource, idOffset) {
 
     const { cat, catLabel, severity } = categorize(title);
     items.push({
-      id:        7000 + idOffset + i,
+      id:        stableId(rawLink.trim(), title),
+      isDemo:    false,
       cat, catLabel, severity,
       lat:       null,
       lng:       null,
@@ -124,7 +145,7 @@ export default async function handler(req, res) {
           signal: AbortSignal.timeout(8000),
         })
           .then(r => r.ok ? r.text() : Promise.reject(new Error(`HTTP ${r.status}`)))
-          .then(xml => parseRss(xml, feed.source, i * 100))
+          .then(xml => parseRss(xml, feed.source))
           .catch(e => { console.error(`[GNews] ${feed.source} failed:`, e.message); return []; })
       )
     );
