@@ -2421,8 +2421,8 @@ function updateGlobePoints() {
 
   const eventsWithCoords = feedEvents.filter(e => e.lat != null && e.lng != null);
 
-  // ── Glowing points — show up to 100 events from all categories ──
-  const points = eventsWithCoords.slice(0, 100).map((ev, i) => {
+  // ── Glowing points — show up to 200 events from all categories ──
+  const points = eventsWithCoords.slice(0, 200).map((ev, i) => {
     const sev = ev.severity;
     const size = sev === 'critical' ? 2.2 : sev === 'high' ? 1.6 : sev === 'medium' ? 1.1 : 0.7;
     return { lat: ev.lat, lng: ev.lng, size, color: EVENT_COLORS[ev.cat] || '#aaaaaa', ev };
