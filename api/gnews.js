@@ -1,11 +1,11 @@
-// api/gnews.js — Live RSS from major news outlets
-// Uses direct RSS feeds (BBC, Guardian, Sky, DW, France24, NPR) — reliable from cloud/Vercel.
+// api/gnews.js - Live RSS from major news outlets
+// Uses direct RSS feeds (BBC, Guardian, Sky, DW, France24, NPR) - reliable from cloud/Vercel.
 // Google News RSS often blocks datacenter IPs; these feeds do not.
 
 const CACHE_TTL = 8 * 60 * 1000; // 8-minute cache
 let cache = null, cacheTime = 0;
 
-// Stable ID from URL — same article always same ID across polls (range 10000001–19999999)
+// Stable ID from URL - same article always same ID across polls (range 10000001-19999999)
 function stableId(url, title) {
   const s = (url || title || '').toLowerCase().trim().substring(0, 120);
   let h = 2166136261;
@@ -17,7 +17,7 @@ function stableId(url, title) {
 }
 
 const FEEDS = [
-  // ── GLOBAL MAJORS ──
+  //  GLOBAL MAJORS 
   { url: 'https://feeds.bbci.co.uk/news/world/rss.xml',                       source: 'BBC News' },
   { url: 'https://www.theguardian.com/world/rss',                             source: 'The Guardian' },
   { url: 'https://feeds.skynews.com/feeds/rss/world.xml',                     source: 'Sky News' },
@@ -35,7 +35,7 @@ const FEEDS = [
   { url: 'https://feeds.bbci.co.uk/news/technology/rss.xml',                  source: 'BBC Technology' },
   { url: 'https://www.france24.com/en/economy/rss',                           source: 'France24 Economy' },
 
-  // ── INDIA ──
+  //  INDIA 
   { url: 'https://feeds.feedburner.com/ndtvnews-top-stories',                 source: 'NDTV' },
   { url: 'https://timesofindia.indiatimes.com/rssfeedstopstories.cms',        source: 'Times of India' },
   { url: 'https://www.thehindu.com/news/national/feeder/default.rss',         source: 'The Hindu' },
@@ -46,12 +46,12 @@ const FEEDS = [
   { url: 'https://www.business-standard.com/rss/home_page_top_stories.rss',  source: 'Business Standard' },
   { url: 'https://www.indiatoday.in/rss/home',                                source: 'India Today' },
 
-  // ── FINANCE & MARKETS ──
+  //  FINANCE & MARKETS 
   { url: 'https://feeds.content.dowjones.io/public/rss/mw_realtimeheadlines', source: 'MarketWatch' },
   { url: 'https://www.reutersagency.com/feed/?best-topics=business-finance&post_type=best', source: 'Reuters Finance' },
 ];
 
-// Geo lookup — maps headline keywords → [lat, lng, displayName]
+// Geo lookup - maps headline keywords  [lat, lng, displayName]
 const GEO = [
   ['gaza',[31.4,34.3,'Gaza']],['west bank',[31.9,35.2,'West Bank']],['israel',[31.5,35.0,'Israel']],
   ['kyiv',[50.4,30.5,'Kyiv']],['ukraine',[48.5,31.5,'Ukraine']],['russia',[61.5,105.0,'Russia']],
@@ -66,7 +66,7 @@ const GEO = [
   ['yemen',[15.0,48.0,'Yemen']],['red sea',[20.0,38.0,'Red Sea']],
   ['kabul',[34.5,69.2,'Kabul']],['afghanistan',[33.0,66.0,'Afghanistan']],
   ['pakistan',[30.0,70.0,'Pakistan']],['islamabad',[33.7,73.1,'Islamabad']],['karachi',[24.9,67.1,'Karachi']],
-  // India — national + major cities + states
+  // India - national + major cities + states
   ['new delhi',[28.6,77.2,'New Delhi']],['delhi',[28.6,77.2,'New Delhi']],
   ['mumbai',[19.0,72.8,'Mumbai']],['bangalore',[12.9,77.6,'Bengaluru']],['bengaluru',[12.9,77.6,'Bengaluru']],
   ['hyderabad',[17.4,78.5,'Hyderabad']],['chennai',[13.1,80.3,'Chennai']],['kolkata',[22.6,88.4,'Kolkata']],
@@ -85,7 +85,7 @@ const GEO = [
   ['nifty',[19.0,72.8,'Mumbai']],['rbi',[19.0,72.8,'Mumbai']],
   ['myanmar',[17.0,96.0,'Myanmar']],['sudan',[15.0,32.0,'Sudan']],
   ['ethiopia',[8.0,38.0,'Ethiopia']],['nigeria',[10.0,8.0,'Nigeria']],
-  ['nairobi',[−1.3,36.8,'Nairobi']],['kenya',[0.0,37.0,'Kenya']],
+  ['nairobi',[-1.3,36.8,'Nairobi']],['kenya',[0.0,37.0,'Kenya']],
   ['somalia',[5.0,46.0,'Somalia']],['mogadishu',[2.0,45.3,'Mogadishu']],
   ['libya',[26.0,17.0,'Libya']],['egypt',[26.0,30.0,'Egypt']],['cairo',[30.0,31.2,'Cairo']],
   ['venezuela',[8.0,-65.0,'Venezuela']],['haiti',[18.9,-72.3,'Haiti']],
@@ -139,7 +139,7 @@ function parseRss(xml, fallbackSource) {
   while ((m = itemRe.exec(xml)) !== null && i < 25) {
     const b = m[1];
 
-    // Extract title — handle both CDATA and plain text
+    // Extract title - handle both CDATA and plain text
     const rawTitle = (
       b.match(/<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/) || []
     )[1] || '';
@@ -166,7 +166,7 @@ function parseRss(xml, fallbackSource) {
 
     if (!title || title.length < 10) { i++; continue; }
 
-    // Parse pubDate — RFC 2822 parses natively in JS
+    // Parse pubDate - RFC 2822 parses natively in JS
     let pubIso = new Date().toISOString();
     if (rawDate) {
       const d = new Date(rawDate);

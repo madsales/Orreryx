@@ -1,5 +1,5 @@
-// api/events.js — Orrery Global News Coverage
-// Uses GDELT Article API (mode=artlist) — updates every 15 minutes, NOT the GeoJSON endpoint
+// api/events.js - Orrery Global News Coverage
+// Uses GDELT Article API (mode=artlist) - updates every 15 minutes, NOT the GeoJSON endpoint
 // which can lag 2-3 days. Article API gives real seendate timestamps.
 
 const CACHE_TTL = 5 * 60 * 1000;
@@ -43,7 +43,7 @@ const STREAMS = [
   },
 ];
 
-// GDELT Article API — fresh articles, updates every 15 min
+// GDELT Article API - fresh articles, updates every 15 min
 function gdeltUrl(query, max) {
   return (
     'https://api.gdeltproject.org/api/v2/doc/doc' +
@@ -52,7 +52,7 @@ function gdeltUrl(query, max) {
   );
 }
 
-// Stable numeric ID from URL (or title fallback) — same article always same ID,
+// Stable numeric ID from URL (or title fallback) - same article always same ID,
 // regardless of its position in the response. Avoids false deduplication on re-fetch.
 function stableId(url, title) {
   const s = (url || title || '').toLowerCase().trim().substring(0, 120);
@@ -61,11 +61,11 @@ function stableId(url, title) {
     h ^= s.charCodeAt(i);
     h = Math.imul(h, 16777619) >>> 0;
   }
-  // Keep in range 100001–9999999 — never collides with WAR_EVENTS (ids 1–99)
+  // Keep in range 100001-9999999 - never collides with WAR_EVENTS (ids 1-99)
   return (h % 9899999) + 100001;
 }
 
-// GDELT date format: 20260404T120000Z → 2026-04-04T12:00:00Z
+// GDELT date format: 20260404T120000Z  2026-04-04T12:00:00Z
 function parseGdeltDate(s) {
   if (!s) return null;
   const m = String(s).match(/^(\d{4})(\d{2})(\d{2})T(\d{2})(\d{2})(\d{2})/);
@@ -110,9 +110,9 @@ function severityRank(s) {
   return s === 'critical' ? 3 : s === 'high' ? 2 : s === 'medium' ? 1 : 0;
 }
 
-// ── GEO LOOKUP — map location names → [lat, lng, displayName] ──
+//  GEO LOOKUP - map location names  [lat, lng, displayName] 
 const GEO = [
-  // Hot-zones first (checked in order — more specific before general)
+  // Hot-zones first (checked in order - more specific before general)
   ['gaza',          [31.4,  34.3,  'Gaza']],
   ['west bank',     [31.9,  35.2,  'West Bank']],
   ['jerusalem',     [31.8,  35.2,  'Jerusalem']],
@@ -152,7 +152,7 @@ const GEO = [
   ['islamabad',     [33.7,  73.1,  'Islamabad, Pakistan']],
   ['karachi',       [24.9,  67.1,  'Karachi, Pakistan']],
   ['pakistan',      [30.0,  70.0,  'Pakistan']],
-  // India — cities, states, institutions
+  // India - cities, states, institutions
   ['new delhi',     [28.6,  77.2,  'New Delhi, India']],
   ['delhi',         [28.6,  77.2,  'Delhi, India']],
   ['mumbai',        [19.0,  72.8,  'Mumbai, India']],
@@ -200,7 +200,7 @@ const GEO = [
   ['haiti',         [18.9, -72.3,  'Haiti']],
   ['mexico city',   [19.4, -99.1,  'Mexico City']],
   ['mexico',        [23.0,-102.0,  'Mexico']],
-  ['brasilia',      [-15.8,-47.9,  'Brasília, Brazil']],
+  ['brasilia',      [-15.8,-47.9,  'Braslia, Brazil']],
   ['brazil',        [-10.0,-55.0,  'Brazil']],
   ['washington',    [38.9, -77.0,  'Washington DC, USA']],
   ['new york',      [40.7, -74.0,  'New York, USA']],
@@ -251,7 +251,7 @@ function parseArticles(articles) {
       const { cat, catLabel, severity } = categorize(title);
       const { lat, lng, loc } = geolocate(title);
       return {
-        id:       stableId(a.url, title),   // stable — same article = same ID every fetch
+        id:       stableId(a.url, title),   // stable - same article = same ID every fetch
         cat, catLabel, severity,
         lat, lng,
         loc,
