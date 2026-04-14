@@ -1,13 +1,22 @@
 User-agent: *
 Allow: /
+Allow: /geopolitics-news
+Allow: /demo
+Allow: /login
+Allow: /welcome
 Disallow: /app
 Disallow: /admin
 Disallow: /api/
 Disallow: /callback
 
-# Priority pages for crawling
+# Googlebot gets full crawl priority
+User-agent: Googlebot
 Allow: /
-Allow: /login
+Allow: /geopolitics-news
 Allow: /demo
+Disallow: /app
+Disallow: /admin
+Disallow: /api/
+Crawl-delay: 1
 
 Sitemap: https://www.orreryx.io/sitemap.xml
