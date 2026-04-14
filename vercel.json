@@ -14,6 +14,8 @@
     { "src": "/api/track",           "dest": "/api/track.js" },
     { "src": "/api/admin(.*)",       "dest": "/api/admin.js" },
     { "src": "/geopolitics-news",    "dest": "/geopolitics-news.html" },
+    { "src": "/ukraine-war",         "dest": "/ukraine-war.html" },
+    { "src": "/israel-gaza",         "dest": "/israel-gaza.html" },
     { "src": "/demo",                 "dest": "/demo.html" },
     { "src": "/smm",                  "dest": "/smm-week1.html" },
     { "src": "/sitemap.xml",          "dest": "/sitemap.xml" },
