@@ -9,6 +9,7 @@
     { "src": "/api/paypal(.*)",      "dest": "/api/paypal.js" },
     { "src": "/api/events(.*)",      "dest": "/api/events.js" },
     { "src": "/api/gnews(.*)",       "dest": "/api/gnews.js" },
+    { "src": "/api/videos(.*)",     "dest": "/api/videos.js" },
     { "src": "/api/send-magic",      "dest": "/api/send-magic.js" },
     { "src": "/api/verify-magic(.*)", "dest": "/api/verify-magic.js" },
     { "src": "/api/track",           "dest": "/api/track.js" },

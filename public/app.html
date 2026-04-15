@@ -550,6 +550,24 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
 .cb-inp:disabled{opacity:.5}
 .cb-send{background:var(--txt);border:none;border-radius:3px;padding:8px 11px;font:700 7.5px/1 var(--mono);color:var(--bg);cursor:pointer;letter-spacing:.05em;transition:opacity .15s;flex-shrink:0}
 .cb-send:hover{opacity:.85}.cb-send:disabled{opacity:.35;cursor:not-allowed}
+/* ── VIDEO HOVER POPUP ── */
+#vid-popup{position:fixed;z-index:9999;width:288px;background:var(--bg2);border:1px solid var(--brd2);border-radius:10px;box-shadow:0 12px 40px rgba(0,0,0,.7),0 2px 8px rgba(0,0,0,.4);padding:10px;pointer-events:auto;display:none;animation:vpFadeIn .12s ease}
+#vid-popup.vp-show{display:block}
+@keyframes vpFadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.vp-hdr{font:700 7px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--txt3);padding-bottom:8px;margin-bottom:4px;border-bottom:1px solid var(--brd);display:flex;align-items:center;gap:7px}
+.vp-hdr::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--red);flex-shrink:0;animation:blink 1.4s infinite}
+.vp-card{display:flex;gap:8px;padding:7px 4px;border-bottom:1px solid var(--brd);cursor:pointer;border-radius:5px;transition:background .1s;text-decoration:none}
+.vp-card:last-child{border-bottom:none}
+.vp-card:hover{background:var(--bg3)}
+.vp-thumb{width:90px;height:51px;object-fit:cover;border-radius:4px;flex-shrink:0;background:var(--bg4)}
+.vp-info{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:4px}
+.vp-title{font:500 11.5px/1.4 var(--sans);color:var(--txt);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.vp-ch{font:500 9.5px/1 var(--mono);color:var(--txt3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vp-play{color:var(--red);font:700 8px/1 var(--mono);letter-spacing:.05em;margin-top:2px}
+.vp-loading{display:flex;align-items:center;justify-content:center;gap:8px;padding:20px 0;color:var(--txt3);font:400 12px/1 var(--sans)}
+.vp-spinner{width:14px;height:14px;border:2px solid var(--brd2);border-top-color:var(--red);border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
+@keyframes spin{to{transform:rotate(360deg)}}
+.vp-empty{padding:16px 4px;text-align:center;color:var(--txt3);font:400 12px/1 var(--sans)}
 </style>
 </head>
 <body>
@@ -2286,6 +2304,16 @@ function initGlobe() {
       goPage('intel');
       const el = document.querySelector(`[data-evid="${d.ev.id}"]`);
       if (el) { el.scrollIntoView({ behavior: 'smooth', block: 'center' }); handleEvClick(el); }
+    }
+  });
+
+  // Hover on point → show video popup
+  globeInstance.onPointHover(d => {
+    if (d && d.ev) {
+      const q = (d.ev.txt || '').substring(0, 100) || (d.ev.loc || '');
+      if (q) vidPopup.scheduleShow(q, 400);
+    } else {
+      vidPopup.scheduleHide();
     }
   });
 
@@ -4244,6 +4272,133 @@ window.addEventListener('load', () => {
     try { PLAN = 's'; startPlatform(); } catch(e2) { console.error('startPlatform failed:', e2); }
   }
 });
+
+// ─────────────────────────────────────────────────────────────
+// VIDEO HOVER POPUP  — shows YouTube news videos on ev-card hover
+// and globe point hover. Debounced 450ms, 10-min server cache.
+// ─────────────────────────────────────────────────────────────
+const vidPopup = (() => {
+  let el = null;
+  let showTimer = null;
+  let hideTimer = null;
+  let activeQuery = null;
+  let mouseX = 0, mouseY = 0;
+
+  // Track cursor globally
+  document.addEventListener('mousemove', e => { mouseX = e.clientX; mouseY = e.clientY; }, { passive: true });
+
+  function getEl() {
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'vid-popup';
+      el.addEventListener('mouseenter', () => clearTimeout(hideTimer));
+      el.addEventListener('mouseleave', scheduleHide);
+      document.body.appendChild(el);
+    }
+    return el;
+  }
+
+  function position() {
+    const p = getEl();
+    const W = window.innerWidth, H = window.innerHeight;
+    const pw = 296, ph = 230;
+    let left = mouseX + 14;
+    let top  = mouseY - 24;
+    if (left + pw > W - 8)  left = mouseX - pw - 14;
+    if (left < 8)            left = 8;
+    if (top + ph > H - 8)   top  = H - ph - 8;
+    if (top < 8)             top  = 8;
+    p.style.left = left + 'px';
+    p.style.top  = top  + 'px';
+  }
+
+  function scheduleHide() {
+    clearTimeout(hideTimer);
+    hideTimer = setTimeout(hide, 260);
+  }
+
+  function hide() {
+    clearTimeout(showTimer);
+    clearTimeout(hideTimer);
+    activeQuery = null;
+    if (el) { el.classList.remove('vp-show'); }
+  }
+
+  async function show(q) {
+    if (q === activeQuery) return;
+    activeQuery = q;
+    const p = getEl();
+    p.innerHTML = '<div class="vp-hdr">&#9654; Related Video News</div>' +
+                  '<div class="vp-loading"><div class="vp-spinner"></div>Searching videos\u2026</div>';
+    p.classList.add('vp-show');
+    position();
+
+    try {
+      const r = await fetch('/api/videos?q=' + encodeURIComponent(q.substring(0, 120)),
+                            { signal: AbortSignal.timeout(6000) });
+      if (activeQuery !== q) return; // stale — another hover fired
+      const data = r.ok ? await r.json() : { videos: [] };
+      const vids = (data.videos || []);
+
+      if (!vids.length) {
+        p.innerHTML = '<div class="vp-hdr">&#9654; Video News</div>' +
+                      '<div class="vp-empty">No videos found for this event</div>';
+        return;
+      }
+
+      let html = '<div class="vp-hdr">&#9654; Related Video News</div>';
+      vids.forEach(v => {
+        const url = 'https://www.youtube.com/watch?v=' + v.id;
+        const title = (v.title || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        const ch    = (v.channel || '').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+        html +=
+          '<a class="vp-card" href="' + url + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">' +
+            '<img class="vp-thumb" src="' + (v.thumb||'') + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">' +
+            '<div class="vp-info">' +
+              '<div class="vp-title">' + title + '</div>' +
+              '<div class="vp-ch">' + ch + '</div>' +
+              '<div class="vp-play">&#9654; Watch on YouTube</div>' +
+            '</div>' +
+          '</a>';
+      });
+      p.innerHTML = html;
+      position();
+    } catch(err) {
+      if (activeQuery === q) {
+        p.innerHTML = '<div class="vp-hdr">&#9654; Video News</div>' +
+                      '<div class="vp-empty">Videos unavailable</div>';
+      }
+    }
+  }
+
+  function scheduleShow(q, delay) {
+    clearTimeout(hideTimer);
+    clearTimeout(showTimer);
+    showTimer = setTimeout(() => show(q), delay || 450);
+  }
+
+  // ── Event delegation: ev-card hover in feed ──
+  document.addEventListener('mouseover', e => {
+    const card = e.target.closest && e.target.closest('.ev-card[data-evid]');
+    if (!card) return;
+    clearTimeout(hideTimer);
+    const txtEl = card.querySelector('.ev-txt');
+    const locEl = card.querySelector('.ev-loc');
+    const q = txtEl ? (txtEl.textContent || '').trim().substring(0, 100)
+                    : (locEl ? locEl.textContent.replace('📍','').trim() : '');
+    if (q) scheduleShow(q, 450);
+  });
+
+  // Use capture for mouseleave since it doesn't bubble
+  document.addEventListener('mouseleave', e => {
+    const card = e.target.closest && e.target.closest('.ev-card[data-evid]');
+    if (!card) return;
+    clearTimeout(showTimer);
+    scheduleHide();
+  }, true);
+
+  return { scheduleShow, scheduleHide, hide };
+})();
 </script>
 
 <!-- ── MOBILE NAV ── -->
