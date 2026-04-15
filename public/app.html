@@ -4342,29 +4342,26 @@ const vidPopup = (() => {
       const clips = (data.clips || []);
 
       if (!clips.length) {
-        p.innerHTML = '<div class="vp-hdr">&#128250; TV News Coverage</div>' +
-                      '<div class="vp-empty">No broadcast coverage found</div>';
+        p.innerHTML = '<div class="vp-hdr">&#128250; News Coverage</div>' +
+                      '<div class="vp-empty">No coverage found for this story</div>';
         return;
       }
 
-      let html = '<div class="vp-hdr">&#128250; TV News Coverage</div>';
+      let html = '<div class="vp-hdr">&#128250; News Coverage</div>';
       clips.forEach(c => {
-        const url     = (c.url || '').replace(/&/g,'&amp;');
-        const station = (c.station || 'TV News').replace(/</g,'&lt;');
-        const show    = (c.show || '').replace(/</g,'&lt;');
-        const date    = (c.date || '').replace(/</g,'&lt;');
-        const snippet = (c.snippet || '').replace(/</g,'&lt;');
+        const url   = (c.url   || '').replace(/&/g,'&amp;');
+        const ch    = (c.channel || 'News').replace(/</g,'&lt;');
+        const title = (c.title || '').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+        const date  = (c.date  || '');
         html +=
           '<a class="vp-card" href="' + url + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">' +
-            (c.thumb
-              ? '<img class="vp-thumb" src="' + (c.thumb||'') + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
-              : '<div class="vp-thumb" style="display:flex;align-items:center;justify-content:center;font:700 9px/1 var(--mono);color:var(--txt3);">' + station + '</div>'
-            ) +
+            '<img class="vp-thumb" src="' + (c.thumb||'') + '" alt="" loading="lazy" ' +
+              'onerror="this.src=\'https://i.ytimg.com/vi/default/mqdefault.jpg\'">' +
             '<div class="vp-info">' +
-              '<div class="vp-station">' + station + (show ? ' &mdash; ' + show : '') + '</div>' +
-              (snippet ? '<div class="vp-title">' + snippet + '&hellip;</div>' : '') +
-              '<div class="vp-ch">' + (date || 'Broadcast clip') + '</div>' +
-              '<div class="vp-play">&#9654; Watch Broadcast Clip</div>' +
+              '<div class="vp-station">' + ch + '</div>' +
+              '<div class="vp-title">' + title + '</div>' +
+              '<div class="vp-ch">' + (date || '') + '</div>' +
+              '<div class="vp-play">&#9654; Watch Coverage</div>' +
             '</div>' +
           '</a>';
       });

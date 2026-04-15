@@ -1,15 +1,94 @@
-// api/videos.js — GDELT Television News Coverage
-// Searches real TV broadcast clips (CNN, BBC, MSNBC, Al Jazeera, Fox, Reuters TV, etc.)
-// from the GDELT Television Archive. No API key needed. Free.
-// Cache: 15 min per query to avoid hammering GDELT.
+// api/videos.js — News Channel Video Coverage
+// Fetches public RSS feeds from major news channels (CNN, BBC, Reuters, Al Jazeera, Sky News, etc.)
+// No API key needed. YouTube provides free channel RSS feeds publicly.
+// Scores each video title against the query keywords for relevance.
 
-const cache = new Map();
-const CACHE_TTL = 15 * 60 * 1000;
+const CHANNELS = [
+  { name: 'CNN',          id: 'UCupvZG-5ko_eiXAupbDfxWw' },
+  { name: 'BBC News',     id: 'UCnUYZLuoy1rq1aVMwx4aTzw' },
+  { name: 'Reuters',      id: 'UChqUTb7kYRX8-EiaN3XFrSQ' },
+  { name: 'Al Jazeera',  id: 'UCNye-wNBqNL5ZzHSJdba5zA'  },
+  { name: 'Sky News',     id: 'UCIK31bDqkH8lsYsYMoHcFJQ' },
+  { name: 'France 24',    id: 'UCQfwfsi5VrQ8yKZ-UWmAEFg' },
+  { name: 'DW News',      id: 'UCknLrEdhRCp1aegoMqRaCZg' },
+  { name: 'NBC News',     id: 'UCeY0bbntWzzVIaj2z3QigXg' },
+  { name: 'ABC News',     id: 'UCBi2mrWuNuyYy4gbM6fU18Q' },
+];
+
+// Cache for individual channel feeds (30 min) and query results (12 min)
+const channelCache = new Map();  // channelId → { items, ts }
+const queryCache   = new Map();  // query key → { data, ts }
+const CHANNEL_TTL  = 30 * 60 * 1000;
+const QUERY_TTL    = 12 * 60 * 1000;
+
+const STOPWORDS = new Set([
+  'that','this','with','from','they','have','been','will','would','could',
+  'about','into','over','after','were','says','said','their','there','where',
+  'when','what','which','while','than','then','also','news','more','some',
+  'your','just','time','year','most','such','even','well','only','very',
+  'both','each','each','many','much','make','like','look','come','know',
+]);
+
+function keywords(q) {
+  return q.toLowerCase()
+    .replace(/[^a-z0-9\s]/g, ' ')
+    .split(/\s+/)
+    .filter(w => w.length >= 4 && !STOPWORDS.has(w));
+}
+
+function relevance(title, kws) {
+  const t = title.toLowerCase();
+  return kws.reduce((n, k) => n + (t.includes(k) ? 1 : 0), 0);
+}
+
+// Parse YouTube RSS XML without a DOM parser
+function parseYtRss(xml, channelName) {
+  const entries = [];
+  const entryRe = /<entry>([\s\S]*?)<\/entry>/g;
+  let m;
+  while ((m = entryRe.exec(xml)) !== null) {
+    const block = m[1];
+    const getId    = block.match(/<yt:videoId>([^<]+)<\/yt:videoId>/);
+    const getTitle = block.match(/<media:title>([^<]*)<\/media:title>/) ||
+                     block.match(/<title>([^<]*)<\/title>/);
+    const getThumb = block.match(/url="([^"]+)"\s+width="([^"]+)"\s+height/);
+    const getDate  = block.match(/<published>([^<]+)<\/published>/);
+    if (!getId || !getTitle) continue;
+    const videoId = getId[1].trim();
+    entries.push({
+      id:      videoId,
+      title:   getTitle[1].replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>').replace(/&quot;/g,'"').trim(),
+      thumb:   getThumb ? getThumb[1] : 'https://i.ytimg.com/vi/' + videoId + '/mqdefault.jpg',
+      url:     'https://www.youtube.com/watch?v=' + videoId,
+      date:    getDate ? getDate[1].substring(0, 10) : '',
+      channel: channelName,
+    });
+  }
+  return entries;
+}
+
+async function fetchChannel(ch) {
+  const now = Date.now();
+  const hit = channelCache.get(ch.id);
+  if (hit && (now - hit.ts) < CHANNEL_TTL) return hit.items;
+
+  try {
+    const url = 'https://www.youtube.com/feeds/videos.xml?channel_id=' + ch.id;
+    const r = await fetch(url, { signal: AbortSignal.timeout(5000) });
+    if (!r.ok) return [];
+    const xml = await r.text();
+    const items = parseYtRss(xml, ch.name);
+    channelCache.set(ch.id, { items, ts: now });
+    return items;
+  } catch {
+    return [];
+  }
+}
 
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Cache-Control', 'public, max-age=900');
+  res.setHeader('Cache-Control', 'public, max-age=720');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET')    return res.status(405).json({ error: 'GET only' });
@@ -17,70 +96,36 @@ export default async function handler(req, res) {
   const q = ((req.query && req.query.q) || '').trim().substring(0, 150);
   if (!q) return res.status(400).json({ error: 'q param required' });
 
-  const cacheKey = q.toLowerCase().replace(/\s+/g, ' ');
-  const cached = cache.get(cacheKey);
-  if (cached && (Date.now() - cached.ts) < CACHE_TTL) {
+  const ckey = q.toLowerCase().replace(/\s+/g, ' ');
+  const cached = queryCache.get(ckey);
+  if (cached && (Date.now() - cached.ts) < QUERY_TTL) {
     return res.status(200).json(cached.data);
   }
 
-  try {
-    // GDELT TV API - clip gallery mode returns actual broadcast news clips
-    const gdeltUrl =
-      'https://api.gdeltproject.org/api/v2/tv/tv' +
-      '?query=' + encodeURIComponent(q) +
-      '&mode=clipgallery' +
-      '&format=json' +
-      '&timespan=4weeks' +
-      '&maxrecords=4' +
-      '&datanorm=perc' +
-      '&sort=date';
+  const kws = keywords(q);
 
-    const r = await fetch(gdeltUrl, {
-      signal: AbortSignal.timeout(7000),
-      headers: { 'User-Agent': 'Orreryx/1.0 (news intelligence platform)' }
-    });
+  // Fetch all channels in parallel — take first 6 to keep latency low
+  const allVideos = (await Promise.all(
+    CHANNELS.slice(0, 6).map(ch => fetchChannel(ch))
+  )).flat();
 
-    if (!r.ok) {
-      console.error('GDELT TV error:', r.status);
-      return res.status(200).json({ clips: [] });
-    }
+  // Score and rank
+  let scored = allVideos.map(v => ({ ...v, score: relevance(v.title, kws) }));
 
-    const text = await r.text();
-    let data;
-    try { data = JSON.parse(text); } catch { return res.status(200).json({ clips: [] }); }
+  // Sort: first by relevance (desc), then by date (recent first)
+  scored.sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    return b.date.localeCompare(a.date);
+  });
 
-    // GDELT returns clips array with station, show, date, url, preview_thumb
-    const rawClips = data.clips || data.clip_gallery || data.results || [];
-    const clips = rawClips.slice(0, 4).map(c => ({
-      station:  c.station  || c.network || '',
-      show:     c.show     || c.program || '',
-      date:     formatGdeltDate(c.date || c.datetime || ''),
-      url:      c.url      || c.clip_url || '',
-      thumb:    c.preview_thumb || c.thumbnail || c.image || '',
-      snippet:  (c.snippet || c.text || '').substring(0, 120)
-    })).filter(c => c.url);
+  // If nothing is relevant, fall back to most recent 3 across all channels
+  const MIN_SCORE = kws.length > 0 ? 1 : 0;
+  let results = scored.filter(v => v.score >= MIN_SCORE).slice(0, 3);
+  if (!results.length) results = scored.slice(0, 3);
 
-    const result = { clips };
-    cache.set(cacheKey, { data: result, ts: Date.now() });
-    if (cache.size > 300) cache.delete(cache.keys().next().value);
+  const data = { clips: results };
+  queryCache.set(ckey, { data, ts: Date.now() });
+  if (queryCache.size > 400) queryCache.delete(queryCache.keys().next().value);
 
-    return res.status(200).json(result);
-  } catch (err) {
-    console.error('videos.js error:', err.message);
-    return res.status(200).json({ clips: [] });
-  }
-}
-
-function formatGdeltDate(raw) {
-  // GDELT format: "20250415120000" → "Apr 15, 12:00"
-  if (!raw || raw.length < 8) return '';
-  try {
-    const y = raw.substring(0, 4);
-    const mo = parseInt(raw.substring(4, 6), 10) - 1;
-    const d  = raw.substring(6, 8);
-    const h  = raw.substring(8, 10)  || '00';
-    const mi = raw.substring(10, 12) || '00';
-    const months = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-    return months[mo] + ' ' + parseInt(d) + ', ' + h + ':' + mi + ' UTC';
-  } catch { return ''; }
+  return res.status(200).json(data);
 }
