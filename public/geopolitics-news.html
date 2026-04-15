@@ -173,6 +173,9 @@ footer a:hover{color:var(--txt2)}
 <nav>
   <a href="/" class="nav-logo">ORRERYX</a>
   <div class="nav-spacer"></div>
+  <a href="/ukraine-war" class="nav-link">Ukraine</a>
+  <a href="/israel-gaza" class="nav-link">Gaza</a>
+  <a href="/china-taiwan" class="nav-link">Taiwan</a>
   <a href="/demo" class="nav-link">Demo</a>
   <a href="/login?plan=f" class="nav-cta">Free Trial</a>
 </nav>
@@ -205,19 +208,19 @@ footer a:hover{color:var(--txt2)}
     <div class="conflict-grid">
       <div class="conflict-card">
         <div class="conflict-region">Eastern Europe</div>
-        <h3>Russia-Ukraine War</h3>
+        <h3><a href="/ukraine-war" style="color:var(--txt);text-decoration:none">Russia-Ukraine War</a></h3>
         <p>Full-scale invasion ongoing since February 2022. Orreryx tracks frontline movements, ceasefire talks, drone attacks, and NATO responses in real time.</p>
         <span class="severity sev-critical">CRITICAL</span>
       </div>
       <div class="conflict-card">
         <div class="conflict-region">Middle East</div>
-        <h3>Israel-Gaza Conflict</h3>
+        <h3><a href="/israel-gaza" style="color:var(--txt);text-decoration:none">Israel-Gaza Conflict</a></h3>
         <p>Military operations in Gaza and West Bank. Live tracking of airstrikes, humanitarian updates, and regional escalation risk including Hezbollah and Houthi activity.</p>
         <span class="severity sev-critical">CRITICAL</span>
       </div>
       <div class="conflict-card">
         <div class="conflict-region">East Asia</div>
-        <h3>Taiwan Strait Tensions</h3>
+        <h3><a href="/china-taiwan" style="color:var(--txt);text-decoration:none">Taiwan Strait Tensions</a></h3>
         <p>PLA military exercises, US arms sales to Taiwan, and South China Sea incidents tracked continuously. One of the highest-impact geopolitical risk zones for global markets.</p>
         <span class="severity sev-high">HIGH RISK</span>
       </div>
@@ -324,6 +327,42 @@ footer a:hover{color:var(--txt2)}
     <p style="font-size:13px;color:var(--txt3);margin-top:4px">Plus GDELT (Global Database of Events, Language and Tone) covering 100+ languages worldwide.</p>
   </section>
 
+  <!-- DEEP DIVE LINKS -->
+  <section class="section">
+    <h2>Deep Dive — Conflict Intelligence Pages</h2>
+    <p class="section-desc">Orreryx publishes detailed analysis on each major conflict zone, updated continuously with the latest geopolitics news:</p>
+    <div class="conflict-grid">
+      <a href="/ukraine-war" style="text-decoration:none">
+        <div class="conflict-card" style="cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='rgba(224,56,54,.4)'" onmouseout="this.style.borderColor=''">
+          <div class="conflict-region">Ukraine War News Today</div>
+          <h3 style="color:var(--txt)">Who Is Winning the War in Ukraine?</h3>
+          <p>Live frontline map, ceasefire tracker, "who is winning" analysis, market impact of the Ukraine war. Updated every 5 minutes.</p>
+        </div>
+      </a>
+      <a href="/israel-gaza" style="text-decoration:none">
+        <div class="conflict-card" style="cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='rgba(224,56,54,.4)'" onmouseout="this.style.borderColor=''">
+          <div class="conflict-region">Gaza Map & Live News</div>
+          <h3 style="color:var(--txt)">Gaza War Map — Is the War in Gaza Over?</h3>
+          <p>Interactive Gaza map, ceasefire updates, how many have died in Gaza, Red Sea market impact. Updated every 5 minutes.</p>
+        </div>
+      </a>
+      <a href="/china-taiwan" style="text-decoration:none">
+        <div class="conflict-card" style="cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='rgba(224,56,54,.4)'" onmouseout="this.style.borderColor=''">
+          <div class="conflict-region">China Taiwan 2025</div>
+          <h3 style="color:var(--txt)">Is Taiwan Part of China? Will China Invade?</h3>
+          <p>Taiwan Strait risk assessment, "is taiwan part of china" explainer, why China wants Taiwan, semiconductor market impact.</p>
+        </div>
+      </a>
+      <a href="/what-is-geopolitics" style="text-decoration:none">
+        <div class="conflict-card" style="cursor:pointer;transition:border-color .15s" onmouseover="this.style.borderColor='rgba(224,56,54,.4)'" onmouseout="this.style.borderColor=''">
+          <div class="conflict-region">Geopolitics Explainer</div>
+          <h3 style="color:var(--txt)">What Is Geopolitics? Definition & Risk Explained</h3>
+          <p>Clear definition of geopolitics, what does geopolitical mean, real examples of geopolitical risk, how geopolitics affects markets.</p>
+        </div>
+      </a>
+    </div>
+  </section>
+
   <!-- FAQ -->
   <section class="section">
     <h2>Frequently Asked Questions</h2>
@@ -369,7 +408,11 @@ footer a:hover{color:var(--txt2)}
 <footer>
   <p>
     <a href="/">Orreryx</a> &nbsp;|&nbsp;
-    <a href="/geopolitics-news">Geopolitics News Today</a> &nbsp;|&nbsp;
+    <a href="/geopolitics-news">Geopolitics News</a> &nbsp;|&nbsp;
+    <a href="/ukraine-war">Ukraine War</a> &nbsp;|&nbsp;
+    <a href="/israel-gaza">Israel-Gaza</a> &nbsp;|&nbsp;
+    <a href="/china-taiwan">China-Taiwan</a> &nbsp;|&nbsp;
+    <a href="/what-is-geopolitics">What Is Geopolitics</a> &nbsp;|&nbsp;
     <a href="/demo">Demo</a> &nbsp;|&nbsp;
     <a href="/login">Sign In</a>
   </p>
