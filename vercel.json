@@ -18,6 +18,7 @@
     { "src": "/israel-gaza",         "dest": "/israel-gaza.html" },
     { "src": "/china-taiwan",        "dest": "/china-taiwan.html" },
     { "src": "/what-is-geopolitics", "dest": "/what-is-geopolitics.html" },
+    { "src": "/geopolitical-risk",   "dest": "/geopolitical-risk.html" },
     { "src": "/demo",                 "dest": "/demo.html" },
     { "src": "/smm",                  "dest": "/smm-week1.html" },
     { "src": "/sitemap.xml",          "dest": "/sitemap.xml" },

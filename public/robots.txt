@@ -5,6 +5,7 @@ Allow: /ukraine-war
 Allow: /israel-gaza
 Allow: /china-taiwan
 Allow: /what-is-geopolitics
+Allow: /geopolitical-risk
 Allow: /demo
 Allow: /login
 Allow: /welcome
@@ -21,6 +22,7 @@ Allow: /ukraine-war
 Allow: /israel-gaza
 Allow: /china-taiwan
 Allow: /what-is-geopolitics
+Allow: /geopolitical-risk
 Allow: /demo
 Disallow: /app
 Disallow: /admin
