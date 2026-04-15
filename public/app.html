@@ -4378,28 +4378,35 @@ const vidPopup = (() => {
   function scheduleShow(q, delay) {
     clearTimeout(hideTimer);
     clearTimeout(showTimer);
-    showTimer = setTimeout(() => show(q), delay || 450);
+    showTimer = setTimeout(() => show(q), delay || 320);
   }
 
   // ── Event delegation: ev-card hover in feed ──
+  // mouseover: fires when mouse ENTERS the card or any descendant
+  // We only act when entering the card itself (relatedTarget was outside the card)
   document.addEventListener('mouseover', e => {
     const card = e.target.closest && e.target.closest('.ev-card[data-evid]');
     if (!card) return;
+    // Skip if mouse was already inside this card (moving between children)
+    if (e.relatedTarget && card.contains(e.relatedTarget)) return;
     clearTimeout(hideTimer);
     const txtEl = card.querySelector('.ev-txt');
     const locEl = card.querySelector('.ev-loc');
     const q = txtEl ? (txtEl.textContent || '').trim().substring(0, 100)
-                    : (locEl ? locEl.textContent.replace('📍','').trim() : '');
-    if (q) scheduleShow(q, 450);
+                    : (locEl ? (locEl.textContent || '').replace('\uD83D\uDCCD','').trim() : '');
+    if (q) scheduleShow(q, 320);
   });
 
-  // Use capture for mouseleave since it doesn't bubble
-  document.addEventListener('mouseleave', e => {
+  // mouseout: fires when mouse LEAVES the card or any descendant
+  // We only act when actually leaving the card (relatedTarget is outside the card)
+  document.addEventListener('mouseout', e => {
     const card = e.target.closest && e.target.closest('.ev-card[data-evid]');
     if (!card) return;
+    // Skip if mouse is still inside the card (moving between children)
+    if (e.relatedTarget && card.contains(e.relatedTarget)) return;
     clearTimeout(showTimer);
     scheduleHide();
-  }, true);
+  });
 
   return { scheduleShow, scheduleHide, hide };
 })();
