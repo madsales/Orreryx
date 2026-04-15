@@ -30,6 +30,20 @@
   </url>
 
   <url>
+    <loc>https://www.orreryx.io/china-taiwan</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/what-is-geopolitics</loc>
+    <lastmod>2026-04-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.85</priority>
+  </url>
+
+  <url>
     <loc>https://www.orreryx.io/demo</loc>
     <lastmod>2026-04-14</lastmod>
     <changefreq>weekly</changefreq>

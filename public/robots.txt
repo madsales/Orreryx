@@ -1,6 +1,10 @@
 User-agent: *
 Allow: /
 Allow: /geopolitics-news
+Allow: /ukraine-war
+Allow: /israel-gaza
+Allow: /china-taiwan
+Allow: /what-is-geopolitics
 Allow: /demo
 Allow: /login
 Allow: /welcome
@@ -13,6 +17,10 @@ Disallow: /callback
 User-agent: Googlebot
 Allow: /
 Allow: /geopolitics-news
+Allow: /ukraine-war
+Allow: /israel-gaza
+Allow: /china-taiwan
+Allow: /what-is-geopolitics
 Allow: /demo
 Disallow: /app
 Disallow: /admin
