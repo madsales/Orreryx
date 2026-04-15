@@ -561,9 +561,10 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
 .vp-card:hover{background:var(--bg3)}
 .vp-thumb{width:90px;height:51px;object-fit:cover;border-radius:4px;flex-shrink:0;background:var(--bg4)}
 .vp-info{flex:1;min-width:0;display:flex;flex-direction:column;justify-content:center;gap:4px}
-.vp-title{font:500 11.5px/1.4 var(--sans);color:var(--txt);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.vp-ch{font:500 9.5px/1 var(--mono);color:var(--txt3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.vp-play{color:var(--red);font:700 8px/1 var(--mono);letter-spacing:.05em;margin-top:2px}
+.vp-station{font:700 9px/1 var(--mono);color:var(--red);letter-spacing:.04em;margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vp-title{font:400 11px/1.4 var(--sans);color:var(--txt2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:3px}
+.vp-ch{font:500 9px/1 var(--mono);color:var(--txt3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.vp-play{color:var(--red);font:700 8px/1 var(--mono);letter-spacing:.05em;margin-top:3px}
 .vp-loading{display:flex;align-items:center;justify-content:center;gap:8px;padding:20px 0;color:var(--txt3);font:400 12px/1 var(--sans)}
 .vp-spinner{width:14px;height:14px;border:2px solid var(--brd2);border-top-color:var(--red);border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
@@ -4328,8 +4329,8 @@ const vidPopup = (() => {
     if (q === activeQuery) return;
     activeQuery = q;
     const p = getEl();
-    p.innerHTML = '<div class="vp-hdr">&#9654; Related Video News</div>' +
-                  '<div class="vp-loading"><div class="vp-spinner"></div>Searching videos\u2026</div>';
+    p.innerHTML = '<div class="vp-hdr">&#128250; TV News Coverage</div>' +
+                  '<div class="vp-loading"><div class="vp-spinner"></div>Searching broadcasts\u2026</div>';
     p.classList.add('vp-show');
     position();
 
@@ -4338,26 +4339,32 @@ const vidPopup = (() => {
                             { signal: AbortSignal.timeout(6000) });
       if (activeQuery !== q) return; // stale — another hover fired
       const data = r.ok ? await r.json() : { videos: [] };
-      const vids = (data.videos || []);
+      const clips = (data.clips || []);
 
-      if (!vids.length) {
-        p.innerHTML = '<div class="vp-hdr">&#9654; Video News</div>' +
-                      '<div class="vp-empty">No videos found for this event</div>';
+      if (!clips.length) {
+        p.innerHTML = '<div class="vp-hdr">&#128250; TV News Coverage</div>' +
+                      '<div class="vp-empty">No broadcast coverage found</div>';
         return;
       }
 
-      let html = '<div class="vp-hdr">&#9654; Related Video News</div>';
-      vids.forEach(v => {
-        const url = 'https://www.youtube.com/watch?v=' + v.id;
-        const title = (v.title || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-        const ch    = (v.channel || '').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+      let html = '<div class="vp-hdr">&#128250; TV News Coverage</div>';
+      clips.forEach(c => {
+        const url     = (c.url || '').replace(/&/g,'&amp;');
+        const station = (c.station || 'TV News').replace(/</g,'&lt;');
+        const show    = (c.show || '').replace(/</g,'&lt;');
+        const date    = (c.date || '').replace(/</g,'&lt;');
+        const snippet = (c.snippet || '').replace(/</g,'&lt;');
         html +=
           '<a class="vp-card" href="' + url + '" target="_blank" rel="noopener" onclick="event.stopPropagation()">' +
-            '<img class="vp-thumb" src="' + (v.thumb||'') + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">' +
+            (c.thumb
+              ? '<img class="vp-thumb" src="' + (c.thumb||'') + '" alt="" loading="lazy" onerror="this.style.display=\'none\'">'
+              : '<div class="vp-thumb" style="display:flex;align-items:center;justify-content:center;font:700 9px/1 var(--mono);color:var(--txt3);">' + station + '</div>'
+            ) +
             '<div class="vp-info">' +
-              '<div class="vp-title">' + title + '</div>' +
-              '<div class="vp-ch">' + ch + '</div>' +
-              '<div class="vp-play">&#9654; Watch on YouTube</div>' +
+              '<div class="vp-station">' + station + (show ? ' &mdash; ' + show : '') + '</div>' +
+              (snippet ? '<div class="vp-title">' + snippet + '&hellip;</div>' : '') +
+              '<div class="vp-ch">' + (date || 'Broadcast clip') + '</div>' +
+              '<div class="vp-play">&#9654; Watch Broadcast Clip</div>' +
             '</div>' +
           '</a>';
       });
@@ -4365,8 +4372,8 @@ const vidPopup = (() => {
       position();
     } catch(err) {
       if (activeQuery === q) {
-        p.innerHTML = '<div class="vp-hdr">&#9654; Video News</div>' +
-                      '<div class="vp-empty">Videos unavailable</div>';
+        p.innerHTML = '<div class="vp-hdr">&#128250; TV News Coverage</div>' +
+                      '<div class="vp-empty">Coverage unavailable</div>';
       }
     }
   }
