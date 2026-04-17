@@ -2,7 +2,12 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<!-- Google Search Console: Add verification meta tag here -->
+<!-- <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE"> -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="author" content="Orreryx">
+<meta name="publisher" content="Orreryx">
 <meta http-equiv="X-Frame-Options" content="DENY">
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta name="referrer" content="strict-origin-when-cross-origin">
@@ -19,9 +24,9 @@
 <meta property="og:title" content="Orreryx | Geopolitics News Today — Live War Monitoring & Global Intelligence">
 <meta property="og:description" content="Geopolitics news today, live. War monitoring, current global conflicts 2025, and real-time intelligence from 45+ sources. Events mapped on a live 3D globe. Free 3-day trial.">
 <meta property="og:url" content="https://www.orreryx.io/">
-<meta property="og:image" content="https://www.orreryx.io/icon.svg">
-<meta property="og:image:width" content="400">
-<meta property="og:image:height" content="400">
+<meta property="og:image" content="https://www.orreryx.io/og-image.svg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
 <meta property="og:locale" content="en_US">
 
 <!-- ── TWITTER / X CARD ── -->
@@ -30,7 +35,7 @@
 <meta name="twitter:creator" content="@orreryx">
 <meta name="twitter:title" content="Orreryx | Geopolitics News Today — Live War Monitoring & Global Intelligence">
 <meta name="twitter:description" content="Geopolitics news today, live. War monitoring, current global conflicts, real-time intelligence from 45+ sources. Free 3-day trial — no card needed.">
-<meta name="twitter:image" content="https://www.orreryx.io/icon.svg">
+<meta name="twitter:image" content="https://www.orreryx.io/og-image.svg">
 
 <!-- ── STRUCTURED DATA (JSON-LD) ── -->
 <script type="application/ld+json">
@@ -85,11 +90,6 @@
         "priceValidUntil": "2026-12-31",
         "availability": "https://schema.org/InStock",
         "name": "Starter Plan"
-      },
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.8",
-        "reviewCount": "47"
       },
       "featureList": [
         "Live geopolitical crisis feed from BBC, Reuters, AP",
@@ -170,6 +170,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="dns-prefetch" href="https://unpkg.com">
 <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+<link rel="preload" as="image" href="/icon.svg">
 <script src="https://unpkg.com/globe.gl@2.30.0/dist/globe.gl.min.js" defer></script>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#09090b">
@@ -1158,7 +1159,7 @@ footer{border-top:1px solid var(--brd);padding:32px 60px;display:flex;align-item
     <div class="pricing-hd">
       <div class="section-eyebrow" style="display:inline-block">Pricing</div>
       <h2 class="section-h" style="font-size:clamp(22px,3vw,38px)">Start free. Upgrade when you're ready.</h2>
-      <p style="font:400 13px/1.7 var(--sans);color:var(--txt2);margin-top:10px;max-width:460px;margin-left:auto;margin-right:auto">No credit card for the free trial. Cancel paid plans anytime. Every plan includes a <strong style="color:var(--grn)">30-day money-back guarantee</strong>.</p>
+      <p style="font:400 13px/1.7 var(--sans);color:var(--txt2);margin-top:10px;max-width:460px;margin-left:auto;margin-right:auto">No credit card for the free trial. Cancel paid plans anytime.</p>
       <p style="font-family:var(--mono);font-size:11px;color:var(--txt3);margin-top:8px">Billed monthly · PayPal secured · Instant access</p>
     </div>
     <div class="pricing-grid">
@@ -1210,7 +1211,7 @@ footer{border-top:1px solid var(--brd);padding:32px 60px;display:flex;align-item
           <li class="pf"><span class="pf-yes">✓</span>Everything in Starter</li>
           <li class="pf"><span class="pf-yes">✓</span><strong style="color:var(--green)">🌍 Live world map — 150+ cities</strong></li>
           <li class="pf"><span class="pf-yes">✓</span><strong style="color:var(--green)">● Live exchange data — 36 symbols</strong></li>
-          <li class="pf"><span class="pf-yes">✓</span>WebSocket streaming — 36 symbols</li>
+          <li class="pf"><span class="pf-yes">✓</span>Real-time prices — 22 symbols, 15s refresh</li>
           <li class="pf"><span class="pf-yes">✓</span>Click map events for AI brief</li>
           <li class="pf"><span class="pf-yes">✓</span>7-day crisis history archive</li>
           <li class="pf"><span class="pf-yes">✓</span>Stock charts — 1W to 5Y</li>
@@ -1218,10 +1219,6 @@ footer{border-top:1px solid var(--brd);padding:32px 60px;display:flex;align-item
           <li class="pf off"><span class="pf-no">✗</span>Live crypto market</li>
         </ul>
         <a href="/login?plan=a" class="plan-btn gold-btn">GET ANALYST →</a>
-        <div class="guarantee-badge">
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1L8.1 4.3L11.8 4.9L9.15 7.5L9.8 11.2L6.5 9.5L3.2 11.2L3.85 7.5L1.2 4.9L4.9 4.3L6.5 1Z" fill="#3ab860" opacity=".3" stroke="#3ab860" stroke-width="1"/></svg>
-          <span class="guarantee-txt">30-day money-back guarantee — no questions asked</span>
-        </div>
       </div>
       <!-- COMMAND -->
       <div class="plan-card">
@@ -1236,14 +1233,10 @@ footer{border-top:1px solid var(--brd);padding:32px 60px;display:flex;align-item
           <li class="pf"><span class="pf-yes">✓</span>BTC · ETH · XMR · TON · SOL + 7 more</li>
           <li class="pf"><span class="pf-yes">✓</span>30-day history archive</li>
           <li class="pf"><span class="pf-yes">✓</span>Full 5Y chart history</li>
-          <li class="pf"><span class="pf-yes">✓</span>CSV export · Priority support</li>
+          <li class="pf"><span class="pf-yes">✓</span>Download history as CSV · Priority support</li>
           <li class="pf"><span class="pf-yes">✓</span>Early access to new features</li>
         </ul>
         <a href="/login?plan=c" class="plan-btn red-btn">GET COMMAND →</a>
-        <div class="guarantee-badge">
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1L8.1 4.3L11.8 4.9L9.15 7.5L9.8 11.2L6.5 9.5L3.2 11.2L3.85 7.5L1.2 4.9L4.9 4.3L6.5 1Z" fill="#3ab860" opacity=".3" stroke="#3ab860" stroke-width="1"/></svg>
-          <span class="guarantee-txt">30-day money-back guarantee — no questions asked</span>
-        </div>
       </div>
     </div>
     <div class="pay-note">

@@ -2,6 +2,9 @@
 // Fetches public RSS feeds from major news channels (CNN, BBC, Reuters, Al Jazeera, Sky News, etc.)
 // No API key needed. YouTube provides free channel RSS feeds publicly.
 // Scores each video title against the query keywords for relevance.
+//
+// Query is now built client-side as "Country + topic" (e.g. "Iran military conflict")
+// so it matches real news titles instead of fictional scenario text.
 
 const CHANNELS = [
   { name: 'CNN',          id: 'UCupvZG-5ko_eiXAupbDfxWw' },
@@ -15,30 +18,76 @@ const CHANNELS = [
   { name: 'ABC News',     id: 'UCBi2mrWuNuyYy4gbM6fU18Q' },
 ];
 
-// Cache for individual channel feeds (30 min) and query results (12 min)
+// Synonym map — expands query terms so e.g. "conflict" also matches "war", "attack", "strike"
+const SYNONYMS = {
+  military:  ['military','war','attack','strike','troops','army','navy','airstrike','missile','drone','combat','forces'],
+  conflict:  ['conflict','war','fighting','battle','clash','offensive','operation'],
+  oil:       ['oil','crude','opec','petroleum','brent','energy','fuel','gas'],
+  energy:    ['energy','oil','gas','fuel','power','electricity'],
+  nuclear:   ['nuclear','atomic','uranium','iaea','warhead','radiation','nuke'],
+  economy:   ['economy','economic','gdp','inflation','recession','market','finance'],
+  markets:   ['market','stocks','trading','index','shares','equities','wall street'],
+  diplomacy: ['diplomacy','diplomatic','talks','negotiations','ceasefire','summit','peace','sanctions'],
+  talks:     ['talks','negotiations','summit','meeting','diplomacy','ceasefire'],
+  cyber:     ['cyber','hack','ransomware','malware','breach','attack'],
+  politics:  ['politics','political','government','election','president','minister','coup'],
+  crisis:    ['crisis','emergency','collapse','instability','chaos'],
+  disaster:  ['disaster','earthquake','flood','hurricane','tsunami','wildfire','emergency'],
+  health:    ['health','disease','outbreak','epidemic','pandemic','virus'],
+  iran:      ['iran','iranian','tehran','irgc','persian'],
+  russia:    ['russia','russian','kremlin','moscow','putin'],
+  china:     ['china','chinese','beijing','xi','prc'],
+  ukraine:   ['ukraine','ukrainian','kyiv','zelensky','donbas'],
+  israel:    ['israel','israeli','gaza','idf','hamas','netanyahu'],
+  usa:       ['usa','us','american','washington','pentagon','white house'],
+  saudi:     ['saudi','riyadh','aramco','mbs','opec'],
+  uae:       ['uae','dubai','abu dhabi','emirates'],
+};
+
+// Cache for individual channel feeds (30 min) and query results (10 min)
 const channelCache = new Map();  // channelId → { items, ts }
 const queryCache   = new Map();  // query key → { data, ts }
 const CHANNEL_TTL  = 30 * 60 * 1000;
-const QUERY_TTL    = 12 * 60 * 1000;
+const QUERY_TTL    = 10 * 60 * 1000;
 
 const STOPWORDS = new Set([
   'that','this','with','from','they','have','been','will','would','could',
   'about','into','over','after','were','says','said','their','there','where',
   'when','what','which','while','than','then','also','news','more','some',
   'your','just','time','year','most','such','even','well','only','very',
-  'both','each','each','many','much','make','like','look','come','know',
+  'both','each','many','much','make','like','look','come','know',
 ]);
 
 function keywords(q) {
-  return q.toLowerCase()
-    .replace(/[^a-z0-9\s]/g, ' ')
-    .split(/\s+/)
-    .filter(w => w.length >= 4 && !STOPWORDS.has(w));
+  return [...new Set(
+    q.toLowerCase()
+      .replace(/[^a-z0-9\s]/g, ' ')
+      .split(/\s+/)
+      .filter(w => w.length >= 3 && !STOPWORDS.has(w))
+  )];
 }
 
-function relevance(title, kws) {
+// Expand keywords with synonyms — returns flat deduplicated list
+function expandKeywords(kws) {
+  const expanded = new Set(kws);
+  for (const kw of kws) {
+    const syns = SYNONYMS[kw];
+    if (syns) syns.forEach(s => expanded.add(s));
+  }
+  return [...expanded];
+}
+
+// Score a title against keywords — exact match = 2pts, partial/synonym = 1pt
+function relevance(title, kws, expandedKws) {
   const t = title.toLowerCase();
-  return kws.reduce((n, k) => n + (t.includes(k) ? 1 : 0), 0);
+  let score = 0;
+  for (const k of kws) {
+    if (t.includes(k)) score += 2; // direct match worth more
+  }
+  for (const k of expandedKws) {
+    if (!kws.includes(k) && t.includes(k)) score += 1; // synonym match
+  }
+  return score;
 }
 
 // Parse YouTube RSS XML without a DOM parser
@@ -88,7 +137,7 @@ async function fetchChannel(ch) {
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
-  res.setHeader('Cache-Control', 'public, max-age=720');
+  res.setHeader('Cache-Control', 'public, max-age=600');
 
   if (req.method === 'OPTIONS') return res.status(200).end();
   if (req.method !== 'GET')    return res.status(405).json({ error: 'GET only' });
@@ -103,27 +152,31 @@ export default async function handler(req, res) {
   }
 
   const kws = keywords(q);
+  const expandedKws = expandKeywords(kws);
 
-  // Fetch all channels in parallel — take first 6 to keep latency low
+  // Fetch ALL 9 channels in parallel for maximum coverage
   const allVideos = (await Promise.all(
-    CHANNELS.slice(0, 6).map(ch => fetchChannel(ch))
+    CHANNELS.map(ch => fetchChannel(ch))
   )).flat();
 
-  // Score and rank
-  let scored = allVideos.map(v => ({ ...v, score: relevance(v.title, kws) }));
+  // Score and rank with expanded keyword matching
+  let scored = allVideos.map(v => ({
+    ...v,
+    score: relevance(v.title, kws, expandedKws),
+  }));
 
-  // Sort: first by relevance (desc), then by date (recent first)
+  // Sort: relevance desc, then date desc (most recent first)
   scored.sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
     return b.date.localeCompare(a.date);
   });
 
-  // If nothing is relevant, fall back to most recent 3 across all channels
-  const MIN_SCORE = kws.length > 0 ? 1 : 0;
-  let results = scored.filter(v => v.score >= MIN_SCORE).slice(0, 3);
-  if (!results.length) results = scored.slice(0, 3);
-
+  // Return top 3 relevant results. Only fall back to recents if truly nothing matched.
+  let results = scored.filter(v => v.score >= 1).slice(0, 3);
+  // If still nothing, return empty rather than unrelated clips
+  // (client shows "No coverage found" — better than wrong clips)
   const data = { clips: results };
+
   queryCache.set(ckey, { data, ts: Date.now() });
   if (queryCache.size > 400) queryCache.delete(queryCache.keys().next().value);
 

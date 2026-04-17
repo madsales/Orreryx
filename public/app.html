@@ -277,6 +277,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
 .sec-airlines{background:rgba(22,56,160,.1);color:#7090e0}
 .sec-shipping{background:rgba(12,104,96,.1);color:#40bdb0}
 .sec-safe{background:rgba(212,168,67,.1);color:var(--gld)}
+.sec-met{background:rgba(212,168,67,.18);color:#e8c060;border:1px solid rgba(212,168,67,.3)}
+.sec-sfe{background:rgba(212,168,67,.1);color:var(--gld)}
 .sc-name{font:400 10.5px/1 var(--sans);color:var(--txt3);margin-bottom:7px}
 .sc-price{font:600 19px/1 var(--mono)}
 .sc-chg{font:600 9.5px/1 var(--mono);margin-top:3px}
@@ -593,6 +595,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
   <div class="hstat"><div class="hstat-v" id="h-sp" style="color:var(--txt3)">—</div><div class="hstat-l">S&P 500</div></div>
   <div class="hstat"><div class="hstat-v" id="h-oil" style="color:var(--txt3)">—</div><div class="hstat-l">BRENT</div></div>
   <div class="hstat"><div class="hstat-v" id="h-gold" style="color:var(--txt3)">—</div><div class="hstat-l">GOLD</div></div>
+  <div class="hstat"><div class="hstat-v" id="h-silver" style="color:var(--txt3)">—</div><div class="hstat-l">SILVER</div></div>
   <div class="hstat"><div class="hstat-v" id="h-btc" style="color:var(--txt3)">—</div><div class="hstat-l">BTC</div></div>
   <div class="live-btn sim" id="live-btn" onclick="showFeedModal()"><div class="ldot"></div><span id="live-txt">SIMULATED</span></div>
   <div class="plan-btn" id="plan-btn" onclick="showPlanModal()"><span id="plan-btn-name">STARTER</span> ↑</div>
@@ -809,6 +812,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
       <button class="btn btn-ghost" onclick="filterStocks('air')" id="fs-air">AIRLINES</button>
       <button class="btn btn-ghost" onclick="filterStocks('shp')" id="fs-shp">SHIPPING</button>
       <button class="btn btn-ghost" onclick="filterStocks('sfe')" id="fs-sfe">SAFE HAVEN</button>
+      <button class="btn btn-ghost" onclick="filterStocks('met')" id="fs-met">⚡ METALS</button>
     </div>
   </div>
   <div class="pb">
@@ -975,6 +979,9 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
       <div class="ph-title">Crisis History</div>
       <div class="ph-sub" id="hist-sub">Analyst: 7-day archive · Command: 30-day archive</div>
     </div>
+    <div class="ph-right" id="hist-csv-wrap" style="display:none">
+      <button class="btn btn-ghost" style="font-size:7.5px;padding:6px 12px" onclick="downloadHistoryCSV()">⬇ DOWNLOAD CSV</button>
+    </div>
   </div>
   <div class="pb" id="hist-body"></div>
 </div>
@@ -1127,12 +1134,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
     </div>
     <div id="wz-s2" style="display:none"><!-- AI key step removed — AI is server-powered --></div>
     <div id="wz-s3" style="display:none">
-      <p class="modal-body">Connect <strong>Twelve Data</strong> for real exchange prices via WebSocket streaming — 18 global indices + 18 war stocks + crypto.<br><br>Get your key at <a href="https://twelvedata.com" target="_blank" style="color:var(--blu)">twelvedata.com</a> → Grow plan ($29/mo) required for WebSocket.</p>
-      <div class="modal-lbl">Twelve Data API Key (optional)</div>
-      <input class="modal-inp" id="feed-key" type="password" placeholder="Your Twelve Data key…" onkeydown="if(event.key==='Enter')wizGo(3)">
-      <div class="modal-err" id="feed-key-err">Please enter your API key.</div>
-      <button class="modal-go" onclick="wizGo(3)">CONNECT LIVE FEED →</button>
-      <button class="modal-skip" onclick="wizSkip(3)">Skip — use simulation</button>
+      <p class="modal-body">✓ <strong>Real-time prices are built in</strong> — your plan includes live market data for 22 symbols (war stocks, indices, crypto) refreshing every 15 seconds. No API key required.</p>
+      <button class="modal-go" onclick="wizSkip(3)">OPEN THE PLATFORM →</button>
     </div>
   </div>
 </div>
@@ -1190,7 +1193,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
 <div class="modal-ov" id="feed-modal">
   <div class="modal" style="width:440px">
     <div class="modal-hd">
-      <div><div class="modal-title" id="feed-modal-title">Live Exchange Feed</div><div class="modal-sub" id="feed-modal-sub">Twelve Data — Optional</div></div>
+      <div><div class="modal-title" id="feed-modal-title">Live Market Feed</div><div class="modal-sub" id="feed-modal-sub">22 symbols · 15s refresh · built-in</div></div>
       <button class="modal-x" onclick="closeM('feed-modal')">✕</button>
     </div>
 
@@ -1211,7 +1214,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
 
     <!-- CONNECT STATE -->
     <div id="feed-connect-view">
-      <p class="modal-body" id="feed-modal-desc">Your plan includes live exchange prices via the Orrery proxy — no API key needed. Optionally connect your own Twelve Data key for direct WebSocket.</p>
+      <p class="modal-body" id="feed-modal-desc">Your plan includes real-time market prices — 22 symbols refreshing every 15 seconds, built in. No API key or setup needed.</p>
       <div style="background:var(--grn2);border:1px solid rgba(58,184,96,.2);border-radius:4px;padding:10px 13px;margin-bottom:14px;font:400 11px/1.5 var(--sans);color:var(--txt2)">
         <strong style="color:var(--grn);font-family:var(--mono);font-size:9px;letter-spacing:.06em">✓ INCLUDED IN YOUR PLAN</strong><br>
         Live prices are already enabled. Click below to activate.
@@ -1261,6 +1264,46 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
     <div style="padding:11px 16px;border-top:1px solid var(--brd);display:flex;gap:8px">
       <button onclick="quickAskStockModal(currentStockModal,'analysis')" class="btn btn-ghost" style="flex:1">🤖 AI ANALYSIS</button>
       <button onclick="quickAskStockModal(currentStockModal,'buysell')" class="btn btn-gld" style="flex:1">💡 BUY/SELL/HOLD?</button>
+    </div>
+  </div>
+</div>
+
+<!-- CRYPTO DETAIL MODAL -->
+<div class="stk-modal-ov" id="crypto-modal" onclick="if(event.target===this)closeCryptoModal()">
+  <div class="stk-modal">
+    <div class="stk-modal-hd">
+      <div>
+        <div style="font:700 18px/1 var(--mono);color:var(--txt)" id="cmd-sym">BTC</div>
+        <div style="font:400 10.5px/1 var(--sans);color:var(--txt3);margin-top:3px" id="cmd-name">Bitcoin</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px">
+        <div style="text-align:right">
+          <div style="font:700 20px/1 var(--mono)" id="cmd-price">—</div>
+          <div style="font:600 10px/1 var(--mono);margin-top:3px" id="cmd-chg"></div>
+        </div>
+        <button class="modal-x" onclick="closeCryptoModal()">✕</button>
+      </div>
+    </div>
+    <div class="stk-chart-wrap" style="padding:10px 17px 0"><canvas id="crypto-detail-canvas" height="160"></canvas></div>
+    <div style="padding:8px 17px 10px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin:8px 0 6px">
+        <div style="font:600 9px/1 var(--mono);color:var(--txt3);letter-spacing:.06em">WAR CORRELATION</div>
+        <div style="font:700 11px/1 var(--mono)" id="cmd-corrlabel">—</div>
+      </div>
+      <div style="height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;margin-bottom:12px">
+        <div id="cmd-corrbar" style="height:100%;border-radius:3px;transition:width .3s"></div>
+      </div>
+      <div style="font:400 11.5px/1.6 var(--sans);color:var(--txt2)" id="cmd-reason"></div>
+    </div>
+    <div class="stk-modal-meta">
+      <div class="stk-meta-item"><div class="stk-meta-lbl">Pre-War Price</div><div class="stk-meta-val" id="cmd-base">—</div></div>
+      <div class="stk-meta-item"><div class="stk-meta-lbl">War Change</div><div class="stk-meta-val" id="cmd-warchange">—</div></div>
+      <div class="stk-meta-item"><div class="stk-meta-lbl">Correlation</div><div class="stk-meta-val" id="cmd-corr">—</div></div>
+      <div class="stk-meta-item"><div class="stk-meta-lbl">24h Change</div><div class="stk-meta-val" id="cmd-24h">—</div></div>
+    </div>
+    <div style="padding:11px 16px;border-top:1px solid var(--brd);display:flex;gap:8px">
+      <button onclick="quickAskFromCryptoModal()" class="btn btn-ghost" style="flex:1">🤖 AI ANALYSIS</button>
+      <button onclick="quickAskFromCryptoModal('hedge')" class="btn btn-gld" style="flex:1">💡 HEDGE STRATEGY?</button>
     </div>
   </div>
 </div>
@@ -1409,7 +1452,19 @@ const WAR_STOCKS = [
   { sym:'MAERS',name:'A.P. Moller-Maersk',sector:'shp',sectorLabel:'SHIPPING', base:1240.0, price:1038.0, change:-16.29, mcap:'$19.2B',  reason:'Red Sea + Hormuz combined exposure largest of any global carrier.',warImpact:'HIGH' },
   { sym:'FDX',  name:'FedEx',           sector:'shp',  sectorLabel:'SHIPPING', base:248.30, price:231.60, change:-6.72,  mcap:'$58.8B',  reason:'Air freight fuel surcharge activated at 34%. Middle East volume suspended.',warImpact:'MED' },
   { sym:'GLD',  name:'SPDR Gold ETF',   sector:'sfe',  sectorLabel:'SAFE HAVEN',base:185.40,price:193.40, change:+4.32,  mcap:'$68.2B',  reason:'Classic safe haven. Surges on every nuclear signal and DEFCON elevation.',warImpact:'HIGH' },
-  { sym:'SLV',  name:'iShares Silver',  sector:'sfe',  sectorLabel:'SAFE HAVEN',base:22.10, price:23.40,  change:+5.88,  mcap:'$11.4B',  reason:'Industrial + safe haven dual role. Defense electronics demand adds premium.',warImpact:'MED' }
+  { sym:'SLV',  name:'iShares Silver',  sector:'sfe',  sectorLabel:'SAFE HAVEN',base:22.10, price:23.40,  change:+5.88,  mcap:'$11.4B',  reason:'Industrial + safe haven dual role. Defense electronics demand adds premium.',warImpact:'MED' },
+  // ── PRECIOUS METALS ──────────────────────────────────────────────────────
+  { sym:'GLD',  name:'Gold (SPDR ETF)',      sector:'met', sectorLabel:'GOLD',     base:185.40,price:193.40, change:+4.32,  mcap:'$68.2B',  reason:'1 share ≈ 0.093 oz gold. War uncertainty and USD weakness are primary drivers. Real spot ~$2,320/oz.',warImpact:'HIGH', spotLabel:'~$2,320/oz' },
+  { sym:'SLV',  name:'Silver (iShares ETF)', sector:'met', sectorLabel:'SILVER',   base:22.10, price:23.40,  change:+5.88,  mcap:'$11.4B',  reason:'1 share ≈ 0.94 oz silver. Dual safe-haven + industrial demand. Defence electronics boost.',warImpact:'HIGH', spotLabel:'~$31/oz' },
+  { sym:'PPLT', name:'Aberdeen Platinum ETF',sector:'met', sectorLabel:'PLATINUM', base:81.20, price:87.60,  change:+7.88,  mcap:'$0.86B',  reason:'1 share ≈ 0.1 oz platinum. 75% of supply from South Africa — war/sanctions risk premium.',warImpact:'MED', spotLabel:'~$980/oz' },
+  { sym:'PALL', name:'Aberdeen Palladium ETF',sector:'met',sectorLabel:'PALLADIUM',base:86.40, price:90.10,  change:+4.28,  mcap:'$0.42B',  reason:'1 share ≈ 0.1 oz palladium. 40% from Russia — direct sanctions-driven premium. Autocatalyst demand.',warImpact:'HIGH', spotLabel:'~$960/oz' },
+  { sym:'CPER', name:'Copper (US Copper ETF)',sector:'met',sectorLabel:'COPPER',   base:24.80, price:26.40,  change:+6.45,  mcap:'$0.32B',  reason:'Copper vital for defence systems, EV batteries and grid infrastructure. War spending drives demand.',warImpact:'MED', spotLabel:'~$4.8/lb' },
+  { sym:'GDX',  name:'VanEck Gold Miners',   sector:'met', sectorLabel:'MINERS',   base:28.40, price:34.60,  change:+21.83, mcap:'$12.8B',  reason:'Holds top 50 gold mining companies. ~2x leverage to gold price. Major holdings: NEM, GOLD, AEM, WPM.',warImpact:'HIGH' },
+  { sym:'GDXJ', name:'Junior Gold Miners',   sector:'met', sectorLabel:'MINERS',   base:34.10, price:43.20,  change:+26.69, mcap:'$4.9B',   reason:'Small/mid-cap gold miners. 3x leverage vs gold spot. Highest beta war hedge in metals space.',warImpact:'HIGH' },
+  { sym:'NEM',  name:'Newmont Mining',        sector:'met', sectorLabel:'MINERS',   base:38.20, price:46.80,  change:+22.51, mcap:'$56.8B',  reason:'World\'s largest gold producer. Every $100/oz gold move adds ~$0.40 to EPS. Newcrest acquisition complete.',warImpact:'HIGH' },
+  { sym:'GOLD', name:'Barrick Gold',          sector:'met', sectorLabel:'MINERS',   base:15.40, price:18.90,  change:+22.73, mcap:'$32.1B',  reason:'Tier-1 gold mines in Nevada, Mali, Tanzania, PNG. Warren Buffett exited — institutional momentum.',warImpact:'HIGH' },
+  { sym:'WPM',  name:'Wheaton Precious Metals',sector:'met',sectorLabel:'STREAMING',base:48.20,price:61.40,  change:+27.39, mcap:'$27.8B',  reason:'Royalty/streaming model. Receives gold/silver at fixed cost from 30+ mines globally. Low-risk war hedge.',warImpact:'HIGH' },
+  { sym:'FNV',  name:'Franco-Nevada',         sector:'met', sectorLabel:'STREAMING',base:108.40,price:134.20, change:+23.80, mcap:'$25.6B',  reason:'Largest royalty company. No operational mine risk. Pure-play gold price exposure with dividend.',warImpact:'HIGH' }
 ];
 
 // ── GLOBAL MARKETS ──
@@ -1904,7 +1959,16 @@ function startPlatform() {
   setTimeout(() => { fetchLiveEvents(); fetchGNews(); }, 800);
   setInterval(() => { fetchLiveEvents(); fetchGNews(); }, 90 * 1000);
 
-  // ── LIVE CRYPTO PRICES — CoinGecko free API, no key required ──
+  // ── REAL-TIME QUOTES — all plans get polling every 15s (stocks via Yahoo Finance) ──
+  const _allQuoteSyms = [
+    'LMT','NOC','RTX','GD','BA','XOM','CVX','OXY','SLB',
+    'DAL','UAL','AAL','LUV','ZIM','FDX','GLD','SLV',
+    'PPLT','PALL','CPER','GDX','GDXJ','NEM','GOLD','WPM','FNV',
+    'BTC','ETH','SOL','BNB','XRP','AVAX',
+  ];
+  setTimeout(() => startQuotesPoll(_allQuoteSyms), 1000);
+
+  // ── LIVE CRYPTO PRICES — CoinGecko free API, no key required (60s backup) ──
   fetchCryptoPrices();
   setInterval(fetchCryptoPrices, 60 * 1000); // every 60 seconds
 
@@ -2041,13 +2105,25 @@ function updateTopbarPrices() {
     }
   }
 
-  // Gold — from WAR_STOCKS GLD
-  const gld = WAR_STOCKS.find(s => s.sym === 'GLD');
+  // Gold — from WAR_STOCKS GLD (show estimated spot: GLD × 10.43 ≈ spot oz price)
+  const gld = WAR_STOCKS.find(s => s.sym === 'GLD' && s.sector === 'sfe');
   if (gld) {
     const goldEl = document.getElementById('h-gold');
     if (goldEl) {
-      goldEl.textContent = '$' + gld.price.toFixed(2);
+      const spotGold = (gld.price * 10.43).toFixed(0);
+      goldEl.textContent = '$' + Number(spotGold).toLocaleString();
       goldEl.style.color = gld.change >= 0 ? 'var(--grn)' : 'var(--red)';
+    }
+  }
+
+  // Silver — from WAR_STOCKS SLV (SLV × 1.067 ≈ spot oz price)
+  const slv = WAR_STOCKS.find(s => s.sym === 'SLV' && s.sector === 'sfe');
+  if (slv) {
+    const silverEl = document.getElementById('h-silver');
+    if (silverEl) {
+      const spotSilver = (slv.price * 1.067).toFixed(2);
+      silverEl.textContent = '$' + spotSilver;
+      silverEl.style.color = slv.change >= 0 ? 'var(--grn)' : 'var(--red)';
     }
   }
 
@@ -2190,12 +2266,49 @@ function renderIntelFeed() {
   body.innerHTML = sorted.map(e => buildEventCard(e)).join('');
 }
 
+// Build a real-world searchable query from an event.
+// Strategy:
+//   • Live GDELT events: e.source is set → use actual headline (e.txt) — it IS real news text
+//   • Static WAR_EVENTS: e.source is absent → use location + category (fictional text would not match)
+function buildVideoQuery(e) {
+  // Live event — headline IS the query (e.g. "Israel responds to Iran drone strike")
+  if (e.source) {
+    // Strip common noise, keep first ~90 chars
+    return (e.txt || '').replace(/[|•·–—]/g, ' ').trim().substring(0, 90);
+  }
+
+  // Static fictional event — build from location + category
+  const catMap = {
+    mil: 'military strike',
+    nrg: 'oil energy crisis',
+    nuc: 'nuclear Iran',
+    eco: 'economy crisis',
+    dip: 'diplomacy ceasefire',
+    cyb: 'cyber attack',
+    pol: 'political crisis',
+    env: 'environment disaster',
+    dis: 'disaster emergency',
+    hlt: 'health outbreak',
+    hth: 'health outbreak',
+    cri: 'violence conflict',
+    fin: 'financial markets',
+    tech: 'technology',
+    biz: 'business',
+  };
+  // Extract country — last segment after final comma
+  const locParts = (e.loc || '').split(',');
+  const place = (locParts.length > 1 ? locParts[locParts.length - 1] : locParts[0]).trim();
+  const topic = catMap[e.cat] || (e.catLabel || '').toLowerCase();
+  return (place + ' ' + topic).trim().substring(0, 100);
+}
+
 function buildEventCard(e) {
   const timeStr = e.time ? e.time.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) : '';
   const tags = (e.tags || []).map(t => `<span class="tag ${t.up ? 'tag-up' : 'tag-dn'}">${t.t}</span>`).join('');
   const srcUrl = e.url || ('https://news.google.com/search?q=' + encodeURIComponent(e.txt.substring(0, 80)));
   const srcLabel = e.source ? e.source : 'Source';
-  return `<div class="ev-card ${e.newest ? 'newest' : ''}" data-evid="${e.id}" onclick="handleEvClick(this)">
+  const vpq = buildVideoQuery(e);
+  return `<div class="ev-card ${e.newest ? 'newest' : ''}" data-evid="${e.id}" data-vpq="${vpq}" onclick="handleEvClick(this)">
     <div class="ev-top">
       <span class="cat c-${e.cat}">${e.catLabel}</span>
       <span class="ev-loc">📍 ${e.loc}</span>
@@ -2311,7 +2424,7 @@ function initGlobe() {
   // Hover on point → show video popup
   globeInstance.onPointHover(d => {
     if (d && d.ev) {
-      const q = (d.ev.txt || '').substring(0, 100) || (d.ev.loc || '');
+      const q = buildVideoQuery(d.ev);
       if (q) vidPopup.scheduleShow(q, 400);
     } else {
       vidPopup.scheduleHide();
@@ -2555,7 +2668,9 @@ function renderStocks() {
   const stats = document.getElementById('stocks-stats');
   if (!grid) return;
 
-  const filtered = stockFilter === 'all' ? WAR_STOCKS : WAR_STOCKS.filter(s => s.sector === stockFilter);
+  // deduplicate by sym when showing ALL (same ticker can appear in sfe + met)
+  const deduped = WAR_STOCKS.filter((s,i,arr) => stockFilter !== 'all' || arr.findIndex(x=>x.sym===s.sym&&x.sector===s.sector)===i && !arr.slice(0,i).some(x=>x.sym===s.sym));
+  const filtered = stockFilter === 'all' ? deduped : WAR_STOCKS.filter(s => s.sector === stockFilter);
   const gainers = WAR_STOCKS.filter(s => s.change > 0);
   const losers  = WAR_STOCKS.filter(s => s.change < 0);
   const avgGain = gainers.reduce((a,s) => a + s.change, 0) / gainers.length;
@@ -2576,7 +2691,7 @@ function renderStocks() {
         <span class="tag ${up ? 'tag-up' : 'tag-dn'}" style="font-size:9px">${s.warImpact}</span>
       </div>
       <div class="sc-name">${s.name}</div>
-      <div class="sc-price" style="color:${up ? 'var(--grn)' : 'var(--red)'}">${fmtPrice(s.price)}</div>
+      <div class="sc-price" style="color:${up ? 'var(--grn)' : 'var(--red)'}">${fmtPrice(s.price)}${s.spotLabel ? `<span style="font-size:9px;color:var(--txt3);font-weight:400;margin-left:6px;font-family:var(--mono)">${s.spotLabel}</span>` : ''}</div>
       <div class="sc-chg ${up ? 'up' : 'dn'}">${up ? '▲' : '▼'} ${Math.abs(s.change).toFixed(2)}% from pre-war</div>
       <svg class="sc-spark" viewBox="0 0 100 26">${spark}</svg>
       <div class="sc-impact">${s.reason}</div>
@@ -2625,6 +2740,87 @@ function openStockModal(sym) {
   renderStockChart('1W');
 }
 function closeStockModal() { document.getElementById('stk-modal').classList.remove('open'); }
+
+// ── CRYPTO MODAL ──
+let currentCryptoSym = null;
+function openCryptoModal(sym) {
+  const c = CRYPTO_DATA.find(x => x.sym === sym);
+  if (!c) return;
+  currentCryptoSym = sym;
+  const up = c.change >= 0;
+  const warUp = ((c.price - c.base) / c.base * 100) >= 0;
+  const corrColor = c.corr > 0.4 ? 'var(--grn)' : c.corr > 0 ? 'var(--gld)' : 'var(--red)';
+  const corrPct = Math.min(Math.abs(c.corr) * 100, 100);
+  document.getElementById('cmd-sym').textContent = c.sym;
+  document.getElementById('cmd-sym').style.color = c.color || 'var(--txt)';
+  document.getElementById('cmd-name').textContent = c.name;
+  document.getElementById('cmd-price').textContent = fmtPrice(c.price);
+  const chgEl = document.getElementById('cmd-chg');
+  chgEl.textContent = (up ? '▲ +' : '▼ ') + Math.abs(c.change).toFixed(2) + '% 24h';
+  chgEl.style.color = up ? 'var(--grn)' : 'var(--red)';
+  document.getElementById('cmd-corrlabel').textContent = c.corrLabel;
+  document.getElementById('cmd-corrlabel').style.color = corrColor;
+  document.getElementById('cmd-corrbar').style.width = corrPct + '%';
+  document.getElementById('cmd-corrbar').style.background = corrColor;
+  document.getElementById('cmd-reason').textContent = c.reason;
+  document.getElementById('cmd-base').textContent = fmtPrice(c.base);
+  const wc = ((c.price - c.base) / c.base * 100);
+  const wcEl = document.getElementById('cmd-warchange');
+  wcEl.textContent = (wc >= 0 ? '+' : '') + wc.toFixed(2) + '%';
+  wcEl.style.color = wc >= 0 ? 'var(--grn)' : 'var(--red)';
+  document.getElementById('cmd-corr').textContent = (c.corr > 0 ? '+' : '') + c.corr.toFixed(2);
+  const h24 = document.getElementById('cmd-24h');
+  h24.textContent = (up ? '+' : '') + c.change.toFixed(2) + '%';
+  h24.style.color = up ? 'var(--grn)' : 'var(--red)';
+  document.getElementById('crypto-modal').classList.add('open');
+  setTimeout(() => renderCryptoChart(c), 60); // render after modal is visible
+}
+let currentCryptoChart = null;
+function renderCryptoChart(c) {
+  const canvas = document.getElementById('crypto-detail-canvas');
+  if (!canvas) return;
+  if (currentCryptoChart) { currentCryptoChart.destroy(); currentCryptoChart = null; }
+  // Build a 90-day GBM path from base → current price (realistic-looking)
+  const days = 90;
+  const up = c.price >= c.base;
+  // Drift tuned so the simulated path ends near current price
+  const totalDrift = Math.log(c.price / c.base) / days;
+  const vol = 0.035; // higher vol for crypto
+  const prices = gbm(c.base, totalDrift, vol, days);
+  // Force last point to current real price
+  prices[prices.length - 1] = c.price;
+  const color = up ? '#3ab860' : '#e03836';
+  const labels = prices.map((_, i) => i % 15 === 0 ? '-' + (days - i) + 'd' : '');
+  currentCryptoChart = new Chart(canvas, {
+    type: 'line',
+    data: { labels, datasets: [{ data: prices, borderColor: color, backgroundColor: color + '18', borderWidth: 1.5, fill: true, tension: 0.3, pointRadius: 0 }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { display: false },
+        y: { grid: { color: 'rgba(255,255,255,.06)' }, ticks: { color: '#666670', font: { family: 'IBM Plex Mono', size: 9 }, callback: v => v >= 1000 ? '$' + (v/1000).toFixed(1) + 'K' : '$' + v.toFixed(2) } }
+      },
+      animation: { duration: 300 }
+    }
+  });
+}
+function closeCryptoModal() {
+  document.getElementById('crypto-modal').classList.remove('open');
+  currentCryptoSym = null;
+  if (currentCryptoChart) { currentCryptoChart.destroy(); currentCryptoChart = null; }
+}
+function quickAskFromCryptoModal(mode) {
+  const c = currentCryptoSym ? CRYPTO_DATA.find(x => x.sym === currentCryptoSym) : null;
+  if (!c) return;
+  closeCryptoModal();
+  if (mode === 'hedge') {
+    quickAsk(c.sym + ' (' + c.name + ') as a war hedge: correlation ' + c.corrLabel + '. Current price ' + fmtPrice(c.price) + '. Give me a specific hedging strategy — position size, entry zones, and when to exit.');
+  } else {
+    quickAsk('Deep dive on ' + c.sym + ' (' + c.name + '): war correlation analysis, current price vs fair value, supply/demand dynamics, and 3-month price target with bull/bear scenarios.');
+  }
+}
+
 function setTF(tf, btn) {
   document.querySelectorAll('.stk-tf-btn').forEach(b => b.classList.remove('on'));
   btn.classList.add('on');
@@ -2700,7 +2896,7 @@ function cryptoCard(c, blur) {
   const up = c.change >= 0;
   const corrPct = Math.abs(c.corr) * 100;
   const corrColor = c.corr > 0.4 ? 'var(--grn)' : c.corr > 0 ? 'var(--gld)' : 'var(--red)';
-  return `<div class="cc" style="${blur ? 'filter:blur(4px);pointer-events:none' : ''}" data-sym="${c.sym}" onclick="quickAskCrypto(this)">
+  return `<div class="cc" style="${blur ? 'filter:blur(4px);pointer-events:none' : 'cursor:pointer'}" data-sym="${c.sym}" onclick="openCryptoModal('${c.sym}')">
     <div class="cc-top">
       <div><div class="cc-sym" style="color:${c.color}">${c.sym}</div><div class="cc-name">${c.name}</div></div>
       <div style="text-align:right"><div class="cc-price">${fmtPrice(c.price)}</div><div class="cc-chg ${up?'up':'dn'}">${up?'▲ +':'▼ '}${Math.abs(c.change).toFixed(2)}%</div></div>
@@ -3095,6 +3291,27 @@ function renderHistory() {
         </div>
       </div>`).join('')}
     </div>`).join('');
+  // Show CSV button for Command plan
+  const csvWrap = document.getElementById('hist-csv-wrap');
+  if (csvWrap) csvWrap.style.display = PLAN === 'c' ? 'flex' : 'none';
+}
+
+function downloadHistoryCSV() {
+  if (!historyEvents.length) { toast('No events to export yet.'); return; }
+  const rows = [['Date','Time','Category','Location','Event','Tags']];
+  historyEvents.forEach(e => {
+    const d = e.time ? e.time.toLocaleDateString('en-US') : '';
+    const t = e.time ? e.time.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'}) : '';
+    const tags = (e.tags||[]).map(x=>x.t).join(' | ');
+    const txt = (e.txt||'').replace(/"/g,'""');
+    rows.push([d, t, e.catLabel||'', e.loc||'', `"${txt}"`, tags]);
+  });
+  const csv = rows.map(r=>r.join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = 'orreryx-crisis-history-' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+  toast('✓ CSV downloaded — ' + historyEvents.length + ' events');
 }
 
 // ── ACCOUNT PAGE ──
@@ -3121,9 +3338,9 @@ function renderAccount(email) {
   if (as) as.textContent = 'Member since ' + sinceTs.toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
 
   const feats = {
-    s: ['Full crisis intel feed', 'AI Intel Console — unlimited', '18 war stocks + 18 indices', 'Global screener + calculators', 'IPO tracker, brokers, learning hub'],
-    a: ['Everything in Starter', 'Live world map — 150+ cities', '● Live exchange data — 36 symbols', '7-day crisis history archive'],
-    c: ['Everything in Analyst', 'Unlimited live data', 'Live crypto — 12 assets', '30-day history archive', 'CSV export + priority support']
+    s: ['Full crisis intel feed', 'AI Intel Console — unlimited queries', 'Real-time war stocks + global indices', 'Global screener + financial calculators', 'IPO tracker, brokers, learning hub'],
+    a: ['Everything in Starter', 'Live 3D world map — 150+ cities', 'Real-time prices — 22 symbols, 15s refresh', '7-day crisis history archive'],
+    c: ['Everything in Analyst', 'Live crypto — 12 assets with war scores', '30-day crisis history archive', 'Download history as CSV', 'Priority support']
   };
   const af = document.getElementById('acc-features');
   if (af) af.innerHTML = (feats[PLAN] || feats.s).map(f => `<div style="display:flex;align-items:center;gap:7px;font:400 11.5px/1 var(--sans);color:var(--txt2)"><span style="color:var(--grn);font-size:10px">✓</span>${f}</div>`).join('');
@@ -3527,11 +3744,28 @@ function startQuotesPoll(syms){
   clearInterval(_qi);
   async function p(){
     try{
-      const r=await fetch('/api/quotes?symbols='+encodeURIComponent(syms.join(','))+'&t='+(SESSION_TOKEN||''));
+      const r=await fetch('/api/quotes?symbols='+encodeURIComponent(syms.join(',')));
       if(!r.ok)return;
-      const data=await r.json();
-      const quotes=Array.isArray(data)?data:Object.values(data);
-      quotes.forEach(q=>{if(q&&q.symbol&&(q.close||q.price))stockPrices[q.symbol]=parseFloat(q.close||q.price);});
+      const quotes=await r.json();
+      if(!Array.isArray(quotes)||!quotes.length)return;
+      let stockUpdated=false, cryptoUpdated=false;
+      quotes.forEach(q=>{
+        if(!q||!q.symbol||!q.price)return;
+        const price=parseFloat(q.price);
+        const change=parseFloat(q.change||0);
+        if(!price||isNaN(price))return;
+        stockPrices[q.symbol]=price;
+        // Update ALL WAR_STOCKS entries with this symbol (may have sfe + met duplicates)
+        WAR_STOCKS.filter(s=>s.sym===q.symbol).forEach(ws=>{ws.price=price;ws.change=((price-ws.base)/ws.base)*100;stockUpdated=true;});
+        // Update CRYPTO_DATA
+        const cd=CRYPTO_DATA.find(c=>c.sym===q.symbol);
+        if(cd){cd.price=price;cd.change=change;cryptoUpdated=true;}
+      });
+      // Re-render visible pages with real data
+      if(stockUpdated&&currentPage==='stocks')renderStocks();
+      if(cryptoUpdated&&currentPage==='crypto')renderCrypto();
+      if(currentPage==='markets')renderMarkets();
+      updateTopbarPrices();
     }catch(e){}
   }
   p();_qi=setInterval(p,15000);
@@ -3845,7 +4079,7 @@ function showFeedModal() {
 
     // Populate live stats
     const detail = document.getElementById('feed-status-detail');
-    if (detail) detail.textContent = FEED_KEY === '__proxy__' ? 'Polling via Orrery proxy · 15s refresh' : 'Twelve Data direct · ' + (WS ? 'WebSocket' : 'REST poll');
+    if (detail) detail.textContent = 'Real-time prices · Yahoo Finance + CoinGecko · 15s refresh';
 
     const grid = document.getElementById('feed-stats-grid');
     if (grid) {
@@ -3916,7 +4150,7 @@ const LEGAL_CONTENT = {
 <h4 style="color:var(--txt);margin:14px 0 7px">2. Not Financial Advice</h4>
 <p>All content on Orrery — including AI-generated briefings, price data, investment analysis, market signals, and AI predictions — is for informational purposes only and does not constitute regulated financial advice, investment advice, or a solicitation to buy or sell any financial instrument. You should consult a licensed financial adviser before making any investment decisions. Past performance does not guarantee future results.</p>
 <h4 style="color:var(--txt);margin:14px 0 7px">3. Data Accuracy</h4>
-<p>Market data on the Starter plan uses GBM simulation calibrated to realistic market behavior and is not live exchange data. Analyst and Command plans connect to Twelve Data for live prices. We do not warrant the accuracy, completeness or timeliness of any data. Do not use Orrery data as the sole basis for trading decisions.</p>
+<p>Market data is sourced from Yahoo Finance and CoinGecko and refreshes every 15 seconds. Intraday micro-movements shown between refreshes use GBM simulation for visual continuity. We do not warrant the accuracy, completeness or timeliness of any data. Do not use Orrery data as the sole basis for trading decisions.</p>
 <h4 style="color:var(--txt);margin:14px 0 7px">4. Subscriptions</h4>
 <p>Subscriptions are billed monthly. Your subscription renews automatically until cancelled. You may cancel at any time through your Account page. Access continues until the end of the current billing period. We reserve the right to modify pricing with 30 days notice.</p>
 <h4 style="color:var(--txt);margin:14px 0 7px">5. Acceptable Use</h4>
@@ -3937,7 +4171,7 @@ const LEGAL_CONTENT = {
 <h4 style="color:var(--txt);margin:14px 0 7px">How We Use Your Data</h4>
 <p>Your email is used solely for: account sign-in via magic links, transactional confirmations, and critical service announcements. We do not send marketing emails. We never sell, rent, or share your personal data with advertisers.</p>
 <h4 style="color:var(--txt);margin:14px 0 7px">Third-Party Processors</h4>
-<p>Payment processing: PayPal (we never see or store card details). AI processing: Anthropic API (queries are stateless — not stored beyond the request). Live market data: Twelve Data. Email delivery: Resend. Session storage: Redis (encrypted at rest). Deployment: Vercel (SOC 2 compliant).</p>
+<p>Payment processing: PayPal (we never see or store card details). AI processing: Anthropic API (queries are stateless — not stored beyond the request). Live market data: Yahoo Finance & CoinGecko. Email delivery: Resend. Session storage: Redis (encrypted at rest). Deployment: Vercel (SOC 2 compliant).</p>
 <h4 style="color:var(--txt);margin:14px 0 7px">Data Storage & Security</h4>
 <p>Session data is stored client-side in your browser's localStorage. Payment records are stored in encrypted Redis with 400-day TTL. All AI analysis is processed server-side — no sensitive keys are ever stored or exposed client-side. All connections use TLS 1.3.</p>
 <h4 style="color:var(--txt);margin:14px 0 7px">Your Rights (GDPR / Privacy Legislation)</h4>
@@ -4096,7 +4330,7 @@ PLATFORM:
 PLANS:
 - Starter ($0.99/mo): Crisis feed, war stocks, indices, screener, IPO tracker, calculators
 - Analyst ($14.99/mo): + AI Intel Console, live exchange data, 3D world map, 7-day history
-- Command ($34.99/mo): + Unlimited live data, crypto war scores, 30-day history, CSV export
+- Command ($34.99/mo): + Unlimited live data, live crypto (12 assets), 30-day history archive, download history as CSV
 
 SUPPORT:
 - Email: orrerysupport@gmail.com — 24h response, Mon–Fri 9am–6pm IST
@@ -4390,10 +4624,8 @@ const vidPopup = (() => {
     // Skip if mouse was already inside this card (moving between children)
     if (e.relatedTarget && card.contains(e.relatedTarget)) return;
     clearTimeout(hideTimer);
-    const txtEl = card.querySelector('.ev-txt');
-    const locEl = card.querySelector('.ev-loc');
-    const q = txtEl ? (txtEl.textContent || '').trim().substring(0, 100)
-                    : (locEl ? (locEl.textContent || '').replace('\uD83D\uDCCD','').trim() : '');
+    // Use pre-built real-world query (location + category) stored on the card
+    const q = card.getAttribute('data-vpq') || '';
     if (q) scheduleShow(q, 320);
   });
 

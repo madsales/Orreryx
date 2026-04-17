@@ -7,8 +7,11 @@ Allow: /china-taiwan
 Allow: /what-is-geopolitics
 Allow: /geopolitical-risk
 Allow: /demo
-Allow: /login
-Allow: /welcome
+Allow: /ww3-news
+Allow: /ukraine-war-map
+Allow: /war-news
+Disallow: /login
+Disallow: /welcome
 Disallow: /app
 Disallow: /admin
 Disallow: /api/
