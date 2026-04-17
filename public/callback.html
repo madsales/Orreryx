@@ -146,11 +146,49 @@ function getParam(name) {
   return '';
 }
 
-var orderId       = getParam('orderId') || getParam('order_id');
-var paypalOrderId = getParam('token');   // PayPal sends their order ID as 'token'
-var retries       = 0;
-var MAX_RETRY     = 6;
-var pollTimer     = null;
+var orderId        = getParam('orderId') || getParam('order_id');
+var paypalOrderId  = getParam('token');   // one-time flow: PayPal sends order ID as 'token'
+var subscriptionId = getParam('subscription_id') || getParam('subscriptionId');
+var mode           = getParam('mode');    // 'sub' = subscription flow
+var emailParam     = getParam('email');
+var planParam      = getParam('plan') || 's';
+var retries        = 0;
+var MAX_RETRY      = 6;
+var pollTimer      = null;
+
+// ── SUBSCRIPTION ACTIVATE ──
+async function activateSubscription() {
+  setStep(1, 'done');
+  setStep(2, 'active');
+  setProgress(35);
+
+  var r = await fetch('/api/paypal?action=activate', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ subscription_id: subscriptionId, email: emailParam, plan: planParam })
+  });
+  var data = await r.json().catch(function() { return {}; });
+
+  if (!r.ok || !data.ok) {
+    setStep(2, 'error');
+    showFailed(data.error || 'Subscription activation failed. Please contact support.');
+    return;
+  }
+
+  setStep(2, 'done');
+  setStep(3, 'active');
+  setProgress(70);
+
+  // Build session compatible with existing app code
+  var session = {
+    plan:    data.plan,
+    email:   data.email,
+    token:   subscriptionId,
+    expires: Date.now() + 365 * 24 * 60 * 60 * 1000,
+    sub_id:  subscriptionId,
+  };
+  activateSession(session);
+}
 
 // ── PAYPAL CAPTURE ──
 async function capturePayPal() {
@@ -193,7 +231,17 @@ async function startVerification() {
   var sess = getExistingSession();
   if (sess) { activateSession(sess); return; }
 
-  // ── PayPal flow: 'token' param is the PayPal order ID ──
+  // ── Subscription flow ──
+  if (mode === 'sub' && subscriptionId) {
+    try {
+      await activateSubscription();
+    } catch (e) {
+      showError(e.message, false);
+    }
+    return;
+  }
+
+  // ── One-time PayPal flow: 'token' param is the PayPal order ID ──
   if (paypalOrderId) {
     try {
       await capturePayPal();
