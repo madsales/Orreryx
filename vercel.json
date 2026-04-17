@@ -15,6 +15,8 @@
     { "src": "/api/verify-magic(.*)", "dest": "/api/verify-magic.js" },
     { "src": "/api/track",           "dest": "/api/track.js" },
     { "src": "/api/admin(.*)",       "dest": "/api/admin.js" },
+    { "src": "/gold-price",            "dest": "/gold-price.html" },
+    { "src": "/silver-price",          "dest": "/silver-price.html" },
     { "src": "/ww3-news",             "dest": "/ww3-news.html" },
     { "src": "/ukraine-war-map",      "dest": "/ukraine-war-map.html" },
     { "src": "/war-news",             "dest": "/war-news.html" },

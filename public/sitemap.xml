@@ -78,4 +78,18 @@
     <priority>0.95</priority>
   </url>
 
+  <url>
+    <loc>https://www.orreryx.io/gold-price</loc>
+    <lastmod>2026-04-17</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.98</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/silver-price</loc>
+    <lastmod>2026-04-17</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.97</priority>
+  </url>
+
 </urlset>

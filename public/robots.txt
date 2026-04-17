@@ -7,6 +7,8 @@ Allow: /china-taiwan
 Allow: /what-is-geopolitics
 Allow: /geopolitical-risk
 Allow: /demo
+Allow: /gold-price
+Allow: /silver-price
 Allow: /ww3-news
 Allow: /ukraine-war-map
 Allow: /war-news
@@ -27,6 +29,11 @@ Allow: /china-taiwan
 Allow: /what-is-geopolitics
 Allow: /geopolitical-risk
 Allow: /demo
+Allow: /gold-price
+Allow: /silver-price
+Allow: /ww3-news
+Allow: /ukraine-war-map
+Allow: /war-news
 Disallow: /app
 Disallow: /admin
 Disallow: /api/
