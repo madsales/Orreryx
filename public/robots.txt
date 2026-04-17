@@ -12,6 +12,8 @@ Allow: /silver-price
 Allow: /ww3-news
 Allow: /ukraine-war-map
 Allow: /war-news
+Allow: /doomsday-clock
+Allow: /global-conflicts-2025
 Disallow: /login
 Disallow: /welcome
 Disallow: /app
@@ -34,6 +36,8 @@ Allow: /silver-price
 Allow: /ww3-news
 Allow: /ukraine-war-map
 Allow: /war-news
+Allow: /doomsday-clock
+Allow: /global-conflicts-2025
 Disallow: /app
 Disallow: /admin
 Disallow: /api/

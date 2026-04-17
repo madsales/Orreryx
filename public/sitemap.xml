@@ -92,4 +92,18 @@
     <priority>0.97</priority>
   </url>
 
+  <url>
+    <loc>https://www.orreryx.io/doomsday-clock</loc>
+    <lastmod>2026-04-17</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/global-conflicts-2025</loc>
+    <lastmod>2026-04-17</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.88</priority>
+  </url>
+
 </urlset>
