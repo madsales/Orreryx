@@ -501,12 +501,9 @@ async function submitPayment() {
   try { sessionStorage.setItem('orrery_pending_email', email); } catch(e) {}
 
   try {
-    const r = await fetch('/api/paypal?action=create', {
+    const r = await fetch('/api/paypal?action=subscribe', {
       method:'POST', headers:{'Content-Type':'application/json'},
-      body: JSON.stringify({ plan, email, phone, orderId,
-        firstName: parts[0]||name,
-        lastName:  parts.slice(1).join(' ')||parts[0]||name
-      })
+      body: JSON.stringify({ plan, email })
     });
 
     // Read JSON body first regardless of status — error body contains the real message
@@ -518,15 +515,15 @@ async function submitPayment() {
       return;
     }
 
-    if (d.redirect_url) {
+    if (d.approval_url) {
       let safe = false;
       try {
-        const u = new URL(d.redirect_url);
+        const u = new URL(d.approval_url);
         safe = ['paypal.com'].some(h=>u.hostname===h||u.hostname.endsWith('.'+h));
       } catch(e) {}
       if (!safe) { showErr('Payment gateway returned an invalid redirect. Please try again.'); btn.disabled=false; btn.textContent=getBtnText(plan,currentCurrency); return; }
       btn.innerHTML = '<span class="spinner"></span>REDIRECTING…';
-      window.location.href = d.redirect_url;
+      window.location.href = d.approval_url;
     } else {
       showErr(d.error||'Payment gateway error. Please try again.');
       btn.disabled=false; btn.textContent=getBtnText(plan,currentCurrency);
