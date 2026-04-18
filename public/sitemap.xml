@@ -101,9 +101,65 @@
 
   <url>
     <loc>https://www.orreryx.io/global-conflicts-2025</loc>
-    <lastmod>2026-04-17</lastmod>
+    <lastmod>2026-04-18</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.88</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/israel-gaza</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.95</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/iran-nuclear</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.92</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/russia-news</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.93</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/north-korea</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/nato-news</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.90</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/oil-price</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>hourly</changefreq>
+    <priority>0.97</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/stock-market-crash</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.91</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/middle-east-war</loc>
+    <lastmod>2026-04-18</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.92</priority>
   </url>
 
 </urlset>
