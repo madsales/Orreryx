@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <!-- Google Ads Tag -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18101684972"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'AW-18101684972');
+  gtag("js", new Date());
+  gtag("config", "AW-18101684972");
 </script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 <title>Doomsday Clock 2026 — How Close Are We to World War 3? | Orreryx</title>
 <meta name="description" content="Doomsday Clock 2026: track how close the world is to WW3 with live geopolitical risk data. Ukraine war, nuclear posture, Middle East escalation and market impact — updated daily.">

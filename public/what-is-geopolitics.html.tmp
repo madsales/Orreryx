@@ -1,0 +1,294 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google Ads Tag -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18101684972"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag("js", new Date());
+  gtag("config", "AW-18101684972");
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<meta name="author" content="Orreryx">
+<meta name="publisher" content="Orreryx">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>What Is Geopolitics? Definition, Meaning & Geopolitical Risk Explained | Orreryx</title>
+<meta name="description" content="What is geopolitics? Simple definition and meaning of geopolitical terms. Learn what geopolitical risk means, how geopolitics affects markets, and how to track global geopolitical events with live intelligence tools.">
+<meta name="keywords" content="what is geopolitics, what does geopolitical mean, geopolitics definition, geopolitical meaning, what is geopolitical risk, what does geopolitics mean, geopolitical risk definition, geopolitics explained, what is a geopolitical analyst, how geopolitics affects markets">
+<link rel="canonical" href="https://www.orreryx.io/what-is-geopolitics">
+
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="Orreryx">
+<meta property="og:title" content="What Is Geopolitics? Definition & Meaning Explained | Orreryx">
+<meta property="og:description" content="Clear definition of geopolitics and geopolitical risk. Learn what geopolitics means, how it affects markets, and how to track global events with live intelligence tools.">
+<meta property="og:url" content="https://www.orreryx.io/what-is-geopolitics">
+<meta property="og:image" content="https://www.orreryx.io/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="What Is Geopolitics? Definition & Geopolitical Risk Explained | Orreryx">
+<meta name="twitter:description" content="Simple definition of geopolitics and geopolitical risk. How geopolitics affects global markets explained clearly.">
+<meta name="twitter:image" content="https://www.orreryx.io/og-image.svg">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "DefinedTerm",
+      "name": "Geopolitics",
+      "description": "Geopolitics is the study of how geography, power, resources and international relations shape world events and political decisions. It examines how physical location, natural resources, population, and military power influence a country's foreign policy and global influence.",
+      "url": "https://www.orreryx.io/what-is-geopolitics"
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is geopolitics?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Geopolitics is the study of how geography, power, natural resources and international relations shape world events and political decisions. The term combines 'geo' (earth/geography) and 'politics'. Geopolitics examines why countries behave the way they do — how location, borders, natural resources, military strength and alliances determine a nation's foreign policy and global influence. Classic geopolitical theory (Halford Mackinder, Nicholas Spykman) argued that geography is destiny: whoever controls key landmasses and chokepoints controls the world."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does geopolitical mean?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Geopolitical means 'relating to geopolitics' — i.e., relating to the interaction of geography, power and international relations. When people say 'geopolitical risk', they mean risk arising from wars, conflicts, sanctions, elections, coups or diplomatic crises between countries. When analysts say 'geopolitical tensions', they mean rising conflict risk between states. The word is used in finance, news and policy to describe international political developments that could affect economies, markets or security."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is geopolitical risk?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Geopolitical risk is the risk that political events — wars, sanctions, coups, elections, trade wars, or diplomatic crises — will negatively affect investments, businesses or economies. Examples: the Russia-Ukraine war caused European gas prices to spike 400%; US-China trade tensions disrupted global supply chains; Middle East conflicts cause oil price volatility. Investors, companies and governments monitor geopolitical risk to protect assets and plan strategy. Orreryx provides a real-time geopolitical risk feed with market impact tracking."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How does geopolitics affect markets?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Geopolitics moves markets in direct, predictable patterns: Wars drive up defence stocks (Lockheed Martin, Raytheon), oil prices and gold while crashing airline and tourism stocks. Sanctions disrupt trade and currencies. Elections shift emerging market equities. Trade wars move manufacturing stocks. Supply chain disruptions affect technology and consumer goods. Geopolitical events are often the biggest single-day market movers, yet most investors have no early warning system. Orreryx maps geopolitical events to their market impact in real time."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What does a geopolitical analyst do?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A geopolitical analyst monitors and interprets international political events — wars, elections, coups, sanctions, diplomatic negotiations — and assesses their implications for business, investment, security and policy. They work for investment banks, hedge funds, government agencies, think tanks and corporations. Key skills include understanding international relations, economics, military strategy and regional expertise. Tools used include news feeds, OSINT (open source intelligence) platforms like Orreryx, satellite imagery and diplomatic databases."
+          }
+        }
+      ]
+    }
+  ]
+}
+</script>
+
+<link rel="icon" type="image/svg+xml" href="/icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07070a;--bg2:#0d0d12;--bg3:#12121a;--brd:rgba(255,255,255,.06);--brd2:rgba(255,255,255,.1);
+  --txt:#f2f2ee;--txt2:#a8a8a2;--txt3:#585858;
+  --red:#e03836;--red2:rgba(224,56,54,.12);--gold:#d4a843;--grn:#3ab860;
+  --sans:'Inter',system-ui,sans-serif;--mono:'IBM Plex Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);line-height:1.6}
+a{color:var(--red);text-decoration:none}a:hover{text-decoration:underline}
+::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:#2a2a3a;border-radius:2px}
+nav{position:fixed;top:0;left:0;right:0;z-index:200;height:56px;padding:0 32px;display:flex;align-items:center;gap:16px;background:rgba(7,7,10,.85);backdrop-filter:blur(20px);border-bottom:1px solid var(--brd)}
+.nav-logo{font-family:var(--mono);font-size:14px;font-weight:700;color:var(--txt);text-decoration:none;letter-spacing:.05em}
+.nav-spacer{flex:1}
+.nav-cta{padding:8px 18px;font-size:12px;font-weight:600;color:#fff;text-decoration:none;border-radius:5px;background:var(--red)}
+.nav-cta:hover{background:#c42e2c;text-decoration:none}
+.nav-link{font-size:12px;color:var(--txt3);text-decoration:none;margin-right:8px}
+.nav-link:hover{color:var(--txt2);text-decoration:none}
+.page{max-width:800px;margin:0 auto;padding:100px 24px 80px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--red2);border:1px solid rgba(224,56,54,.2);border-radius:4px;padding:5px 12px;font-family:var(--mono);font-size:9px;font-weight:700;color:var(--red);letter-spacing:.14em;text-transform:uppercase;margin-bottom:24px}
+h1{font-size:clamp(28px,4vw,52px);font-weight:800;line-height:1.1;letter-spacing:-.03em;margin-bottom:20px}
+h1 em{font-style:normal;color:var(--red)}
+.lead{font-size:16px;color:var(--txt2);max-width:640px;line-height:1.75;margin-bottom:36px}
+.definition-box{background:var(--bg2);border:1px solid var(--brd2);border-left:3px solid var(--red);border-radius:8px;padding:24px 28px;margin-bottom:40px}
+.def-label{font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--red);margin-bottom:10px}
+.def-text{font-size:16px;color:var(--txt);line-height:1.75;font-weight:400}
+.section{margin-bottom:48px}
+h2{font-size:22px;font-weight:700;letter-spacing:-.02em;margin-bottom:10px;color:var(--txt)}
+.body-text{font-size:14px;color:var(--txt2);line-height:1.8;max-width:680px;margin-bottom:16px}
+.example-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:12px;margin-bottom:16px}
+.example-card{background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:16px 18px}
+.example-event{font-family:var(--mono);font-size:8px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-bottom:6px}
+.example-card h3{font-size:13px;font-weight:600;margin-bottom:4px}
+.example-card p{font-size:12px;color:var(--txt2);line-height:1.5}
+.cta-row{display:flex;gap:12px;flex-wrap:wrap;margin:32px 0}
+.btn-p{display:inline-flex;align-items:center;gap:8px;padding:13px 24px;border-radius:6px;font-size:13px;font-weight:600;text-decoration:none;background:var(--red);color:#fff}
+.btn-p:hover{background:#c42e2c;text-decoration:none}
+.btn-s{display:inline-flex;align-items:center;padding:13px 20px;border-radius:6px;font-size:13px;font-weight:500;text-decoration:none;color:var(--txt2);border:1px solid var(--brd2)}
+.btn-s:hover{color:var(--txt);text-decoration:none}
+.faq-list{display:flex;flex-direction:column;gap:0;border:1px solid var(--brd);border-radius:8px;overflow:hidden}
+.faq-item{padding:20px 24px;border-bottom:1px solid var(--brd)}
+.faq-item:last-child{border-bottom:none}
+.faq-q{font-size:14px;font-weight:600;color:var(--txt);margin-bottom:8px}
+.faq-a{font-size:13px;color:var(--txt2);line-height:1.7}
+.related-links{display:flex;flex-direction:column;gap:8px}
+.related-link{display:flex;align-items:center;gap:12px;padding:14px 18px;background:var(--bg2);border:1px solid var(--brd);border-radius:8px;text-decoration:none;color:var(--txt2);font-size:13px}
+.related-link:hover{border-color:var(--brd2);color:var(--txt);text-decoration:none}
+.related-link-arrow{margin-left:auto;color:var(--red)}
+.breadcrumb{font-size:12px;color:var(--txt3);margin-bottom:16px}
+.breadcrumb a{color:var(--txt3)}.breadcrumb a:hover{color:var(--txt2)}
+footer{border-top:1px solid var(--brd);padding:32px 24px;text-align:center;font-size:12px;color:var(--txt3)}
+footer a{color:var(--txt3)}footer a:hover{color:var(--txt2)}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">ORRERYX</a>
+  <div class="nav-spacer"></div>
+  <a href="/geopolitics-news" class="nav-link">News Today</a>
+  <a href="/ukraine-war" class="nav-link">Ukraine</a>
+  <a href="/israel-gaza" class="nav-link">Gaza</a>
+  <a href="/login?plan=f" class="nav-cta">Free Trial</a>
+</nav>
+
+<main class="page">
+  <div class="breadcrumb"><a href="/">Orreryx</a> / <a href="/geopolitics-news">Geopolitics News</a> / What Is Geopolitics</div>
+  <div class="eyebrow">Definition & Meaning</div>
+  <h1>What Is <em>Geopolitics?</em><br>Definition, Meaning &<br>Geopolitical Risk Explained</h1>
+  <p class="lead">A clear, simple explanation of what geopolitics means, what geopolitical risk is, and how global political events move markets — with a live real-time intelligence platform to track it all.</p>
+
+  <div class="definition-box">
+    <div class="def-label">Definition — Geopolitics</div>
+    <div class="def-text">Geopolitics is the study of how <strong>geography, power, resources and international relations</strong> shape world events and political decisions. It examines why countries behave as they do — how borders, natural resources, military strength and alliances drive foreign policy and global influence.</div>
+  </div>
+
+  <section class="section">
+    <h2>What Does Geopolitical Mean?</h2>
+    <p class="body-text">The word <strong>geopolitical</strong> simply means "relating to geopolitics." When journalists and analysts use it, they usually mean one of three things:</p>
+    <p class="body-text"><strong>1. Geopolitical events</strong> — Wars, coups, elections, sanctions, peace deals, military exercises. Events caused by or between governments that affect international relations.</p>
+    <p class="body-text"><strong>2. Geopolitical risk</strong> — The risk that political events between countries will disrupt economies, investments or supply chains. A war that cuts off oil supply is a geopolitical risk. Trade sanctions are a geopolitical risk.</p>
+    <p class="body-text"><strong>3. Geopolitical tensions</strong> — Rising conflict risk between states, even before actual hostilities. China-Taiwan tensions, Russia-NATO tensions, and US-Iran tensions are examples of ongoing geopolitical tensions tracked by analysts worldwide.</p>
+  </section>
+
+  <section class="section">
+    <h2>What Is Geopolitical Risk?</h2>
+    <p class="body-text">Geopolitical risk is the danger that international political events will negatively affect your investment, business or economy. Here are real examples of geopolitical risk and their market impact:</p>
+    <div class="example-grid">
+      <div class="example-card">
+        <div class="example-event">War</div>
+        <h3>Russia-Ukraine 2022</h3>
+        <p>European gas prices rose 400%. Global wheat prices spiked 70%. Defence stocks surged worldwide. Energy stocks outperformed all sectors.</p>
+      </div>
+      <div class="example-card">
+        <div class="example-event">Sanctions</div>
+        <h3>Russia SWIFT Removal</h3>
+        <p>Russian ruble collapsed 40% in days. Commodity exports disrupted. European companies lost billions in stranded Russian assets.</p>
+      </div>
+      <div class="example-card">
+        <div class="example-event">Trade War</div>
+        <h3>US-China Tariffs</h3>
+        <p>Global supply chains reorganised. Manufacturing shifted from China to Vietnam, India and Mexico. Tech stocks volatile for years.</p>
+      </div>
+      <div class="example-card">
+        <div class="example-event">Conflict</div>
+        <h3>Red Sea Houthi Attacks</h3>
+        <p>Global shipping rerouted around Africa. Freight rates tripled. European inflation rose as goods took 14 extra days to arrive.</p>
+      </div>
+      <div class="example-card">
+        <div class="example-event">Coup</div>
+        <h3>Sahel Military Coups</h3>
+        <p>Gold and uranium mining concessions cancelled. French military expelled from Niger, Mali, Burkina Faso. Supply chain disruptions for European nuclear power.</p>
+      </div>
+      <div class="example-card">
+        <div class="example-event">Election</div>
+        <h3>Emerging Market Elections</h3>
+        <p>Elections in Brazil, Turkey, Mexico and Argentina caused currency swings of 10-30% as investors priced in policy uncertainty and fiscal risk.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>How Geopolitics Affects Markets</h2>
+    <p class="body-text">Geopolitical events are often the biggest single-day market movers — bigger than earnings reports, economic data or central bank decisions. The pattern is predictable:</p>
+    <p class="body-text"><strong>Wars and conflicts:</strong> Defence stocks rise (Lockheed Martin, Raytheon, BAE Systems). Oil prices spike if the conflict is near major producers. Gold rises as a safe haven. Airlines, tourism and shipping stocks fall.</p>
+    <p class="body-text"><strong>Sanctions:</strong> The sanctioned country's currency collapses. Commodity prices spike if the country is a major exporter. Companies with exposure to the sanctioned country see their stock fall.</p>
+    <p class="body-text"><strong>Elections:</strong> Emerging market currencies are most affected. A left-wing election win often causes capital flight and currency weakness. Trade policy uncertainty moves multinational stocks.</p>
+    <p class="body-text">Orreryx tracks every geopolitical event in real time and maps its exact market impact — so you can act before the market fully prices in the news.</p>
+    <div class="cta-row">
+      <a href="/login?plan=f" class="btn-p">Track Geopolitics Live — Free Trial</a>
+      <a href="/geopolitics-news" class="btn-s">Today's Geopolitics News</a>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <div class="faq-q">What is geopolitics?</div>
+        <div class="faq-a">Geopolitics is the study of how geography, power and international relations shape world events. It examines how a country's location, resources, military strength and alliances determine its behaviour in global affairs. The term was coined in the late 19th century and is now central to international relations, strategic studies and investment analysis.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">What does geopolitical mean?</div>
+        <div class="faq-a">Geopolitical means "relating to geopolitics" — relating to the interaction of geography, power and international relations. A geopolitical event is any event involving governments or international relations: a war, election, coup, sanction, summit or territorial dispute. Geopolitical risk is the financial and business risk arising from such events.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">What is geopolitical risk?</div>
+        <div class="faq-a">Geopolitical risk is the risk that political events between countries — wars, sanctions, coups, trade disputes, elections — will negatively impact investments, businesses or economies. It is distinct from financial risk (market volatility) or credit risk (default). Geopolitical risk is unpredictable in timing but often predictable in effect. Orreryx provides a real-time geopolitical risk feed with market correlation tracking.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">What does a geopolitical analyst do?</div>
+        <div class="faq-a">A geopolitical analyst monitors international political events and assesses their implications for business, investment, security and policy. They work for investment banks, hedge funds, government agencies, think tanks and corporations. They use tools like Orreryx for real-time event monitoring, plus satellite imagery, diplomatic databases and OSINT platforms.</div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">How will geopolitical tensions affect markets in 2025?</div>
+        <div class="faq-a">In 2025, key geopolitical tensions affecting markets include: US-China trade war (tariffs impacting tech and manufacturing), Russia-Ukraine war (energy prices, defence spending), Middle East instability (oil prices, shipping), and Taiwan Strait tensions (semiconductor supply risk). Orreryx tracks all of these in real time with direct market impact mapping.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <h2>Track Live Geopolitics by Conflict</h2>
+    <div class="related-links">
+      <a href="/geopolitics-news" class="related-link">
+        <span>Geopolitics News Today — All Conflicts Live</span>
+        <span class="related-link-arrow">→</span>
+      </a>
+      <a href="/ukraine-war" class="related-link">
+        <span>Ukraine War News Today — Live Updates & Map</span>
+        <span class="related-link-arrow">→</span>
+      </a>
+      <a href="/israel-gaza" class="related-link">
+        <span>Gaza War Map & Live News — Israel-Hamas 2025</span>
+        <span class="related-link-arrow">→</span>
+      </a>
+      <a href="/china-taiwan" class="related-link">
+        <span>China-Taiwan Conflict — Is Taiwan Part of China?</span>
+        <span class="related-link-arrow">→</span>
+      </a>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <p>
+    <a href="/">Orreryx</a> &nbsp;|&nbsp;
+    <a href="/geopolitics-news">Geopolitics News</a> &nbsp;|&nbsp;
+    <a href="/ukraine-war">Ukraine War</a> &nbsp;|&nbsp;
+    <a href="/israel-gaza">Israel-Gaza</a> &nbsp;|&nbsp;
+    <a href="/china-taiwan">China-Taiwan</a> &nbsp;|&nbsp;
+    <a href="/geopolitical-risk">Geopolitical Risk</a> &nbsp;|&nbsp;
+    <a href="/what-is-geopolitics">What Is Geopolitics</a>
+  </p>
+  <p style="margin-top:8px">Geopolitics definition and live intelligence platform. &copy; 2025 Orreryx.</p>
+</footer>
+</body>
+</html>

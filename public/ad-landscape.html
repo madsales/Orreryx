@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1200px; height: 628px; overflow: hidden;
+    background: #07070a;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: #e8e8e2;
+  }
+
+  .ad {
+    width: 1200px; height: 628px;
+    background: #07070a;
+    position: relative;
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+  }
+
+  /* Background grid */
+  .grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(224,56,54,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(224,56,54,.04) 1px, transparent 1px);
+    background-size: 50px 50px;
+  }
+
+  /* Top accent bar */
+  .top-bar {
+    position: absolute; top: 0; left: 0; right: 0; height: 5px;
+    background: linear-gradient(90deg, #e03836, #d4a843, #e03836);
+  }
+
+  /* Left glow */
+  .glow-left {
+    position: absolute;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(224,56,54,.15) 0%, transparent 70%);
+    top: -150px; left: -100px;
+  }
+  .glow-right {
+    position: absolute;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(212,168,67,.1) 0%, transparent 70%);
+    bottom: -100px; right: 200px;
+  }
+
+  /* LEFT PANEL — Text */
+  .left {
+    flex: 0 0 600px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 56px 56px 56px 64px;
+    position: relative; z-index: 2;
+  }
+
+  .logo {
+    font-size: 22px; font-weight: 800; letter-spacing: -0.3px;
+    margin-bottom: 24px;
+  }
+  .logo span { color: #e03836; }
+
+  .badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(224,56,54,.12);
+    border: 1px solid rgba(224,56,54,.3);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 12px; font-weight: 700; color: #e03836;
+    letter-spacing: 1.2px; text-transform: uppercase;
+    margin-bottom: 24px; width: fit-content;
+  }
+  .dot {
+    width: 7px; height: 7px; border-radius: 50%;
+    background: #e03836;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+
+  .headline {
+    font-size: 58px; font-weight: 900;
+    line-height: 1.0; letter-spacing: -2px;
+    margin-bottom: 20px;
+  }
+  .headline em { color: #e03836; font-style: normal; }
+  .headline .gold { color: #d4a843; }
+
+  .sub {
+    font-size: 17px; color: #888882; line-height: 1.6;
+    margin-bottom: 36px; max-width: 460px;
+  }
+  .sub strong { color: #e8e8e2; }
+
+  .cta-row { display: flex; align-items: center; gap: 20px; }
+  .btn {
+    background: #e03836; color: #fff;
+    font-size: 17px; font-weight: 800;
+    padding: 16px 36px; border-radius: 6px;
+    letter-spacing: 0.5px;
+  }
+  .btn-note { font-size: 13px; color: #585858; }
+
+  /* Divider */
+  .divider {
+    position: absolute; left: 600px; top: 40px; bottom: 40px;
+    width: 1px; background: rgba(255,255,255,.07);
+    z-index: 2;
+  }
+
+  /* RIGHT PANEL — Stats */
+  .right {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 48px 48px 48px 56px;
+    position: relative; z-index: 2;
+    gap: 16px;
+  }
+
+  .right-title {
+    font-size: 11px; font-weight: 700; color: #585858;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  /* Conflict rows */
+  .conflict-row {
+    display: flex; align-items: center; gap: 14px;
+  }
+  .flag { font-size: 22px; width: 30px; flex-shrink: 0; }
+  .conflict-info { flex: 1; }
+  .conflict-name { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
+  .conflict-bar-track {
+    height: 5px; background: rgba(255,255,255,.07);
+    border-radius: 3px; overflow: hidden;
+  }
+  .conflict-bar-fill { height: 100%; border-radius: 3px; }
+  .conflict-pct {
+    font-size: 13px; font-weight: 700; width: 42px;
+    text-align: right; flex-shrink: 0;
+  }
+
+  /* Big stat */
+  .big-stat {
+    background: rgba(224,56,54,.08);
+    border: 1px solid rgba(224,56,54,.2);
+    border-radius: 8px;
+    padding: 16px 20px;
+    display: flex; align-items: center; gap: 16px;
+    margin-top: 8px;
+  }
+  .big-stat-num {
+    font-size: 42px; font-weight: 900; color: #e03836;
+    line-height: 1;
+  }
+  .big-stat-text { font-size: 13px; color: #888882; line-height: 1.4; }
+  .big-stat-text strong { color: #e8e8e2; display: block; font-size: 15px; margin-bottom: 2px; }
+
+  /* Domain */
+  .domain {
+    position: absolute; bottom: 18px; right: 24px;
+    font-size: 13px; color: #383834; letter-spacing: 0.5px;
+    z-index: 2;
+  }
+</style>
+</head>
+<body>
+<div class="ad">
+  <div class="grid"></div>
+  <div class="glow-left"></div>
+  <div class="glow-right"></div>
+  <div class="top-bar"></div>
+  <div class="divider"></div>
+
+  <!-- LEFT -->
+  <div class="left">
+    <div class="logo">⊕ <span>Orrery</span></div>
+    <div class="badge"><div class="dot"></div> Live Intelligence</div>
+    <div class="headline">Wars Move<br><em>Markets.</em><br>Know <span class="gold">First.</span></div>
+    <div class="sub">
+      Track every active conflict and its <strong>exact market impact</strong> —
+      energy, gold, currencies and defense stocks. Updated every 5 minutes.
+    </div>
+    <div class="cta-row">
+      <div class="btn">Free Trial →</div>
+      <div class="btn-note">No card needed<br>Cancel anytime</div>
+    </div>
+  </div>
+
+  <!-- RIGHT -->
+  <div class="right">
+    <div class="right-title">Live Market Risk — Top Conflicts</div>
+
+    <div class="conflict-row">
+      <div class="flag">🇺🇦</div>
+      <div class="conflict-info">
+        <div class="conflict-name">Ukraine — Russia</div>
+        <div class="conflict-bar-track">
+          <div class="conflict-bar-fill" style="width:94%;background:#e03836"></div>
+        </div>
+      </div>
+      <div class="conflict-pct" style="color:#e03836">94</div>
+    </div>
+
+    <div class="conflict-row">
+      <div class="flag">🇮🇱</div>
+      <div class="conflict-info">
+        <div class="conflict-name">Israel — Gaza</div>
+        <div class="conflict-bar-track">
+          <div class="conflict-bar-fill" style="width:88%;background:#e03836"></div>
+        </div>
+      </div>
+      <div class="conflict-pct" style="color:#e03836">88</div>
+    </div>
+
+    <div class="conflict-row">
+      <div class="flag">🇨🇩</div>
+      <div class="conflict-info">
+        <div class="conflict-name">DRC — Cobalt Crisis</div>
+        <div class="conflict-bar-track">
+          <div class="conflict-bar-fill" style="width:82%;background:#d4813a"></div>
+        </div>
+      </div>
+      <div class="conflict-pct" style="color:#d4813a">82</div>
+    </div>
+
+    <div class="conflict-row">
+      <div class="flag">🇹🇼</div>
+      <div class="conflict-info">
+        <div class="conflict-name">China — Taiwan</div>
+        <div class="conflict-bar-track">
+          <div class="conflict-bar-fill" style="width:76%;background:#d4813a"></div>
+        </div>
+      </div>
+      <div class="conflict-pct" style="color:#d4813a">76</div>
+    </div>
+
+    <div class="conflict-row">
+      <div class="flag">🇮🇷</div>
+      <div class="conflict-info">
+        <div class="conflict-name">Iran — Nuclear</div>
+        <div class="conflict-bar-track">
+          <div class="conflict-bar-fill" style="width:71%;background:#d4a843"></div>
+        </div>
+      </div>
+      <div class="conflict-pct" style="color:#d4a843">71</div>
+    </div>
+
+    <div class="big-stat">
+      <div class="big-stat-num">56</div>
+      <div class="big-stat-text">
+        <strong>Active conflicts tracked live</strong>
+        Doomsday Clock: 89 seconds to midnight
+      </div>
+    </div>
+  </div>
+
+  <div class="domain">orreryx.io</div>
+</div>
+</body>
+</html>

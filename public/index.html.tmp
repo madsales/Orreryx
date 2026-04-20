@@ -1,15 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
 <!-- Google Ads Tag -->
 <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18101684972"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
-  gtag('js', new Date());
-  gtag('config', 'AW-18101684972');
+  gtag("js", new Date());
+  gtag("config", "AW-18101684972");
 </script>
+<meta charset="UTF-8">
 <!-- Google Search Console: Add verification meta tag here -->
 <!-- <meta name="google-site-verification" content="YOUR_VERIFICATION_CODE"> -->
 <meta name="viewport" content="width=device-width, initial-scale=1.0">

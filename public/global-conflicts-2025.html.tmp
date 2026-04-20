@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<!-- Google Ads Tag -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18101684972"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag("js", new Date());
+  gtag("config", "AW-18101684972");
+</script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <!-- Google Ads Tag -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=AW-18101684972"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'AW-18101684972');
-  </script>
   <title>Current Global Conflicts 2025 — Live War Map & Market Impact | Orrery</title>
   <meta name="description" content="Track every active global conflict in 2025 and 2026: Ukraine, Gaza, Sudan, Myanmar, DRC and more. Live risk levels, market impact analysis, and geopolitical intelligence for investors.">
   <meta name="keywords" content="current global conflicts 2025, active wars 2025, world conflicts map, geopolitical risk 2025, ongoing wars, global war tracker">
