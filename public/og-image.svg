@@ -1,0 +1,103 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 630" width="1200" height="630">
+  <defs>
+    <!-- Background radial glow on right side -->
+    <radialGradient id="redGlow" cx="85%" cy="50%" r="40%">
+      <stop offset="0%" stop-color="#7f0e0e" stop-opacity="0.55"/>
+      <stop offset="100%" stop-color="#07070a" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Subtle left glow -->
+    <radialGradient id="leftGlow" cx="10%" cy="40%" r="35%">
+      <stop offset="0%" stop-color="#1a0505" stop-opacity="0.6"/>
+      <stop offset="100%" stop-color="#07070a" stop-opacity="0"/>
+    </radialGradient>
+    <!-- Globe ellipse clip -->
+    <clipPath id="globeClip">
+      <circle cx="970" cy="315" r="220"/>
+    </clipPath>
+  </defs>
+
+  <!-- Base background -->
+  <rect width="1200" height="630" fill="#07070a"/>
+
+  <!-- Glow layers -->
+  <rect width="1200" height="630" fill="url(#redGlow)"/>
+  <rect width="1200" height="630" fill="url(#leftGlow)"/>
+
+  <!-- Subtle grid lines for texture -->
+  <line x1="0" y1="210" x2="700" y2="210" stroke="#1a1a1f" stroke-width="1"/>
+  <line x1="0" y1="420" x2="700" y2="420" stroke="#1a1a1f" stroke-width="1"/>
+  <line x1="140" y1="0" x2="140" y2="630" stroke="#1a1a1f" stroke-width="1"/>
+
+  <!-- ── GLOBE DECORATION (right side) ── -->
+  <!-- Outer sphere boundary -->
+  <circle cx="970" cy="315" r="218" fill="none" stroke="#1e1e24" stroke-width="1.5"/>
+  <!-- Latitude lines -->
+  <ellipse cx="970" cy="315" rx="218" ry="55" fill="none" stroke="#1e1e24" stroke-width="1"/>
+  <ellipse cx="970" cy="315" rx="218" ry="110" fill="none" stroke="#1e1e24" stroke-width="1"/>
+  <ellipse cx="970" cy="315" rx="218" ry="165" fill="none" stroke="#171717" stroke-width="1"/>
+  <!-- Longitude lines -->
+  <ellipse cx="970" cy="315" rx="55" ry="218" fill="none" stroke="#1e1e24" stroke-width="1"/>
+  <ellipse cx="970" cy="315" rx="110" ry="218" fill="none" stroke="#1e1e24" stroke-width="1"/>
+  <ellipse cx="970" cy="315" rx="165" ry="218" fill="none" stroke="#171717" stroke-width="1"/>
+  <!-- Central cross lines -->
+  <line x1="752" y1="315" x2="1188" y2="315" stroke="#1e1e24" stroke-width="1"/>
+  <line x1="970" y1="97" x2="970" y2="533" stroke="#1e1e24" stroke-width="1"/>
+
+  <!-- Conflict zone dots on globe -->
+  <!-- Ukraine region -->
+  <circle cx="1010" cy="248" r="5" fill="#c0392b" opacity="0.9"/>
+  <circle cx="1010" cy="248" r="9" fill="none" stroke="#c0392b" stroke-width="1" opacity="0.5"/>
+  <!-- Middle East -->
+  <circle cx="1035" cy="298" r="4" fill="#c0392b" opacity="0.85"/>
+  <circle cx="1035" cy="298" r="8" fill="none" stroke="#c0392b" stroke-width="1" opacity="0.4"/>
+  <!-- Taiwan Strait -->
+  <circle cx="1095" cy="280" r="4" fill="#c0392b" opacity="0.8"/>
+  <!-- Sahel -->
+  <circle cx="968" cy="340" r="3" fill="#c0392b" opacity="0.7"/>
+  <!-- Myanmar -->
+  <circle cx="1070" cy="315" r="3" fill="#c0392b" opacity="0.7"/>
+
+  <!-- ── LIVE BADGE (top-left) ── -->
+  <rect x="60" y="52" rx="4" ry="4" width="78" height="28" fill="#c0392b"/>
+  <circle cx="79" cy="66" r="5" fill="#ff6b6b"/>
+  <!-- pulse ring -->
+  <circle cx="79" cy="66" r="8" fill="none" stroke="#ff6b6b" stroke-width="1.5" opacity="0.5"/>
+  <text x="92" y="71" font-family="'Courier New', Courier, monospace" font-size="13" font-weight="700" fill="#ffffff" letter-spacing="1">LIVE</text>
+
+  <!-- ── ORRERYX WORDMARK ── -->
+  <text x="60" y="195" font-family="'Courier New', Courier, monospace" font-size="84" font-weight="700" fill="#f2f2ee" letter-spacing="-2">ORRERYX</text>
+
+  <!-- ── TAGLINE ── -->
+  <text x="62" y="248" font-family="'Courier New', Courier, monospace" font-size="28" font-weight="400" fill="#a8a8a2" letter-spacing="0.5">Live Geopolitical Intelligence — As It Happens</text>
+
+  <!-- ── DIVIDER ── -->
+  <line x1="60" y1="278" x2="640" y2="278" stroke="#2a2a32" stroke-width="1.5"/>
+
+  <!-- ── STAT CHIPS ── -->
+  <!-- Chip 1: 45+ Sources -->
+  <rect x="60" y="298" rx="4" ry="4" width="138" height="34" fill="#1a0505"/>
+  <rect x="60" y="298" rx="4" ry="4" width="138" height="34" fill="none" stroke="#5c1010" stroke-width="1"/>
+  <text x="129" y="321" font-family="'Courier New', Courier, monospace" font-size="13" font-weight="700" fill="#e05252" text-anchor="middle" letter-spacing="0.5">45+ Sources</text>
+
+  <!-- Chip 2: 200+ Events/hour -->
+  <rect x="212" y="298" rx="4" ry="4" width="178" height="34" fill="#1a0505"/>
+  <rect x="212" y="298" rx="4" ry="4" width="178" height="34" fill="none" stroke="#5c1010" stroke-width="1"/>
+  <text x="301" y="321" font-family="'Courier New', Courier, monospace" font-size="13" font-weight="700" fill="#e05252" text-anchor="middle" letter-spacing="0.5">200+ Events/hour</text>
+
+  <!-- Chip 3: Real-time 3D Globe -->
+  <rect x="404" y="298" rx="4" ry="4" width="186" height="34" fill="#1a0505"/>
+  <rect x="404" y="298" rx="4" ry="4" width="186" height="34" fill="none" stroke="#5c1010" stroke-width="1"/>
+  <text x="497" y="321" font-family="'Courier New', Courier, monospace" font-size="13" font-weight="700" fill="#e05252" text-anchor="middle" letter-spacing="0.5">Real-time 3D Globe</text>
+
+  <!-- ── SECONDARY COPY ── -->
+  <text x="62" y="400" font-family="'Courier New', Courier, monospace" font-size="18" fill="#5a5a58" letter-spacing="0.3">Track global conflicts · War stocks · Market impact</text>
+
+  <!-- ── BOTTOM DIVIDER ── -->
+  <line x1="60" y1="545" x2="700" y2="545" stroke="#1e1e24" stroke-width="1"/>
+
+  <!-- ── URL ── -->
+  <text x="62" y="576" font-family="'Courier New', Courier, monospace" font-size="18" fill="#3a3a3f" letter-spacing="1">orreryx.io</text>
+
+  <!-- Bottom-right version tag -->
+  <text x="1140" y="576" font-family="'Courier New', Courier, monospace" font-size="12" fill="#2a2a32" text-anchor="end">v2</text>
+</svg>

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    width: 1200px; height: 1200px; overflow: hidden;
+    background: #07070a;
+    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    color: #e8e8e2;
+  }
+
+  .ad {
+    width: 1200px; height: 1200px;
+    background: #07070a;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 80px;
+    overflow: hidden;
+  }
+
+  /* Background grid lines */
+  .grid {
+    position: absolute; inset: 0;
+    background-image:
+      linear-gradient(rgba(224,56,54,.04) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(224,56,54,.04) 1px, transparent 1px);
+    background-size: 60px 60px;
+  }
+
+  /* Glow effects */
+  .glow-red {
+    position: absolute;
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(224,56,54,.18) 0%, transparent 70%);
+    top: -100px; left: -100px;
+    pointer-events: none;
+  }
+  .glow-gold {
+    position: absolute;
+    width: 500px; height: 500px;
+    background: radial-gradient(circle, rgba(212,168,67,.1) 0%, transparent 70%);
+    bottom: -80px; right: -80px;
+    pointer-events: none;
+  }
+
+  /* Top bar */
+  .top-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, #e03836, #d4a843, #e03836);
+  }
+
+  /* Logo */
+  .logo {
+    font-size: 28px; font-weight: 800; letter-spacing: -0.5px;
+    color: #e8e8e2; margin-bottom: 48px;
+    position: relative; z-index: 2;
+  }
+  .logo span { color: #e03836; }
+
+  /* Live badge */
+  .badge {
+    display: flex; align-items: center; gap: 10px;
+    background: rgba(224,56,54,.12);
+    border: 1px solid rgba(224,56,54,.3);
+    border-radius: 30px;
+    padding: 10px 24px;
+    font-size: 18px; font-weight: 700; color: #e03836;
+    letter-spacing: 1.5px; text-transform: uppercase;
+    margin-bottom: 40px;
+    position: relative; z-index: 2;
+  }
+  .dot {
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #e03836;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.5;transform:scale(1.4)} }
+
+  /* Main headline */
+  .headline {
+    font-size: 88px; font-weight: 900;
+    line-height: 1.0; letter-spacing: -3px;
+    text-align: center;
+    margin-bottom: 32px;
+    position: relative; z-index: 2;
+  }
+  .headline em { color: #e03836; font-style: normal; }
+  .headline .gold { color: #d4a843; }
+
+  /* Subheadline */
+  .sub {
+    font-size: 28px; color: #888882; text-align: center;
+    max-width: 800px; line-height: 1.5;
+    margin-bottom: 64px;
+    position: relative; z-index: 2;
+  }
+  .sub strong { color: #e8e8e2; }
+
+  /* Stats row */
+  .stats {
+    display: flex; gap: 48px; margin-bottom: 72px;
+    position: relative; z-index: 2;
+  }
+  .stat {
+    text-align: center;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(255,255,255,.08);
+    border-radius: 12px;
+    padding: 28px 40px;
+    min-width: 200px;
+  }
+  .stat-num {
+    font-size: 52px; font-weight: 900; line-height: 1;
+    margin-bottom: 8px;
+  }
+  .stat-num.red { color: #e03836; }
+  .stat-num.gold { color: #d4a843; }
+  .stat-num.green { color: #3a9e6e; }
+  .stat-label {
+    font-size: 16px; color: #888882;
+    text-transform: uppercase; letter-spacing: 1px;
+  }
+
+  /* CTA */
+  .cta {
+    display: flex; flex-direction: column; align-items: center;
+    position: relative; z-index: 2;
+  }
+  .btn {
+    background: #e03836;
+    color: #fff;
+    font-size: 28px; font-weight: 800;
+    padding: 28px 72px;
+    border-radius: 8px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .btn-note {
+    font-size: 18px; color: #585858;
+  }
+
+  /* Bottom domain */
+  .domain {
+    position: absolute; bottom: 40px;
+    font-size: 20px; color: #484844; letter-spacing: 1px;
+    z-index: 2;
+  }
+</style>
+</head>
+<body>
+<div class="ad">
+  <div class="grid"></div>
+  <div class="glow-red"></div>
+  <div class="glow-gold"></div>
+  <div class="top-bar"></div>
+
+  <div class="logo">⊕ <span>Orrery</span></div>
+
+  <div class="badge">
+    <div class="dot"></div>
+    Live Risk Monitor
+  </div>
+
+  <div class="headline">
+    Wars Move<br><em>Markets.</em><br>We Track <span class="gold">Both.</span>
+  </div>
+
+  <div class="sub">
+    Real-time intelligence on every active conflict —<br>
+    <strong>and exactly which assets each one is moving.</strong>
+  </div>
+
+  <div class="stats">
+    <div class="stat">
+      <div class="stat-num red">56</div>
+      <div class="stat-label">Active Wars</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num gold">89s</div>
+      <div class="stat-label">To Midnight</div>
+    </div>
+    <div class="stat">
+      <div class="stat-num green">5min</div>
+      <div class="stat-label">Updates</div>
+    </div>
+  </div>
+
+  <div class="cta">
+    <div class="btn">Start Free Trial →</div>
+    <div class="btn-note">No credit card required · Cancel anytime</div>
+  </div>
+
+  <div class="domain">orreryx.io</div>
+</div>
+</body>
+</html>

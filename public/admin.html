@@ -465,6 +465,15 @@ p.desc{font:400 12px/1.75 var(--sans);color:var(--txt3);margin-bottom:18px}
 
     <!-- HEALTH TAB -->
     <div id="pg-health" style="display:none">
+
+      <div class="section" style="margin-bottom:12px">
+        <div class="sec-title">Live Feed Status</div>
+        <div class="stats-grid" id="feed-stats-grid">
+          <div class="loading-txt"><span class="spinner"></span>Fetching live data…</div>
+        </div>
+        <button class="btn-sm" onclick="loadFeedStats()" style="margin-top:10px">Refresh Feed Stats</button>
+      </div>
+
       <div class="section">
         <div class="sec-title">Environment Variables & Services</div>
         <div class="health-grid" id="health-grid">
@@ -558,6 +567,7 @@ function showShell() {
   loadStats();
   loadHealth();
   loadContent();
+  loadFeedStats();
 }
 
 // Auto-login if token in session
@@ -572,7 +582,8 @@ function switchTab(name) {
     document.getElementById('tab-' + t).classList.toggle('active', t === name);
     document.getElementById('pg-' + t).style.display = t === name ? 'block' : 'none';
   });
-  if (name === 'test' && document.getElementById('api-check-grid').childElementCount <= 1) runApiChecks();
+  if (name === 'test')   runApiChecks();
+  if (name === 'health') loadFeedStats();
 }
 
 // ── TEST ACCESS ───────────────────────────────────────────────────────────────
@@ -609,7 +620,8 @@ async function runApiChecks() {
   const grid = document.getElementById('api-check-grid');
   const checks = [
     { name: 'Admin Auth',     test: () => fetch('/api/admin?action=auth', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: '___probe___' }) }).then(r => r.status === 401 ? '✅ Reachable (401 as expected)' : '⚠️ HTTP ' + r.status) },
-    { name: 'Events API',     test: () => fetch('/api/events?type=gdelt').then(r => r.ok ? '✅ OK' : '⚠️ HTTP ' + r.status) },
+    { name: 'Events API',     test: () => fetch('/api/events').then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => '✅ ' + (d.count || 0) + ' events · ' + Object.keys(d.bycat||{}).length + ' categories').catch(e => '❌ ' + e) },
+    { name: 'GNews API',      test: () => fetch('/api/gnews').then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => '✅ ' + (d.count || 0) + ' articles · ' + (d.feeds||0) + ' feeds live').catch(e => '❌ ' + e) },
     { name: 'Anthropic API',  test: () => fetch('/api/anthropic', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ messages:[{role:'user',content:'ping'}], max_tokens:1 }) }).then(r => r.status === 200 || r.status === 400 ? '✅ Reachable' : '❌ HTTP ' + r.status) },
     { name: 'Track API',      test: () => fetch('/api/track', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ event:'pv', page:'/admin-test' }) }).then(r => r.ok ? '✅ OK' : '⚠️ HTTP ' + r.status) },
     { name: 'Send Magic',     test: () => fetch('/api/send-magic', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email:'probe@test.com' }) }).then(r => r.status < 500 ? '✅ Reachable' : '❌ HTTP ' + r.status) },
@@ -822,6 +834,61 @@ async function saveContent() {
 
 function toggleMaintenance() {
   // Instant visual feedback — actual save happens on SAVE CHANGES click
+}
+
+// ── FEED STATS ────────────────────────────────────────────────────────────────
+async function loadFeedStats() {
+  const grid = document.getElementById('feed-stats-grid');
+  if (!grid) return;
+  grid.innerHTML = '<div class="loading-txt"><span class="spinner"></span>Fetching live data…</div>';
+  try {
+    const [evRes, gnRes] = await Promise.allSettled([
+      fetch('/api/events').then(r => r.ok ? r.json() : null),
+      fetch('/api/gnews').then(r => r.ok ? r.json() : null),
+    ]);
+    const ev = evRes.status === 'fulfilled' ? evRes.value : null;
+    const gn = gnRes.status === 'fulfilled' ? gnRes.value : null;
+    const evCount  = ev ? (ev.count || 0) : 'ERR';
+    const gnCount  = gn ? (gn.count || 0) : 'ERR';
+    const gnFeeds  = gn ? (gn.feeds || 0) : '—';
+    const total    = (typeof evCount === 'number' && typeof gnCount === 'number') ? evCount + gnCount : '—';
+    const byCat    = ev ? ev.bycat || {} : {};
+    const topCats  = Object.entries(byCat).sort((a,b)=>b[1]-a[1]).slice(0,3).map(([k,v])=>k.toUpperCase()+':'+v).join(' · ');
+    const freshAge = ev && ev.fetched ? Math.round((Date.now()-ev.fetched)/1000) + 's ago' : '—';
+    grid.innerHTML = `
+      <div class="stat-card green">
+        <div class="stat-lbl">GDELT Events</div>
+        <div class="stat-val">${evCount}</div>
+        <div class="stat-sub">11 streams · fetched ${freshAge}</div>
+      </div>
+      <div class="stat-card blue">
+        <div class="stat-lbl">RSS Articles</div>
+        <div class="stat-val">${gnCount}</div>
+        <div class="stat-sub">${gnFeeds}/45 feeds live</div>
+      </div>
+      <div class="stat-card gold">
+        <div class="stat-lbl">Total Live Items</div>
+        <div class="stat-val">${total}</div>
+        <div class="stat-sub">merged into intel feed</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl">Geo Coverage</div>
+        <div class="stat-val">250+</div>
+        <div class="stat-sub">cities & regions mapped</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl">Top Categories</div>
+        <div class="stat-val" style="font-size:13px;letter-spacing:0">${topCats || '—'}</div>
+        <div class="stat-sub">by event count</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-lbl">Data Sources</div>
+        <div class="stat-val">56</div>
+        <div class="stat-sub">GDELT + 45 RSS feeds</div>
+      </div>`;
+  } catch(e) {
+    grid.innerHTML = '<div class="empty">Feed stat fetch failed: ' + esc(e.message) + '</div>';
+  }
 }
 
 // ── HEALTH ────────────────────────────────────────────────────────────────────

@@ -1,0 +1,14 @@
+.vercel
+.env*.local
+
+# Local Claude Code settings (may contain tokens)
+.claude/
+
+# Vercel env files with secrets
+.env.vercel
+.env.local
+.env
+
+# Node
+node_modules/
+.github/workflows/

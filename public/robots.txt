@@ -1,13 +1,46 @@
 User-agent: *
 Allow: /
+Allow: /geopolitics-news
+Allow: /ukraine-war
+Allow: /israel-gaza
+Allow: /china-taiwan
+Allow: /what-is-geopolitics
+Allow: /geopolitical-risk
+Allow: /demo
+Allow: /gold-price
+Allow: /silver-price
+Allow: /ww3-news
+Allow: /ukraine-war-map
+Allow: /war-news
+Allow: /doomsday-clock
+Allow: /global-conflicts-2025
+Disallow: /login
+Disallow: /welcome
 Disallow: /app
 Disallow: /admin
 Disallow: /api/
 Disallow: /callback
 
-# Priority pages for crawling
+# Googlebot gets full crawl priority
+User-agent: Googlebot
 Allow: /
-Allow: /login
+Allow: /geopolitics-news
+Allow: /ukraine-war
+Allow: /israel-gaza
+Allow: /china-taiwan
+Allow: /what-is-geopolitics
+Allow: /geopolitical-risk
 Allow: /demo
+Allow: /gold-price
+Allow: /silver-price
+Allow: /ww3-news
+Allow: /ukraine-war-map
+Allow: /war-news
+Allow: /doomsday-clock
+Allow: /global-conflicts-2025
+Disallow: /app
+Disallow: /admin
+Disallow: /api/
+Crawl-delay: 1
 
 Sitemap: https://www.orreryx.io/sitemap.xml

@@ -1,169 +1,251 @@
-// api/paypal.js — Orrery PayPal Payment Handler
-// Handles: create order (redirects to PayPal), capture after user approves
+// api/paypal.js — Orrery PayPal Subscriptions Handler
+// Actions: setup, subscribe, activate, cancel, status
 
-import crypto from 'crypto';
+const IS_LIVE   = String(process.env.PAYPAL_ENV || '').toLowerCase() === 'live';
+const BASE      = IS_LIVE ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
+const CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
+const SECRET    = process.env.PAYPAL_CLIENT_SECRET;
+const HOST      = (process.env.APP_HOST || process.env.PESAPAL_HOST || 'https://www.orreryx.io').replace(/\/$/, '');
 
-const IS_LIVE    = String(process.env.PAYPAL_ENV || '').toLowerCase() === 'live';
-const BASE       = IS_LIVE ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
-const CLIENT_ID  = process.env.PAYPAL_CLIENT_ID;
-const SECRET     = process.env.PAYPAL_CLIENT_SECRET;
-const HOST       = (process.env.APP_HOST || process.env.PESAPAL_HOST || 'https://www.orreryx.io').replace(/\/$/, '');
-
-const PLANS = {
-  s: { name: 'Starter',  usd: 0.99  },
-  a: { name: 'Analyst',  usd: 14.99 },
-  c: { name: 'Command',  usd: 34.99 },
+const PLAN_META = {
+  s: { name: 'Starter', usd: 0.99,  envKey: 'PAYPAL_PLAN_ID_S' },
+  a: { name: 'Analyst', usd: 14.99, envKey: 'PAYPAL_PLAN_ID_A' },
+  c: { name: 'Command', usd: 34.99, envKey: 'PAYPAL_PLAN_ID_C' },
 };
 
-// ── ACCESS TOKEN CACHE ──
-let _token = null, _tokenExpiry = 0;
-async function getAccessToken() {
-  if (_token && Date.now() < _tokenExpiry) return _token;
+// ── Redis helpers ─────────────────────────────────────────────────────────────
+const R_URL   = process.env.UPSTASH_REDIS_REST_URL;
+const R_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+async function redis(...cmd) {
+  const r = await fetch(R_URL, {
+    method:  'POST',
+    headers: { Authorization: `Bearer ${R_TOKEN}`, 'Content-Type': 'application/json' },
+    body:    JSON.stringify(cmd),
+  });
+  return (await r.json()).result;
+}
+
+async function redisPipe(cmds) {
+  const r = await fetch(`${R_URL}/pipeline`, {
+    method:  'POST',
+    headers: { Authorization: `Bearer ${R_TOKEN}`, 'Content-Type': 'application/json' },
+    body:    JSON.stringify(cmds),
+  });
+  return (await r.json()).map(x => x.result);
+}
+
+// ── PayPal token cache ────────────────────────────────────────────────────────
+let _tok = null, _tokExp = 0;
+async function ppToken() {
+  if (_tok && Date.now() < _tokExp) return _tok;
   const r = await fetch(`${BASE}/v1/oauth2/token`, {
-    method: 'POST',
+    method:  'POST',
     headers: {
       'Content-Type': 'application/x-www-form-urlencoded',
-      Authorization: 'Basic ' + Buffer.from(`${CLIENT_ID}:${SECRET}`).toString('base64'),
+      Authorization:  'Basic ' + Buffer.from(`${CLIENT_ID}:${SECRET}`).toString('base64'),
     },
     body: 'grant_type=client_credentials',
   });
   const d = await r.json();
-  if (!r.ok || !d.access_token) throw new Error(`PayPal auth failed: ${d?.error_description || JSON.stringify(d)}`);
-  _token = d.access_token;
-  _tokenExpiry = Date.now() + (d.expires_in - 60) * 1000;
-  return _token;
+  if (!r.ok) throw new Error(`PayPal auth: ${d.error_description || JSON.stringify(d)}`);
+  _tok    = d.access_token;
+  _tokExp = Date.now() + (d.expires_in - 60) * 1000;
+  return _tok;
 }
 
-function normalizePlan(plan) {
-  const p = String(plan || '').toLowerCase().trim();
+function normPlan(p) {
+  p = String(p || '').toLowerCase().trim();
   if (p === 'c' || p === 'command') return 'c';
   if (p === 'a' || p === 'analyst') return 'a';
   return 's';
 }
 
+// ── Handler ───────────────────────────────────────────────────────────────────
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type,Authorization');
   res.setHeader('Cache-Control', 'no-store');
   if (req.method === 'OPTIONS') return res.status(200).end();
-
-  if (!CLIENT_ID || !SECRET) {
-    return res.status(500).json({ error: 'PAYPAL_CLIENT_ID and PAYPAL_CLIENT_SECRET are not set in Vercel environment variables.' });
-  }
+  if (!CLIENT_ID || !SECRET)
+    return res.status(500).json({ error: 'PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET not set' });
 
   const action = String(req.query.action || '').trim();
 
   try {
-    const accessToken = await getAccessToken();
+    const tok = await ppToken();
 
-    // ── CREATE ORDER — returns PayPal approval URL ──
-    if (action === 'create' && req.method === 'POST') {
-      const body     = req.body || {};
-      const planCode = normalizePlan(body.plan);
-      const plan     = PLANS[planCode];
-      const orderId  = String(body.orderId || `orrery_${planCode}_${Date.now()}`).replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 50);
+    // ── SETUP (run once as admin to create billing plans) ─────────────────────
+    if (action === 'setup' && req.method === 'GET') {
+      const adminPwd = process.env.ADMIN_PASSWORD;
+      const auth     = (req.headers.authorization || '').replace('Bearer ', '').trim();
+      if (!adminPwd || auth !== adminPwd)
+        return res.status(401).json({ error: 'Unauthorized' });
 
-      const returnUrl = `${HOST}/callback.html?orderId=${encodeURIComponent(orderId)}&plan=${encodeURIComponent(planCode)}`;
-      const cancelUrl = `${HOST}/login?plan=${encodeURIComponent(planCode)}&cancelled=1`;
+      const out = {};
+      for (const [code, meta] of Object.entries(PLAN_META)) {
+        // 1. Create product
+        const pr = await fetch(`${BASE}/v1/catalogs/products`, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
+          body:    JSON.stringify({ name: `Orrery ${meta.name}`, type: 'SERVICE', category: 'SOFTWARE' }),
+        });
+        const prod = await pr.json();
+        if (!pr.ok) { out[code] = { error: prod.message }; continue; }
 
-      const r = await fetch(`${BASE}/v2/checkout/orders`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-          'PayPal-Request-Id': orderId,
-        },
-        body: JSON.stringify({
-          intent: 'CAPTURE',
-          purchase_units: [{
-            reference_id: orderId,
-            description: `Orrery ${plan.name} Plan`,
-            amount: { currency_code: 'USD', value: plan.usd.toFixed(2) },
-          }],
+        // 2. Create billing plan
+        const br = await fetch(`${BASE}/v1/billing/plans`, {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
+          body:    JSON.stringify({
+            product_id: prod.id,
+            name:       `Orrery ${meta.name} Monthly`,
+            status:     'ACTIVE',
+            billing_cycles: [{
+              frequency:      { interval_unit: 'MONTH', interval_count: 1 },
+              tenure_type:    'REGULAR',
+              sequence:       1,
+              total_cycles:   0,
+              pricing_scheme: { fixed_price: { value: meta.usd.toFixed(2), currency_code: 'USD' } },
+            }],
+            payment_preferences: {
+              auto_bill_outstanding:     true,
+              setup_fee_failure_action:  'CANCEL',
+              payment_failure_threshold: 3,
+            },
+          }),
+        });
+        const plan = await br.json();
+        out[code] = br.ok
+          ? { product_id: prod.id, plan_id: plan.id, set_env: `${meta.envKey}=${plan.id}` }
+          : { error: plan.message };
+      }
+      return res.status(200).json({ results: out, next: 'Copy each plan_id to Vercel env vars then redeploy' });
+    }
+
+    // ── SUBSCRIBE — create subscription, return PayPal approval URL ───────────
+    if (action === 'subscribe' && req.method === 'POST') {
+      const { email, plan: planInput } = req.body || {};
+      if (!email) return res.status(400).json({ error: 'email required' });
+      const code   = normPlan(planInput);
+      const meta   = PLAN_META[code];
+      const planId = process.env[meta.envKey];
+      if (!planId) return res.status(500).json({ error: `${meta.envKey} not set in Vercel env vars` });
+
+      const returnUrl = `${HOST}/callback.html?plan=${code}&email=${encodeURIComponent(email)}&mode=sub`;
+      const cancelUrl = `${HOST}/login?plan=${code}&cancelled=1`;
+
+      const r = await fetch(`${BASE}/v1/billing/subscriptions`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
+        body:    JSON.stringify({
+          plan_id:    planId,
+          subscriber: { email_address: email },
           application_context: {
-            brand_name: 'Orrery',
-            landing_page: 'BILLING',
-            user_action: 'PAY_NOW',
-            return_url: returnUrl,
-            cancel_url: cancelUrl,
+            brand_name:          'Orrery',
+            locale:              'en-US',
+            shipping_preference: 'NO_SHIPPING',
+            user_action:         'SUBSCRIBE_NOW',
+            return_url:          returnUrl,
+            cancel_url:          cancelUrl,
           },
         }),
       });
+      const sub = await r.json();
+      if (!r.ok) return res.status(400).json({ error: sub.message || 'Subscription creation failed' });
 
-      const result = await r.json();
-      console.log('[PayPal] Create order:', result.id, result.status);
+      const approveLink = sub.links?.find(l => l.rel === 'approve')?.href;
+      if (!approveLink) return res.status(400).json({ error: 'No approval URL returned by PayPal' });
 
-      if (!r.ok || result.status !== 'CREATED') {
-        const msg = result?.details?.[0]?.description || result?.message || 'Order creation failed';
-        return res.status(400).json({ error: msg });
+      return res.status(200).json({ approval_url: approveLink, subscription_id: sub.id });
+    }
+
+    // ── ACTIVATE — called after PayPal redirects user back ────────────────────
+    if (action === 'activate' && req.method === 'POST') {
+      const { subscription_id, email, plan: planInput } = req.body || {};
+      if (!subscription_id || !email)
+        return res.status(400).json({ error: 'subscription_id and email are required' });
+
+      // Verify with PayPal that subscription is ACTIVE
+      const r = await fetch(`${BASE}/v1/billing/subscriptions/${subscription_id}`, {
+        headers: { Authorization: `Bearer ${tok}` },
+      });
+      const sub = await r.json();
+      if (!r.ok || sub.status !== 'ACTIVE')
+        return res.status(400).json({ error: `Subscription not active. PayPal status: ${sub.status}` });
+
+      const code   = normPlan(planInput);
+      const nextMs = sub.billing_info?.next_billing_time
+        ? new Date(sub.billing_info.next_billing_time).getTime()
+        : Date.now() + 30 * 24 * 60 * 60 * 1000;
+
+      // Store subscription data + reverse index for webhook lookups
+      await redisPipe([
+        ['SET', `user:${email}:plan`,                    code],
+        ['SET', `user:${email}:sub_id`,                  subscription_id],
+        ['SET', `user:${email}:sub_status`,              'active'],
+        ['SET', `user:${email}:sub_expires`,             String(nextMs)],
+        ['SET', `sub_to_email:${subscription_id}`,       email],
+      ]);
+
+      // Analytics
+      await redisPipe([
+        ['INCR', 'analytics:payment:total'],
+        ['HINCRBY', 'analytics:revenue_count', code, '1'],
+      ]);
+
+      return res.status(200).json({ ok: true, plan: code, email, subscription_id });
+    }
+
+    // ── CANCEL ────────────────────────────────────────────────────────────────
+    if (action === 'cancel' && req.method === 'POST') {
+      const { email } = req.body || {};
+      if (!email) return res.status(400).json({ error: 'email required' });
+
+      const subId = await redis('GET', `user:${email}:sub_id`);
+      if (!subId) return res.status(404).json({ error: 'No subscription found for this email' });
+
+      const r = await fetch(`${BASE}/v1/billing/subscriptions/${subId}/cancel`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
+        body:    JSON.stringify({ reason: 'User requested cancellation' }),
+      });
+
+      // 422 = already cancelled — treat as success
+      if (!r.ok && r.status !== 422) {
+        const err = await r.json();
+        return res.status(400).json({ error: err.message || 'Cancel failed' });
       }
 
-      const approveLink = result.links?.find(l => l.rel === 'approve')?.href;
-      if (!approveLink) return res.status(400).json({ error: 'PayPal did not return an approval URL.' });
+      await redis('SET', `user:${email}:sub_status`, 'cancelled');
+      return res.status(200).json({ ok: true });
+    }
+
+    // ── STATUS ────────────────────────────────────────────────────────────────
+    if (action === 'status' && req.method === 'GET') {
+      const { email } = req.query;
+      if (!email) return res.status(400).json({ error: 'email required' });
+
+      const [plan, subId, status, expires] = await redisPipe([
+        ['GET', `user:${email}:plan`],
+        ['GET', `user:${email}:sub_id`],
+        ['GET', `user:${email}:sub_status`],
+        ['GET', `user:${email}:sub_expires`],
+      ]);
 
       return res.status(200).json({
-        redirect_url: approveLink,
-        paypal_order_id: result.id,
-        orderId,
-        plan: planCode,
-        amount: plan.usd,
-        currency: 'USD',
-        env: IS_LIVE ? 'live' : 'sandbox',
+        plan,
+        sub_id:  subId,
+        status,
+        expires: expires ? parseInt(expires) : null,
       });
     }
 
-    // ── CAPTURE PAYMENT — called after user approves on PayPal ──
-    if (action === 'capture' && req.method === 'POST') {
-      const paypalOrderId = String(req.body?.paypalOrderId || '').trim();
-      if (!paypalOrderId) return res.status(400).json({ error: 'paypalOrderId is required' });
-
-      const r = await fetch(`${BASE}/v2/checkout/orders/${encodeURIComponent(paypalOrderId)}/capture`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${accessToken}`,
-        },
-      });
-
-      const result = await r.json();
-      console.log('[PayPal] Capture:', result.id, result.status);
-
-      if (!r.ok) {
-        const msg = result?.details?.[0]?.description || result?.message || `Capture failed (${r.status})`;
-        return res.status(r.status).json({ error: msg });
-      }
-
-      if (result.status !== 'COMPLETED') {
-        return res.status(400).json({ error: `Payment not completed. Status: ${result.status}` });
-      }
-
-      // Extract our orderId from the purchase unit reference_id
-      const refId    = result.purchase_units?.[0]?.reference_id || '';
-      const match    = refId.match(/^orrery_([sac])_/);
-      const planCode = match ? match[1] : normalizePlan(req.body?.plan);
-      const email    = result.payer?.email_address || '';
-      const token    = crypto.randomBytes(32).toString('hex');
-      const expires  = Date.now() + 365 * 24 * 60 * 60 * 1000;
-
-      console.log(`[PayPal] Payment confirmed — orderId=${refId} plan=${planCode} email=${email}`);
-
-      return res.status(200).json({
-        paid:          true,
-        status:        'paid',
-        plan:          planCode,
-        email,
-        token,
-        expires,
-        orderId:       refId,
-        paypalOrderId: result.id,
-      });
-    }
-
-    return res.status(400).json({ error: 'Unknown action. Valid actions: create, capture' });
+    return res.status(400).json({ error: 'Unknown action. Valid: setup, subscribe, activate, cancel, status' });
 
   } catch (err) {
-    console.error('[PayPal] Error:', err.message);
+    console.error('[PayPal]', err.message);
     return res.status(500).json({ error: err.message });
   }
 }
