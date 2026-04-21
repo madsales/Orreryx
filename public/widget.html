@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google Ads Tag -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18101684972"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag("js", new Date());
+  gtag("config", "AW-18101684972");
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="index, follow">
+<title>Free Geopolitical Risk Widget — Embed on Your Site | Orreryx</title>
+<meta name="description" content="Embed the Orreryx conflict risk widget on your website for free. Shows live global conflict risk scores, war status and commodity impact. 2-line embed code. No sign-up required.">
+<meta name="keywords" content="geopolitical risk widget, conflict tracker embed, free war risk widget, embed geopolitics widget, website widget global risk, free embeddable conflict map">
+<link rel="canonical" href="https://www.orreryx.io/widget">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Free Geopolitical Risk Widget | Orreryx">
+<meta property="og:description" content="Add live global conflict risk to your website in 2 lines of code. Free. No sign-up. Always up to date.">
+<meta property="og:url" content="https://www.orreryx.io/widget">
+<meta property="og:image" content="https://www.orreryx.io/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<style>
+  :root {
+    --bg: #0a0e1a; --card: #111827; --border: #1f2937; --accent: #f59e0b;
+    --accent2: #3b82f6; --text: #e5e7eb; --muted: #6b7280; --green: #10b981;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; line-height: 1.6; }
+  a { color: var(--accent); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  nav { background: rgba(10,14,26,0.95); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; }
+  .nav-logo { font-size: 1.25rem; font-weight: 700; color: var(--accent); }
+  .nav-links { display: flex; gap: 20px; font-size: 0.85rem; }
+  .nav-links a { color: var(--muted); }
+  .nav-links a:hover { color: var(--text); text-decoration: none; }
+  .nav-cta { background: var(--accent); color: #000; padding: 7px 16px; border-radius: 6px; font-weight: 600; font-size: 0.85rem; }
+  .nav-cta:hover { background: #d97706; text-decoration: none; color: #000; }
+
+  .hero { max-width: 860px; margin: 0 auto; padding: 70px 24px 50px; text-align: center; }
+  .hero-badge { display: inline-flex; align-items: center; gap: 8px; background: rgba(59,130,246,0.1); border: 1px solid rgba(59,130,246,0.3); color: var(--accent2); padding: 6px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 24px; }
+  .hero h1 { font-size: clamp(1.9rem, 5vw, 3rem); font-weight: 800; line-height: 1.15; margin-bottom: 20px; }
+  .hero h1 span { color: var(--accent); }
+  .hero p { font-size: 1.1rem; color: #9ca3af; max-width: 580px; margin: 0 auto 40px; }
+
+  /* LIVE PREVIEW */
+  .preview-section { max-width: 860px; margin: 0 auto 70px; padding: 0 24px; }
+  .preview-label { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); font-weight: 700; margin-bottom: 16px; }
+  .preview-box { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 32px; margin-bottom: 28px; }
+  .preview-controls { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 24px; }
+  .ctrl-btn { background: var(--bg); border: 1px solid var(--border); color: var(--muted); padding: 8px 16px; border-radius: 6px; font-size: 0.82rem; cursor: pointer; transition: all .2s; }
+  .ctrl-btn.active, .ctrl-btn:hover { border-color: var(--accent); color: var(--accent); }
+  #widget-preview { border: 1px dashed var(--border); border-radius: 10px; padding: 16px; min-height: 200px; }
+
+  /* CODE BLOCKS */
+  .code-section { max-width: 860px; margin: 0 auto 70px; padding: 0 24px; }
+  .code-section h2 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; margin-bottom: 24px; }
+  .code-tabs { display: flex; gap: 4px; margin-bottom: 16px; }
+  .code-tab { padding: 8px 18px; border-radius: 6px 6px 0 0; font-size: 0.85rem; cursor: pointer; border: 1px solid var(--border); border-bottom: none; color: var(--muted); background: var(--bg); }
+  .code-tab.active { background: var(--card); color: var(--accent); border-color: var(--border); }
+  .code-block { background: #060a14; border: 1px solid var(--border); border-radius: 0 8px 8px 8px; padding: 24px; font-family: 'Courier New', monospace; font-size: 0.88rem; color: #a5f3fc; overflow-x: auto; position: relative; }
+  .code-block .kw { color: #c084fc; }
+  .code-block .str { color: #86efac; }
+  .code-block .attr { color: #fbbf24; }
+  .copy-btn { position: absolute; top: 12px; right: 12px; background: rgba(245,158,11,0.15); border: 1px solid var(--accent); color: var(--accent); padding: 5px 12px; border-radius: 5px; font-size: 0.75rem; cursor: pointer; font-family: inherit; transition: background .2s; }
+  .copy-btn:hover { background: rgba(245,158,11,0.3); }
+  .copy-btn.copied { background: rgba(16,185,129,0.15); border-color: var(--green); color: var(--green); }
+
+  /* OPTIONS TABLE */
+  .options { max-width: 860px; margin: 0 auto 70px; padding: 0 24px; }
+  .options h2 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; margin-bottom: 24px; }
+  table { width: 100%; border-collapse: collapse; }
+  th { text-align: left; padding: 12px 16px; font-size: 0.82rem; text-transform: uppercase; letter-spacing: 0.5px; color: var(--muted); border-bottom: 1px solid var(--border); }
+  td { padding: 14px 16px; font-size: 0.9rem; border-bottom: 1px solid rgba(31,41,55,0.5); }
+  td:first-child { font-family: monospace; color: var(--accent); }
+  td:nth-child(2) { color: #93c5fd; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+
+  /* USE CASES */
+  .use-cases { max-width: 900px; margin: 0 auto 70px; padding: 0 24px; }
+  .use-cases h2 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; margin-bottom: 32px; }
+  .uc-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; }
+  .uc-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 24px; }
+  .uc-icon { font-size: 1.6rem; margin-bottom: 12px; }
+  .uc-card h3 { font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+  .uc-card p { font-size: 0.88rem; color: var(--muted); }
+
+  /* WHY EMBED */
+  .why { max-width: 860px; margin: 0 auto 70px; padding: 0 24px; }
+  .why h2 { font-size: clamp(1.5rem, 3vw, 2rem); font-weight: 800; margin-bottom: 32px; text-align: center; }
+  .why-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; text-align: center; }
+  .why-item { padding: 24px 16px; }
+  .why-icon { font-size: 2rem; margin-bottom: 12px; }
+  .why-item h3 { font-size: 0.95rem; font-weight: 700; margin-bottom: 6px; }
+  .why-item p { font-size: 0.84rem; color: var(--muted); }
+
+  /* CTA */
+  .bottom-cta { background: linear-gradient(135deg, rgba(245,158,11,0.08), rgba(59,130,246,0.05)); border: 1px solid rgba(245,158,11,0.2); border-radius: 20px; max-width: 700px; margin: 0 auto 70px; padding: 50px 40px; text-align: center; }
+  .bottom-cta h2 { font-size: 1.8rem; font-weight: 800; margin-bottom: 14px; }
+  .bottom-cta p { color: var(--muted); margin-bottom: 28px; }
+  .cta-btns { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn-primary { background: var(--accent); color: #000; padding: 13px 28px; border-radius: 8px; font-weight: 700; font-size: 1rem; }
+  .btn-primary:hover { background: #d97706; text-decoration: none; color: #000; }
+  .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--text); padding: 13px 28px; border-radius: 8px; font-weight: 600; font-size: 1rem; }
+  .btn-secondary:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
+
+  footer { border-top: 1px solid var(--border); padding: 32px 24px; text-align: center; color: var(--muted); font-size: 0.82rem; }
+  footer a { color: var(--muted); }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="/">⚡ Orreryx</a>
+  <div class="nav-links">
+    <a href="/geopolitics-news">News</a>
+    <a href="/newsletter">Newsletter</a>
+    <a href="/enterprise">Enterprise</a>
+  </div>
+  <a class="nav-cta" href="/app">Try Free</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">🔌 Free Embed Widget</div>
+  <h1>Add Live Conflict Risk<br><span>To Any Website</span></h1>
+  <p>Two lines of code. Free forever. Your readers get real-time geopolitical risk scores — you get a backlink from Orreryx and engaged visitors who trust your content.</p>
+</section>
+
+<!-- LIVE PREVIEW -->
+<section class="preview-section">
+  <div class="preview-label">Live Preview</div>
+  <div class="preview-box">
+    <div class="preview-controls">
+      <button class="ctrl-btn active" onclick="setTheme('dark',this)">🌑 Dark Theme</button>
+      <button class="ctrl-btn" onclick="setTheme('light',this)">☀️ Light Theme</button>
+      <button class="ctrl-btn active" onclick="toggleCompact(this)">⚡ Compact Mode</button>
+      <button class="ctrl-btn" onclick="setCount(3,this)">3 Conflicts</button>
+      <button class="ctrl-btn" onclick="setCount(5,this)">5 Conflicts</button>
+      <button class="ctrl-btn" onclick="setCount(8,this)">8 Conflicts</button>
+    </div>
+    <div id="widget-preview">
+      <div id="orrery-widget" data-theme="dark" data-compact="true" data-conflicts="5"></div>
+    </div>
+  </div>
+</section>
+
+<!-- CODE EMBED -->
+<section class="code-section">
+  <h2>Embed Code</h2>
+  <div class="code-tabs">
+    <div class="code-tab active" onclick="showTab('html',this)">HTML</div>
+    <div class="code-tab" onclick="showTab('react',this)">React</div>
+    <div class="code-tab" onclick="showTab('wordpress',this)">WordPress</div>
+  </div>
+
+  <div id="tab-html" class="code-block">
+    <button class="copy-btn" onclick="copyCode('tab-html',this)">Copy</button>
+<span class="kw">&lt;!-- Orreryx Conflict Risk Widget --&gt;</span>
+<span class="kw">&lt;div</span> <span class="attr">id</span>=<span class="str">"orrery-widget"</span>
+     <span class="attr">data-theme</span>=<span class="str">"dark"</span>
+     <span class="attr">data-compact</span>=<span class="str">"true"</span>
+     <span class="attr">data-conflicts</span>=<span class="str">"5"</span><span class="kw">&gt;&lt;/div&gt;</span>
+<span class="kw">&lt;script</span> <span class="attr">src</span>=<span class="str">"https://www.orreryx.io/widget.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
+  </div>
+
+  <div id="tab-react" class="code-block" style="display:none">
+    <button class="copy-btn" onclick="copyCode('tab-react',this)">Copy</button>
+<span class="kw">import</span> { useEffect } <span class="kw">from</span> <span class="str">'react'</span>;
+
+<span class="kw">export default function</span> OrreryxWidget() {
+  useEffect(() => {
+    <span class="kw">const</span> script = document.createElement(<span class="str">'script'</span>);
+    script.src = <span class="str">'https://www.orreryx.io/widget.js'</span>;
+    document.body.appendChild(script);
+    <span class="kw">return</span> () => document.body.removeChild(script);
+  }, []);
+
+  <span class="kw">return</span> (
+    &lt;<span class="attr">div</span>
+      id=<span class="str">"orrery-widget"</span>
+      data-theme=<span class="str">"dark"</span>
+      data-compact=<span class="str">"true"</span>
+      data-conflicts=<span class="str">"5"</span>
+    /&gt;
+  );
+}
+  </div>
+
+  <div id="tab-wordpress" class="code-block" style="display:none">
+    <button class="copy-btn" onclick="copyCode('tab-wordpress',this)">Copy</button>
+<span class="kw">&lt;!-- Paste in any WordPress HTML block or widget --&gt;</span>
+<span class="kw">&lt;div</span> <span class="attr">id</span>=<span class="str">"orrery-widget"</span>
+     <span class="attr">data-theme</span>=<span class="str">"dark"</span>
+     <span class="attr">data-compact</span>=<span class="str">"true"</span>
+     <span class="attr">data-conflicts</span>=<span class="str">"5"</span><span class="kw">&gt;&lt;/div&gt;</span>
+<span class="kw">&lt;script</span> <span class="attr">src</span>=<span class="str">"https://www.orreryx.io/widget.js"</span><span class="kw">&gt;&lt;/script&gt;</span>
+
+<span class="kw">&lt;!-- Or add to functions.php for site-wide --&gt;</span>
+<span class="str">add_action</span>(<span class="str">'wp_footer'</span>, function() {
+  echo <span class="str">'&lt;script src="https://www.orreryx.io/widget.js"&gt;&lt;/script&gt;'</span>;
+});
+  </div>
+</section>
+
+<!-- OPTIONS TABLE -->
+<section class="options">
+  <h2>Widget Options</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Attribute</th>
+        <th>Values</th>
+        <th>Default</th>
+        <th>Description</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>data-theme</td>
+        <td>dark · light</td>
+        <td>dark</td>
+        <td>Widget color scheme — matches your site's background</td>
+      </tr>
+      <tr>
+        <td>data-compact</td>
+        <td>true · false</td>
+        <td>false</td>
+        <td>Compact layout for sidebars; full layout for content areas</td>
+      </tr>
+      <tr>
+        <td>data-conflicts</td>
+        <td>3 · 5 · 8 · 10</td>
+        <td>5</td>
+        <td>Number of active conflicts to display in the widget</td>
+      </tr>
+      <tr>
+        <td>data-width</td>
+        <td>any CSS value</td>
+        <td>100%</td>
+        <td>Widget width — e.g. "300px" for a fixed sidebar</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- USE CASES -->
+<section class="use-cases">
+  <h2>Who Embeds the Widget</h2>
+  <div class="uc-grid">
+    <div class="uc-card">
+      <div class="uc-icon">📰</div>
+      <h3>News & Media Sites</h3>
+      <p>Add live geopolitical risk context to news articles. Readers stay longer, bounce rates drop, and your editorial credibility grows.</p>
+    </div>
+    <div class="uc-card">
+      <div class="uc-icon">📈</div>
+      <h3>Finance & Investing Blogs</h3>
+      <p>Commodity traders, stock analysts and investment blogs use the widget to show readers how conflicts drive asset prices in real time.</p>
+    </div>
+    <div class="uc-card">
+      <div class="uc-icon">🎓</div>
+      <h3>Research & Academic Sites</h3>
+      <p>Political science departments, think tanks and research institutes embed the widget to provide live data alongside their analysis.</p>
+    </div>
+    <div class="uc-card">
+      <div class="uc-icon">🌍</div>
+      <h3>Travel & Risk Blogs</h3>
+      <p>Travel bloggers and digital nomad sites embed the conflict tracker to give readers practical, real-time safety context by region.</p>
+    </div>
+    <div class="uc-card">
+      <div class="uc-icon">💼</div>
+      <h3>B2B & Consulting Sites</h3>
+      <p>Management consultancies and risk advisory firms use the widget as a credibility signal — showing clients they track global risk live.</p>
+    </div>
+    <div class="uc-card">
+      <div class="uc-icon">🔐</div>
+      <h3>Security & Defence</h3>
+      <p>Defence contractors, security firms and military analysis sites embed the widget to provide clients with quick-reference risk status.</p>
+    </div>
+  </div>
+</section>
+
+<!-- WHY EMBED -->
+<section class="why">
+  <h2>Why Embed This Widget?</h2>
+  <div class="why-grid">
+    <div class="why-item">
+      <div class="why-icon">🆓</div>
+      <h3>Completely Free</h3>
+      <p>No API key. No sign-up. No credit card. Embed and it just works.</p>
+    </div>
+    <div class="why-item">
+      <div class="why-icon">⚡</div>
+      <h3>Always Up to Date</h3>
+      <p>Conflict data is updated continuously. Your embed never goes stale.</p>
+    </div>
+    <div class="why-item">
+      <div class="why-icon">📱</div>
+      <h3>Fully Responsive</h3>
+      <p>Looks great on desktop, tablet and mobile. No extra CSS needed.</p>
+    </div>
+    <div class="why-item">
+      <div class="why-icon">🎨</div>
+      <h3>Dark + Light Themes</h3>
+      <p>Matches any site design. Swap themes with one attribute change.</p>
+    </div>
+    <div class="why-item">
+      <div class="why-icon">🚀</div>
+      <h3>Async Loading</h3>
+      <p>Loads asynchronously — never blocks your page's Core Web Vitals.</p>
+    </div>
+    <div class="why-item">
+      <div class="why-icon">🔗</div>
+      <h3>Mutual Value</h3>
+      <p>Your readers get live data. You get a quality contextual backlink.</p>
+    </div>
+  </div>
+</section>
+
+<!-- BOTTOM CTA -->
+<section style="padding: 0 24px;">
+  <div class="bottom-cta">
+    <h2>Ready to Embed?</h2>
+    <p>Copy the code above and paste it anywhere on your site. Or explore the full Orreryx intelligence platform for teams.</p>
+    <div class="cta-btns">
+      <a class="btn-primary" href="#" onclick="document.querySelector('.code-section').scrollIntoView({behavior:'smooth'});return false;">Get Embed Code →</a>
+      <a class="btn-secondary" href="/enterprise">Enterprise API</a>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <p>© 2026 Orreryx Intelligence · <a href="/">Home</a> · <a href="/newsletter">Newsletter</a> · <a href="/enterprise">Enterprise</a> · <a href="/app">App</a></p>
+</footer>
+
+<script src="/widget.js"></script>
+<script>
+  let currentTheme = 'dark', currentCompact = 'true', currentCount = 5;
+
+  function setTheme(theme, btn) {
+    currentTheme = theme;
+    document.querySelectorAll('.preview-controls .ctrl-btn').forEach(b => {
+      if (b.textContent.includes('Theme')) b.classList.remove('active');
+    });
+    btn.classList.add('active');
+    rerender();
+  }
+  function toggleCompact(btn) {
+    currentCompact = currentCompact === 'true' ? 'false' : 'true';
+    btn.classList.toggle('active');
+    rerender();
+  }
+  function setCount(n, btn) {
+    currentCount = n;
+    document.querySelectorAll('.preview-controls .ctrl-btn').forEach(b => {
+      if (b.textContent.includes('Conflicts')) b.classList.remove('active');
+    });
+    btn.classList.add('active');
+    rerender();
+  }
+  function rerender() {
+    const preview = document.getElementById('widget-preview');
+    preview.innerHTML = `<div id="orrery-widget" data-theme="${currentTheme}" data-compact="${currentCompact}" data-conflicts="${currentCount}"></div>`;
+    if (window.OrreryxWidget) window.OrreryxWidget.init();
+  }
+
+  function showTab(tab, el) {
+    document.querySelectorAll('.code-block').forEach(b => b.style.display = 'none');
+    document.querySelectorAll('.code-tab').forEach(t => t.classList.remove('active'));
+    document.getElementById('tab-' + tab).style.display = 'block';
+    el.classList.add('active');
+  }
+
+  function copyCode(id, btn) {
+    const el = document.getElementById(id);
+    const text = el.innerText.replace('Copy\n', '').replace('Copy', '').trim();
+    navigator.clipboard.writeText(text).then(() => {
+      btn.textContent = 'Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+    });
+  }
+</script>
+</body>
+</html>

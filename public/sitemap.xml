@@ -274,4 +274,18 @@
     <priority>0.91</priority>
   </url>
 
+  <url>
+    <loc>https://www.orreryx.io/newsletter</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.92</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/widget</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.80</priority>
+  </url>
+
 </urlset>

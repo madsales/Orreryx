@@ -223,10 +223,34 @@ async function processDrip() {
 // ── MAIN HANDLER ─────────────────────────────────────────────────────────────
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   res.setHeader('Cache-Control', 'no-store');
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  // ── GET: unsubscribe via magic link ─────────────────────────────────────
+  if (req.method === 'GET') {
+    const { action, email } = req.query || {};
+    if (action === 'unsubscribe' && email) {
+      try {
+        const key = `newsletter:${email.toLowerCase().trim()}`;
+        const existing = await redis('GET', key);
+        if (existing) {
+          const sub = JSON.parse(existing);
+          await redis('SET', key, JSON.stringify({ ...sub, unsubscribed: true, unsubscribed_at: Date.now() }));
+          await redis('DECR', 'newsletter:count');
+        }
+        // Redirect to unsubscribe confirmation page
+        res.setHeader('Location', '/unsubscribe?done=1');
+        return res.status(302).end();
+      } catch (e) {
+        res.setHeader('Location', '/unsubscribe?done=1');
+        return res.status(302).end();
+      }
+    }
+    return res.status(405).end();
+  }
+
   if (req.method !== 'POST') return res.status(405).end();
 
   const body = req.body || {};

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Unsubscribe — Orreryx</title>
+<style>
+  :root { --bg: #0a0e1a; --card: #111827; --border: #1f2937; --accent: #f59e0b; --text: #e5e7eb; --muted: #6b7280; --green: #10b981; }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', system-ui, sans-serif; min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 24px; }
+  .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 48px 40px; max-width: 480px; width: 100%; text-align: center; }
+  .logo { font-size: 1.2rem; font-weight: 800; color: var(--accent); margin-bottom: 32px; }
+  .icon { font-size: 3rem; margin-bottom: 20px; }
+  h1 { font-size: 1.5rem; font-weight: 800; margin-bottom: 12px; }
+  p { color: var(--muted); font-size: 0.95rem; line-height: 1.7; margin-bottom: 28px; }
+  .btn { display: inline-block; background: var(--accent); color: #000; padding: 12px 28px; border-radius: 8px; font-weight: 700; text-decoration: none; font-size: 0.95rem; }
+  .btn:hover { background: #d97706; }
+  .btn-ghost { display: inline-block; color: var(--muted); font-size: 0.85rem; text-decoration: none; margin-top: 16px; }
+  .btn-ghost:hover { color: var(--text); }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="logo">⚡ Orreryx</div>
+  <div id="done-view" style="display:none">
+    <div class="icon">✅</div>
+    <h1>You're unsubscribed.</h1>
+    <p>You've been removed from the Orreryx Intel newsletter. You won't receive any more emails from us.</p>
+    <a class="btn" href="/">Back to Orreryx</a>
+    <br>
+    <a class="btn-ghost" href="/newsletter">Subscribe again any time</a>
+  </div>
+  <div id="form-view">
+    <div class="icon">📭</div>
+    <h1>Unsubscribe</h1>
+    <p>Enter your email address below to unsubscribe from the Orreryx Intel newsletter.</p>
+    <input id="email" type="email" placeholder="your@email.com" style="width:100%;background:#0a0e1a;border:1px solid var(--border);color:var(--text);padding:12px 16px;border-radius:8px;font-size:1rem;outline:none;margin-bottom:16px;">
+    <button onclick="unsub()" style="width:100%;background:var(--accent);color:#000;border:none;padding:13px;border-radius:8px;font-size:1rem;font-weight:700;cursor:pointer;">Unsubscribe</button>
+    <br>
+    <a class="btn-ghost" href="/">Cancel — go back to Orreryx</a>
+  </div>
+</div>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('done') === '1') {
+    document.getElementById('done-view').style.display = 'block';
+    document.getElementById('form-view').style.display = 'none';
+  }
+  async function unsub() {
+    const email = document.getElementById('email').value.trim();
+    if (!email || !email.includes('@')) return;
+    window.location.href = `/api/newsletter?action=unsubscribe&email=${encodeURIComponent(email)}`;
+  }
+  document.getElementById('email').addEventListener('keydown', e => { if (e.key === 'Enter') unsub(); });
+</script>
+</body>
+</html>

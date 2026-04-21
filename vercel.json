@@ -15,7 +15,7 @@
     "api/newsletter.js":   { "maxDuration": 30 }
   },
   "routes": [
-    { "src": "/api/newsletter",       "dest": "/api/newsletter.js" },
+    { "src": "/api/newsletter(.*)",    "dest": "/api/newsletter.js" },
     { "src": "/api/anthropic",       "dest": "/api/anthropic.js" },
     { "src": "/api/paypal(.*)",      "dest": "/api/paypal.js" },
     { "src": "/api/events(.*)",      "dest": "/api/events.js" },
@@ -66,6 +66,9 @@
     { "src": "/china-taiwan-war",    "dest": "/china-taiwan-war.html" },
     { "src": "/russia-ukraine-war",  "dest": "/russia-ukraine-war.html" },
     { "src": "/uranium-price",       "dest": "/uranium-price.html" },
+    { "src": "/newsletter",             "dest": "/newsletter.html" },
+    { "src": "/widget",                "dest": "/widget.html" },
+    { "src": "/unsubscribe",           "dest": "/unsubscribe.html" },
     { "src": "/enterprise",            "dest": "/enterprise.html" },
     { "src": "/demo",                 "dest": "/demo.html" },
     { "src": "/smm",                  "dest": "/smm-week1.html" },
