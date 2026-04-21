@@ -1,6 +1,7 @@
-// api/newsletter.js — Email capture + 5-step automated drip sequence
+// api/newsletter.js — Email capture + drip sequence + daily digest broadcast
 // POST { email, source }                → subscribe + schedule drip sequence
 // POST { action:'process_drip', token } → cron: send due drip emails
+// POST { action:'daily_digest', token } → cron: broadcast daily digest to all subscribers
 // POST { action:'stats', token }        → return subscriber stats
 
 const R_URL   = process.env.UPSTASH_REDIS_REST_URL;
@@ -220,6 +221,72 @@ async function processDrip() {
   return { processed: due.length, sent };
 }
 
+// ── DAILY DIGEST — top 5 risk signals, broadcast to all active subscribers ────
+const DAILY_RISKS = [
+  { score:94, flag:'🇺🇦', label:'Ukraine–Russia', note:'Spring offensive. NATO corridor activity elevated.' },
+  { score:88, flag:'🇮🇳', label:'India–Pakistan', note:'LoC violations at 2-year high. Mobilisation confirmed.' },
+  { score:84, flag:'🇮🇷', label:'Iran Nuclear', note:'Enrichment at 60%. IAEA access restricted.' },
+  { score:82, flag:'🌍', label:'Middle East Multi-Front', note:'Hezbollah, Houthis, IRGC coordination increasing.' },
+  { score:76, flag:'🇰🇵', label:'North Korea', note:'ICBM test cycle ongoing. Russia arms deal active.' },
+];
+
+function dailyDigestHtml(date) {
+  const unsub = `${HOST}/unsubscribe`;
+  const dateStr = new Date(date).toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
+  const rows = DAILY_RISKS.map(r => {
+    const color = r.score >= 85 ? '#e03836' : r.score >= 70 ? '#f59e0b' : '#10b981';
+    return `<tr><td style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:20px">${r.flag}</td><td style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.06)"><div style="font-size:13px;font-weight:700;color:#f0f0ec">${r.label}</div><div style="font-size:12px;color:#9e9e9e">${r.note}</div></td><td style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);text-align:right"><span style="background:${color}20;color:${color};border:1px solid ${color}40;border-radius:4px;padding:3px 8px;font-size:12px;font-weight:700">${r.score}</span></td></tr>`;
+  }).join('');
+  return `<div style="background:#09090b;color:#f0f0ec;padding:40px;max-width:520px;margin:0 auto;border:1px solid rgba(255,255,255,.1);border-radius:8px;font-family:'Helvetica Neue',sans-serif">
+    <div style="margin-bottom:20px;font-size:16px;font-weight:800">⊕ Orrery</div>
+    <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Daily Risk Briefing · ${dateStr}</div>
+    <div style="font-size:20px;font-weight:800;margin-bottom:20px">Top 5 Risk Signals Today</div>
+    <table style="width:100%;border-collapse:collapse">${rows}</table>
+    <div style="margin-top:24px">
+      <a href="${HOST}/risk-dashboard" style="display:block;background:#e03836;color:#fff;text-decoration:none;text-align:center;padding:13px;border-radius:4px;font-weight:700;font-size:14px;margin-bottom:12px">View Full Risk Dashboard →</a>
+      <a href="${HOST}/gold-price" style="display:inline-block;background:rgba(245,158,11,.1);color:#f59e0b;text-decoration:none;padding:8px 14px;border-radius:4px;font-size:12px;margin-right:8px">Gold Price</a>
+      <a href="${HOST}/oil-price" style="display:inline-block;background:rgba(245,158,11,.1);color:#f59e0b;text-decoration:none;padding:8px 14px;border-radius:4px;font-size:12px;margin-right:8px">Oil Price</a>
+      <a href="${HOST}/geopolitics-news" style="display:inline-block;background:rgba(245,158,11,.1);color:#f59e0b;text-decoration:none;padding:8px 14px;border-radius:4px;font-size:12px">Latest News</a>
+    </div>
+    <div style="margin-top:28px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08);font-size:11px;color:#484844">© 2026 Orrery Intelligence · <a href="${HOST}" style="color:#484844">orreryx.io</a> · <a href="${unsub}" style="color:#484844">Unsubscribe</a></div>
+  </div>`;
+}
+
+async function broadcastDailyDigest() {
+  // Scan all newsletter:* keys and send to active subscribers (batch of 100)
+  let cursor = 0, sent = 0, skipped = 0;
+  const today = new Date().toISOString().split('T')[0];
+  const digestHtml = dailyDigestHtml(Date.now());
+  const subject = `☢ Daily Risk Brief — ${new Date().toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' })}`;
+
+  do {
+    const result = await redis('SCAN', cursor, 'MATCH', 'newsletter:*@*', 'COUNT', 100);
+    if (!result) break;
+    [cursor, ...[]]; // satisfy linter
+    const [nextCursor, keys] = result;
+    cursor = parseInt(nextCursor) || 0;
+    if (!keys || !keys.length) break;
+
+    for (const key of keys) {
+      try {
+        const raw = await redis('GET', key);
+        if (!raw) continue;
+        const sub = JSON.parse(raw);
+        if (sub.unsubscribed) { skipped++; continue; }
+        // Avoid re-sending same day
+        if (sub.last_digest === today) { skipped++; continue; }
+        const ok = await sendEmail(sub.email, subject, digestHtml);
+        if (ok) {
+          sent++;
+          await redis('SET', key, JSON.stringify({ ...sub, last_digest: today }));
+        }
+      } catch (e) { /* skip bad records */ }
+    }
+  } while (cursor !== 0);
+
+  return { sent, skipped };
+}
+
 // ── MAIN HANDLER ─────────────────────────────────────────────────────────────
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -259,6 +326,12 @@ export default async function handler(req, res) {
   if (body.action === 'process_drip') {
     if (body.token !== CRON_SECRET) return res.status(401).json({ error: 'Unauthorized' });
     const result = await processDrip();
+    return res.status(200).json({ ok: true, ...result });
+  }
+
+  if (body.action === 'daily_digest') {
+    if (body.token !== CRON_SECRET) return res.status(401).json({ error: 'Unauthorized' });
+    const result = await broadcastDailyDigest();
     return res.status(200).json({ ok: true, ...result });
   }
 

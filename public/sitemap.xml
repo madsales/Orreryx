@@ -288,4 +288,88 @@
     <priority>0.80</priority>
   </url>
 
+  <url>
+    <loc>https://www.orreryx.io/top-risks-2026</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.94</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/risk-dashboard</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.93</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/country/ukraine</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/country/russia</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/country/china</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/country/iran</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.94</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/country/israel</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.94</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/country/india</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.93</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/country/pakistan</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.93</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/country/north-korea</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.92</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/country/taiwan</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.92</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/country/saudi-arabia</loc>
+    <lastmod>2026-04-21</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.91</priority>
+  </url>
+
 </urlset>

@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google Ads Tag -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18101684972"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag("js", new Date());
+  gtag("config", "AW-18101684972");
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<title>Geopolitical Risk Dashboard 2026 — Live Conflict &amp; Country Risk Scores | Orreryx</title>
+<meta name="description" content="Live geopolitical risk dashboard: risk scores for 20+ active conflicts and 10 countries, traffic-light status (deteriorated/stable/improved), market implications. Updated daily.">
+<meta name="keywords" content="geopolitical risk dashboard, global conflict risk tracker, country risk scores 2026, conflict risk monitor, live geopolitical risk, global risk scores, country risk analysis 2026">
+<link rel="canonical" href="https://www.orreryx.io/risk-dashboard">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Geopolitical Risk Dashboard 2026 — Live Conflict &amp; Country Risk Scores | Orreryx">
+<meta property="og:description" content="Live geopolitical risk dashboard: risk scores for 20+ active conflicts and 10 countries, traffic-light status, market implications. Updated daily.">
+<meta property="og:url" content="https://www.orreryx.io/risk-dashboard">
+<meta property="og:image" content="https://www.orreryx.io/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Geopolitical Risk Dashboard 2026 | Orreryx">
+<meta name="twitter:description" content="Live conflict risk scores and country risk ratings for 2026. Traffic-light status, trend tracking, and market impact analysis. Updated daily.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://www.orreryx.io/risk-dashboard#webpage",
+      "url": "https://www.orreryx.io/risk-dashboard",
+      "name": "Geopolitical Risk Dashboard 2026 — Live Conflict & Country Risk Scores",
+      "description": "Live geopolitical risk dashboard with conflict risk scores, country risk ratings, and market impact analysis. Updated daily with traffic-light status indicators.",
+      "isPartOf": { "@id": "https://www.orreryx.io/#website" },
+      "datePublished": "2026-01-01",
+      "dateModified": "2026-04-21",
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.orreryx.io/" },
+          { "@type": "ListItem", "position": 2, "name": "Risk Dashboard", "item": "https://www.orreryx.io/risk-dashboard" }
+        ]
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is a geopolitical risk dashboard?",
+          "acceptedAnswer": { "@type": "Answer", "text": "A geopolitical risk dashboard is a real-time monitoring tool that tracks political instability, military conflicts, diplomatic crises and other risks across countries and regions, translating them into quantitative risk scores and market impact indicators. Professional investors, risk managers and supply chain analysts use geopolitical risk dashboards to identify emerging threats before they are reflected in asset prices. Orreryx's dashboard tracks 15+ active conflicts, 10 country risk profiles and 6 asset classes, updated daily with the latest intelligence." }
+        },
+        {
+          "@type": "Question",
+          "name": "Which countries have the highest geopolitical risk in 2026?",
+          "acceptedAnswer": { "@type": "Answer", "text": "In 2026, the countries with the highest geopolitical risk scores are Iran (84/100), Ukraine (88/100), Russia (82/100), Pakistan (78/100) and North Korea (76/100). Iran's risk is driven by its nuclear programme and proxy network; Ukraine by active war with Russia; Russia by sanctions exposure and military overextension; Pakistan by India-Pakistan tensions and economic fragility; North Korea by ICBM testing and nuclear posture. All five countries show deteriorating or volatile trend indicators heading into mid-2026." }
+        },
+        {
+          "@type": "Question",
+          "name": "How do geopolitical risk scores affect commodity prices?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Geopolitical risk scores directly drive commodity price volatility through supply disruption risk, safe-haven demand and sanctions-driven trade rerouting. Oil prices are most sensitive to Middle East and Russia-Ukraine risk scores; wheat is driven by Ukraine-Russia and Sahel scores; gold correlates with overall global risk levels, especially nuclear risk indicators and Middle East tensions. Natural gas in Europe tracks the Ukraine-Russia risk score most closely. When risk scores deteriorate rapidly, commodity markets price in supply risk premiums that can add 10-25% to spot prices within days." }
+        },
+        {
+          "@type": "Question",
+          "name": "How often is the Orreryx risk dashboard updated?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The Orreryx risk dashboard is updated daily with the latest conflict data, diplomatic developments and military intelligence. During acute crisis events — such as a missile exchange, military exercise or diplomatic breakdown — updates are made in near real-time as events are verified. Risk scores use a 7-day rolling assessment window to avoid over-reaction to single events while remaining responsive to genuine trend changes. Subscribers receive push alerts when any monitored conflict crosses key threshold changes (e.g., a score move of 10+ points, or a status change from VOLATILE to DETERIORATING)." }
+        }
+      ]
+    }
+  ]
+}
+</script>
+<link rel="icon" type="image/svg+xml" href="/icon.svg">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07070a;--bg2:#0d0d12;--bg3:#12121a;--bg4:#1a1a24;
+  --brd:rgba(255,255,255,.06);--brd2:rgba(255,255,255,.1);--brd3:rgba(255,255,255,.16);
+  --txt:#f2f2ee;--txt2:#a8a8a2;--txt3:#585858;
+  --red:#e03836;--red2:rgba(224,56,54,.12);
+  --grn:#3a9e6e;--grn2:rgba(58,158,110,.12);
+  --gold:#d4a843;--gold2:rgba(212,168,67,.12);
+  --amber:#f59e0b;--amber2:rgba(245,158,11,.12);
+  --critical:#ef4444;--critical2:rgba(239,68,68,.12);
+  --volatile:#f59e0b;--volatile2:rgba(245,158,11,.12);
+  --stable:#3a9e6e;--stable2:rgba(58,158,110,.12);
+  --sans:'Inter',system-ui,sans-serif;--mono:'IBM Plex Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);line-height:1.7}
+nav{position:fixed;top:0;left:0;right:0;z-index:200;height:56px;padding:0 40px;display:flex;align-items:center;gap:8px;background:rgba(7,7,10,.85);backdrop-filter:blur(24px);border-bottom:1px solid var(--brd)}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;font-family:var(--mono);font-size:14px;font-weight:700;color:var(--txt);letter-spacing:.05em}
+.nav-right{margin-left:auto;display:flex;gap:8px}
+.nav-a{padding:7px 16px;font-size:12px;font-weight:500;color:var(--txt2);text-decoration:none;border-radius:4px;border:1px solid var(--brd2);transition:all .15s}
+.nav-a:hover{color:var(--txt);border-color:var(--brd3)}
+.nav-cta{background:var(--red);border-color:var(--red);color:#fff;font-weight:600}
+.nav-cta:hover{background:#c42e2c;border-color:#c42e2c}
+main{max-width:900px;margin:0 auto;padding:96px 24px 80px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--red2);border:1px solid rgba(224,56,54,.3);border-radius:20px;padding:5px 14px;font-family:var(--mono);font-size:9px;font-weight:700;color:var(--red);letter-spacing:.14em;text-transform:uppercase;margin-bottom:20px}
+.dot-live{width:8px;height:8px;border-radius:50%;background:var(--red);animation:blink 1.4s infinite;flex-shrink:0}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+h1{font-size:clamp(26px,4vw,46px);font-weight:800;line-height:1.1;letter-spacing:-.03em;margin-bottom:16px}
+h1 em{font-style:normal;color:var(--amber)}
+.lead{font-size:16px;color:var(--txt2);max-width:700px;margin-bottom:40px;line-height:1.8}
+.section-title{font-size:18px;font-weight:700;letter-spacing:-.02em;margin-bottom:16px;padding-top:8px}
+.section-subtitle{font-size:13px;color:var(--txt3);font-family:var(--mono);letter-spacing:.04em;text-transform:uppercase;margin-bottom:20px}
+
+/* Summary stat cards */
+.stat-row{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:48px}
+.stat-card{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:20px 24px}
+.stat-num{font-family:var(--mono);font-size:36px;font-weight:700;color:var(--txt);line-height:1;margin-bottom:6px}
+.stat-num.red{color:var(--critical)}
+.stat-num.amber{color:var(--amber)}
+.stat-num.gold{color:var(--gold)}
+.stat-label{font-size:12px;color:var(--txt3);letter-spacing:.04em;text-transform:uppercase;font-family:var(--mono)}
+
+/* Conflict grid */
+.conflict-grid{width:100%;border-collapse:collapse;margin-bottom:48px;font-size:13px}
+.conflict-grid thead tr{border-bottom:1px solid var(--brd2)}
+.conflict-grid th{text-align:left;font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--txt3);padding:8px 10px;white-space:nowrap}
+.conflict-grid tbody tr{border-bottom:1px solid var(--brd);transition:background .12s}
+.conflict-grid tbody tr:hover{background:rgba(255,255,255,.025)}
+.conflict-grid td{padding:12px 10px;vertical-align:middle}
+.conflict-name{color:var(--txt);font-weight:600;font-size:13px;white-space:nowrap}
+.conflict-note{color:var(--txt3);font-size:11px;margin-top:2px;line-height:1.4}
+.status-pill{display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 9px;border-radius:20px;white-space:nowrap}
+.status-pill.det{background:var(--critical2);color:var(--critical);border:1px solid rgba(239,68,68,.3)}
+.status-pill.vol{background:var(--volatile2);color:var(--volatile);border:1px solid rgba(245,158,11,.3)}
+.status-pill.sta{background:var(--stable2);color:var(--stable);border:1px solid rgba(58,158,110,.3)}
+.risk-score{font-family:var(--mono);font-size:14px;font-weight:700;white-space:nowrap}
+.risk-score.crit{color:var(--critical)}
+.risk-score.high{color:var(--amber)}
+.risk-score.mod{color:var(--gold)}
+.risk-score.low{color:var(--stable)}
+.trend{font-family:var(--mono);font-size:16px;font-weight:700}
+.trend.up{color:var(--critical)}
+.trend.flat{color:var(--txt3)}
+.trend.dn{color:var(--stable)}
+.details-link{font-size:11px;font-weight:600;color:var(--amber);text-decoration:none;white-space:nowrap;transition:opacity .15s}
+.details-link:hover{opacity:.7}
+
+/* Country cards */
+.country-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:16px;margin-bottom:48px}
+.country-card{background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:20px 22px;transition:border-color .15s}
+.country-card:hover{border-color:var(--brd3)}
+.country-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.country-name-flag{display:flex;align-items:center;gap:10px}
+.country-flag{font-size:22px;line-height:1}
+.country-name{font-size:15px;font-weight:700;color:var(--txt)}
+.overall-score{font-family:var(--mono);font-size:22px;font-weight:700;line-height:1}
+.overall-score.crit{color:var(--critical)}
+.overall-score.high{color:var(--amber)}
+.overall-score.mod{color:var(--gold)}
+.overall-score.low{color:var(--stable)}
+.score-bar-wrap{margin-bottom:12px}
+.score-bar-row{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.score-bar-label{font-size:10px;color:var(--txt3);font-family:var(--mono);letter-spacing:.04em;width:72px;flex-shrink:0}
+.score-bar-track{flex:1;height:5px;background:var(--bg4);border-radius:3px;overflow:hidden}
+.score-bar-fill{height:100%;border-radius:3px}
+.score-bar-val{font-family:var(--mono);font-size:10px;font-weight:700;width:30px;text-align:right;flex-shrink:0}
+.country-link{display:inline-flex;align-items:center;gap:4px;font-size:11px;font-weight:600;color:var(--amber);text-decoration:none;margin-top:8px;transition:opacity .15s}
+.country-link:hover{opacity:.7}
+
+/* Heatmap */
+.heatmap-wrap{margin-bottom:48px;overflow-x:auto}
+.heatmap{width:100%;border-collapse:collapse;font-size:12px;min-width:640px}
+.heatmap th{font-family:var(--mono);font-size:9px;letter-spacing:.06em;text-transform:uppercase;color:var(--txt3);padding:8px 12px;border-bottom:1px solid var(--brd2);white-space:nowrap;text-align:center}
+.heatmap th:first-child{text-align:left}
+.heatmap td{padding:10px 12px;border-bottom:1px solid var(--brd);text-align:center;vertical-align:middle}
+.heatmap td:first-child{text-align:left;color:var(--txt);font-weight:600;font-size:13px;white-space:nowrap}
+.hm-cell{display:inline-flex;align-items:center;justify-content:center;gap:4px;font-size:10px;font-weight:700;font-family:var(--mono);padding:3px 8px;border-radius:4px;white-space:nowrap}
+.hm-hi{background:var(--critical2);color:var(--critical);border:1px solid rgba(239,68,68,.25)}
+.hm-md{background:var(--volatile2);color:var(--volatile);border:1px solid rgba(245,158,11,.25)}
+.hm-lo{background:var(--bg4);color:var(--txt3);border:1px solid var(--brd)}
+
+/* FAQ */
+.faq{margin:40px 0}
+.faq h2{font-size:22px;font-weight:700;margin-bottom:24px;letter-spacing:-.02em}
+.faq-item{border-bottom:1px solid var(--brd);padding:18px 0}
+.faq-q{font-size:15px;font-weight:600;color:var(--txt);margin-bottom:8px}
+.faq-a{font-size:13.5px;color:var(--txt2);line-height:1.75}
+
+/* Related */
+.related{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:12px;margin:40px 0}
+.related-link{background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:16px;text-decoration:none;transition:border-color .15s}
+.related-link:hover{border-color:var(--brd3)}
+.related-link-label{font-family:var(--mono);font-size:9px;color:var(--txt3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.related-link-title{font-size:13px;font-weight:600;color:var(--txt)}
+
+/* CTA */
+.cta-box{background:var(--amber2);border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:32px;text-align:center;margin:40px 0}
+.cta-box h2{font-size:20px;font-weight:700;margin-bottom:8px}
+.cta-box p{font-size:13px;color:var(--txt2);margin-bottom:20px}
+.cta-btn{display:inline-block;background:var(--red);color:#fff;text-decoration:none;padding:13px 28px;border-radius:6px;font-size:13px;font-weight:700;letter-spacing:.04em;transition:all .15s}
+.cta-btn:hover{background:#c42e2c;transform:translateY(-1px)}
+
+footer{border-top:1px solid var(--brd);padding:32px 24px;text-align:center;font-size:12px;color:var(--txt3)}
+footer a{color:var(--txt3);text-decoration:none;margin:0 10px}
+footer a:hover{color:var(--txt2)}
+
+@media(max-width:700px){
+  .stat-row{grid-template-columns:1fr 1fr}
+  .stat-row .stat-card:last-child{grid-column:1/-1}
+  .country-grid{grid-template-columns:1fr}
+  nav{padding:0 16px}
+  main{max-width:100%}
+}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">
+    <svg width="20" height="20" viewBox="0 0 32 32"><rect width="32" height="32" rx="4" fill="#f0f0ec"/><ellipse cx="16" cy="16" rx="10" ry="4" fill="none" stroke="#09090a" stroke-width="1" transform="rotate(-30,16,16)"/><circle cx="16" cy="16" r="2" fill="#09090a"/><circle cx="12" cy="20" r="1" fill="#e03836"/></svg>
+    Orreryx
+  </a>
+  <div class="nav-right">
+    <a href="/doomsday-clock" class="nav-a">Risk Index</a>
+    <a href="/ww3-news" class="nav-a">WW3 News</a>
+    <a href="/login?plan=f" class="nav-cta nav-a">FREE TRIAL →</a>
+  </div>
+</nav>
+
+<main>
+  <div class="eyebrow"><div class="dot-live"></div>Updated Daily</div>
+  <h1><em>Global Risk</em> Dashboard</h1>
+  <p class="lead">Live geopolitical risk scores across active conflicts, country risk profiles and market impact indicators. Traffic-light status, trend direction and asset exposure — the reference page for investors and risk managers tracking 2026 instability.</p>
+
+  <!-- Summary Stats -->
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="stat-num amber">56</div>
+      <div class="stat-label">Active Conflicts</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num red">8</div>
+      <div class="stat-label">Critical Risk Zones</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num gold">74<span style="font-size:18px;color:var(--txt3)">/100</span></div>
+      <div class="stat-label">Avg Risk Score</div>
+    </div>
+  </div>
+
+  <!-- Conflict Status Grid -->
+  <div class="section-title">Conflict Status Grid</div>
+  <div class="section-subtitle">15 key flashpoints — status, score &amp; trend</div>
+  <div style="overflow-x:auto;margin-bottom:48px">
+  <table class="conflict-grid">
+    <thead>
+      <tr>
+        <th>Conflict</th>
+        <th>Status</th>
+        <th>Score</th>
+        <th>Trend</th>
+        <th>Note</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <div class="conflict-name">🇺🇦🇷🇺 Ukraine-Russia</div>
+        </td>
+        <td><span class="status-pill det">🔴 Deteriorating</span></td>
+        <td><span class="risk-score crit">94/100</span></td>
+        <td><span class="trend up">↑</span></td>
+        <td><div class="conflict-note">NATO red lines tested; nuclear signalling at highest level since Cold War</div></td>
+        <td><a href="/ukraine-war" class="details-link">Details →</a></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="conflict-name">🇮🇱🇵🇸 Gaza-Israel</div>
+        </td>
+        <td><span class="status-pill det">🔴 Deteriorating</span></td>
+        <td><span class="risk-score crit">91/100</span></td>
+        <td><span class="trend flat">→</span></td>
+        <td><div class="conflict-note">No ceasefire; regional spillover into Lebanon &amp; Yemen ongoing</div></td>
+        <td><a href="/israel-gaza" class="details-link">Details →</a></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="conflict-name">🇮🇳🇵🇰 India-Pakistan</div>
+        </td>
+        <td><span class="status-pill det">🔴 Deteriorating</span></td>
+        <td><span class="risk-score crit">88/100</span></td>
+        <td><span class="trend up">↑</span></td>
+        <td><div class="conflict-note">LoC violations at 2-year high; both nuclear-armed states on alert</div></td>
+        <td><a href="/top-risks-2026" class="details-link">Details →</a></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="conflict-name">🌏 Middle East Regional</div>
+        </td>
+        <td><span class="status-pill det">🔴 Deteriorating</span></td>
+        <td><span class="risk-score crit">82/100</span></td>
+        <td><span class="trend up">↑</span></td>
+        <td><div class="conflict-note">Iran proxies active across Lebanon, Yemen, Iraq, Syria simultaneously</div></td>
+        <td><a href="/israel-gaza" class="details-link">Details →</a></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="conflict-name">🇮🇷 Iran Nuclear</div>
+        </td>
+        <td><span class="status-pill vol">🟡 Volatile</span></td>
+        <td><span class="risk-score high">79/100</span></td>
+        <td><span class="trend flat">→</span></td>
+        <td><div class="conflict-note">60% enrichment; IAEA access limited; Israeli strike window narrowing</div></td>
+        <td><a href="/iran-nuclear" class="details-link">Details →</a></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="conflict-name">🇹🇼🇨🇳 China-Taiwan</div>
+        </td>
+        <td><span class="status-pill vol">🟡 Volatile</span></td>
+        <td><span class="risk-score high">74/100</span></td>
+        <td><span class="trend up">↑</span></td>
+        <td><div class="conflict-note">PLA exercises increasing; $1T semiconductor supply chain at risk</div></td>
+        <td><a href="/top-risks-2026" class="details-link">Details →</a></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="conflict-name">🇰🇵 North Korea</div>
+        </td>
+        <td><span class="status-pill vol">🟡 Volatile</span></td>
+        <td><span class="risk-score high">72/100</span></td>
+        <td><span class="trend flat">→</span></td>
+        <td><div class="conflict-note">ICBM tests continuing; troops deployed in Russia; doctrine escalating</div></td>
+        <td><a href="/doomsday-clock" class="details-link">Details →</a></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="conflict-name">🇷🇺🌍 Russia-NATO</div>
+        </td>
+        <td><span class="status-pill vol">🟡 Volatile</span></td>
+        <td><span class="risk-score high">71/100</span></td>
+        <td><span class="trend flat">→</span></td>
+        <td><div class="conflict-note">Drone attacks reaching NATO territory; Article 5 consultation active</div></td>
+        <td><a href="/ukraine-war" class="details-link">Details →</a></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="conflict-name">🇾🇪 Yemen-Red Sea</div>
+        </td>
+        <td><span class="status-pill vol">🟡 Volatile</span></td>
+        <td><span class="risk-score high">69/100</span></td>
+        <td><span class="trend flat">→</span></td>
+        <td><div class="conflict-note">Houthi shipping attacks ongoing; $1T trade rerouted around Cape</div></td>
+        <td><a href="/israel-gaza" class="details-link">Details →</a></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="conflict-name">🇸🇩 Sudan</div>
+        </td>
+        <td><span class="status-pill vol">🟡 Volatile</span></td>
+        <td><span class="risk-score high">68/100</span></td>
+        <td><span class="trend flat">→</span></td>
+        <td><div class="conflict-note">8M+ displaced; largest displacement crisis globally; proxy war deepening</div></td>
+        <td><a href="/global-conflicts-2025" class="details-link">Details →</a></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="conflict-name">🌍 Sahel Region</div>
+        </td>
+        <td><span class="status-pill vol">🟡 Volatile</span></td>
+        <td><span class="risk-score high">62/100</span></td>
+        <td><span class="trend flat">→</span></td>
+        <td><div class="conflict-note">State authority collapse in Mali, Niger, Chad; Russia/Wagner presence</div></td>
+        <td><a href="/global-conflicts-2025" class="details-link">Details →</a></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="conflict-name">🇲🇲 Myanmar</div>
+        </td>
+        <td><span class="status-pill vol">🟡 Volatile</span></td>
+        <td><span class="risk-score high">65/100</span></td>
+        <td><span class="trend flat">→</span></td>
+        <td><div class="conflict-note">Junta losing territory; resistance coalition advancing; China watching</div></td>
+        <td><a href="/global-conflicts-2025" class="details-link">Details →</a></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="conflict-name">🇪🇹 Ethiopia</div>
+        </td>
+        <td><span class="status-pill vol">🟡 Volatile</span></td>
+        <td><span class="risk-score mod">58/100</span></td>
+        <td><span class="trend flat">→</span></td>
+        <td><div class="conflict-note">Tigray agreement fragile; Amhara tensions rising; Nile dispute escalating</div></td>
+        <td><a href="/global-conflicts-2025" class="details-link">Details →</a></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="conflict-name">🇵🇭🇨🇳 South China Sea</div>
+        </td>
+        <td><span class="status-pill vol">🟡 Volatile</span></td>
+        <td><span class="risk-score high">76/100</span></td>
+        <td><span class="trend up">↑</span></td>
+        <td><div class="conflict-note">Philippine resupply missions confronted; US treaty obligation near trigger</div></td>
+        <td><a href="/top-risks-2026" class="details-link">Details →</a></td>
+      </tr>
+      <tr>
+        <td>
+          <div class="conflict-name">🇦🇿🇦🇲 Nagorno-Karabakh</div>
+        </td>
+        <td><span class="status-pill sta">🟢 Stable</span></td>
+        <td><span class="risk-score low">41/100</span></td>
+        <td><span class="trend dn">↓</span></td>
+        <td><div class="conflict-note">Azerbaijani control consolidated; Armenian diaspora tensions remain</div></td>
+        <td><a href="/global-conflicts-2025" class="details-link">Details →</a></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <!-- Country Risk Score Cards -->
+  <div class="section-title">Country Risk Scores</div>
+  <div class="section-subtitle">Overall risk + political / security / economic sub-scores</div>
+  <div class="country-grid">
+
+    <div class="country-card">
+      <div class="country-header">
+        <div class="country-name-flag">
+          <span class="country-flag">🇺🇦</span>
+          <span class="country-name">Ukraine</span>
+        </div>
+        <span class="overall-score crit">88</span>
+      </div>
+      <div class="score-bar-wrap">
+        <div class="score-bar-row">
+          <span class="score-bar-label">Political</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:82%;background:var(--critical)"></div></div>
+          <span class="score-bar-val" style="color:var(--critical)">82</span>
+        </div>
+        <div class="score-bar-row">
+          <span class="score-bar-label">Security</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:95%;background:var(--critical)"></div></div>
+          <span class="score-bar-val" style="color:var(--critical)">95</span>
+        </div>
+        <div class="score-bar-row">
+          <span class="score-bar-label">Economic</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:78%;background:var(--amber)"></div></div>
+          <span class="score-bar-val" style="color:var(--amber)">78</span>
+        </div>
+      </div>
+      <a href="/ukraine-war" class="country-link">View Full Profile →</a>
+    </div>
+
+    <div class="country-card">
+      <div class="country-header">
+        <div class="country-name-flag">
+          <span class="country-flag">🇮🇷</span>
+          <span class="country-name">Iran</span>
+        </div>
+        <span class="overall-score crit">84</span>
+      </div>
+      <div class="score-bar-wrap">
+        <div class="score-bar-row">
+          <span class="score-bar-label">Political</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:88%;background:var(--critical)"></div></div>
+          <span class="score-bar-val" style="color:var(--critical)">88</span>
+        </div>
+        <div class="score-bar-row">
+          <span class="score-bar-label">Security</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:86%;background:var(--critical)"></div></div>
+          <span class="score-bar-val" style="color:var(--critical)">86</span>
+        </div>
+        <div class="score-bar-row">
+          <span class="score-bar-label">Economic</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:76%;background:var(--amber)"></div></div>
+          <span class="score-bar-val" style="color:var(--amber)">76</span>
+        </div>
+      </div>
+      <a href="/iran-nuclear" class="country-link">View Full Profile →</a>
+    </div>
+
+    <div class="country-card">
+      <div class="country-header">
+        <div class="country-name-flag">
+          <span class="country-flag">🇷🇺</span>
+          <span class="country-name">Russia</span>
+        </div>
+        <span class="overall-score crit">82</span>
+      </div>
+      <div class="score-bar-wrap">
+        <div class="score-bar-row">
+          <span class="score-bar-label">Political</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:79%;background:var(--amber)"></div></div>
+          <span class="score-bar-val" style="color:var(--amber)">79</span>
+        </div>
+        <div class="score-bar-row">
+          <span class="score-bar-label">Security</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:91%;background:var(--critical)"></div></div>
+          <span class="score-bar-val" style="color:var(--critical)">91</span>
+        </div>
+        <div class="score-bar-row">
+          <span class="score-bar-label">Economic</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:72%;background:var(--amber)"></div></div>
+          <span class="score-bar-val" style="color:var(--amber)">72</span>
+        </div>
+      </div>
+      <a href="/ukraine-war" class="country-link">View Full Profile →</a>
+    </div>
+
+    <div class="country-card">
+      <div class="country-header">
+        <div class="country-name-flag">
+          <span class="country-flag">🇵🇰</span>
+          <span class="country-name">Pakistan</span>
+        </div>
+        <span class="overall-score crit">78</span>
+      </div>
+      <div class="score-bar-wrap">
+        <div class="score-bar-row">
+          <span class="score-bar-label">Political</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:82%;background:var(--critical)"></div></div>
+          <span class="score-bar-val" style="color:var(--critical)">82</span>
+        </div>
+        <div class="score-bar-row">
+          <span class="score-bar-label">Security</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:81%;background:var(--critical)"></div></div>
+          <span class="score-bar-val" style="color:var(--critical)">81</span>
+        </div>
+        <div class="score-bar-row">
+          <span class="score-bar-label">Economic</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:73%;background:var(--amber)"></div></div>
+          <span class="score-bar-val" style="color:var(--amber)">73</span>
+        </div>
+      </div>
+      <a href="/top-risks-2026" class="country-link">View Full Profile →</a>
+    </div>
+
+    <div class="country-card">
+      <div class="country-header">
+        <div class="country-name-flag">
+          <span class="country-flag">🇰🇵</span>
+          <span class="country-name">North Korea</span>
+        </div>
+        <span class="overall-score crit">76</span>
+      </div>
+      <div class="score-bar-wrap">
+        <div class="score-bar-row">
+          <span class="score-bar-label">Political</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:68%;background:var(--amber)"></div></div>
+          <span class="score-bar-val" style="color:var(--amber)">68</span>
+        </div>
+        <div class="score-bar-row">
+          <span class="score-bar-label">Security</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:89%;background:var(--critical)"></div></div>
+          <span class="score-bar-val" style="color:var(--critical)">89</span>
+        </div>
+        <div class="score-bar-row">
+          <span class="score-bar-label">Economic</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:62%;background:var(--amber)"></div></div>
+          <span class="score-bar-val" style="color:var(--amber)">62</span>
+        </div>
+      </div>
+      <a href="/doomsday-clock" class="country-link">View Full Profile →</a>
+    </div>
+
+    <div class="country-card">
+      <div class="country-header">
+        <div class="country-name-flag">
+          <span class="country-flag">🇮🇱</span>
+          <span class="country-name">Israel</span>
+        </div>
+        <span class="overall-score crit">79</span>
+      </div>
+      <div class="score-bar-wrap">
+        <div class="score-bar-row">
+          <span class="score-bar-label">Political</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:71%;background:var(--amber)"></div></div>
+          <span class="score-bar-val" style="color:var(--amber)">71</span>
+        </div>
+        <div class="score-bar-row">
+          <span class="score-bar-label">Security</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:92%;background:var(--critical)"></div></div>
+          <span class="score-bar-val" style="color:var(--critical)">92</span>
+        </div>
+        <div class="score-bar-row">
+          <span class="score-bar-label">Economic</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:59%;background:var(--gold)"></div></div>
+          <span class="score-bar-val" style="color:var(--gold)">59</span>
+        </div>
+      </div>
+      <a href="/israel-gaza" class="country-link">View Full Profile →</a>
+    </div>
+
+    <div class="country-card">
+      <div class="country-header">
+        <div class="country-name-flag">
+          <span class="country-flag">🇨🇳</span>
+          <span class="country-name">China</span>
+        </div>
+        <span class="overall-score high">71</span>
+      </div>
+      <div class="score-bar-wrap">
+        <div class="score-bar-row">
+          <span class="score-bar-label">Political</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:62%;background:var(--amber)"></div></div>
+          <span class="score-bar-val" style="color:var(--amber)">62</span>
+        </div>
+        <div class="score-bar-row">
+          <span class="score-bar-label">Security</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:79%;background:var(--amber)"></div></div>
+          <span class="score-bar-val" style="color:var(--amber)">79</span>
+        </div>
+        <div class="score-bar-row">
+          <span class="score-bar-label">Economic</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:65%;background:var(--amber)"></div></div>
+          <span class="score-bar-val" style="color:var(--amber)">65</span>
+        </div>
+      </div>
+      <a href="/top-risks-2026" class="country-link">View Full Profile →</a>
+    </div>
+
+    <div class="country-card">
+      <div class="country-header">
+        <div class="country-name-flag">
+          <span class="country-flag">🇹🇼</span>
+          <span class="country-name">Taiwan</span>
+        </div>
+        <span class="overall-score high">69</span>
+      </div>
+      <div class="score-bar-wrap">
+        <div class="score-bar-row">
+          <span class="score-bar-label">Political</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:58%;background:var(--gold)"></div></div>
+          <span class="score-bar-val" style="color:var(--gold)">58</span>
+        </div>
+        <div class="score-bar-row">
+          <span class="score-bar-label">Security</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:81%;background:var(--critical)"></div></div>
+          <span class="score-bar-val" style="color:var(--critical)">81</span>
+        </div>
+        <div class="score-bar-row">
+          <span class="score-bar-label">Economic</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:56%;background:var(--gold)"></div></div>
+          <span class="score-bar-val" style="color:var(--gold)">56</span>
+        </div>
+      </div>
+      <a href="/top-risks-2026" class="country-link">View Full Profile →</a>
+    </div>
+
+    <div class="country-card">
+      <div class="country-header">
+        <div class="country-name-flag">
+          <span class="country-flag">🇮🇳</span>
+          <span class="country-name">India</span>
+        </div>
+        <span class="overall-score high">67</span>
+      </div>
+      <div class="score-bar-wrap">
+        <div class="score-bar-row">
+          <span class="score-bar-label">Political</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:61%;background:var(--amber)"></div></div>
+          <span class="score-bar-val" style="color:var(--amber)">61</span>
+        </div>
+        <div class="score-bar-row">
+          <span class="score-bar-label">Security</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:74%;background:var(--amber)"></div></div>
+          <span class="score-bar-val" style="color:var(--amber)">74</span>
+        </div>
+        <div class="score-bar-row">
+          <span class="score-bar-label">Economic</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:58%;background:var(--gold)"></div></div>
+          <span class="score-bar-val" style="color:var(--gold)">58</span>
+        </div>
+      </div>
+      <a href="/top-risks-2026" class="country-link">View Full Profile →</a>
+    </div>
+
+    <div class="country-card">
+      <div class="country-header">
+        <div class="country-name-flag">
+          <span class="country-flag">🇸🇦</span>
+          <span class="country-name">Saudi Arabia</span>
+        </div>
+        <span class="overall-score mod">58</span>
+      </div>
+      <div class="score-bar-wrap">
+        <div class="score-bar-row">
+          <span class="score-bar-label">Political</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:52%;background:var(--gold)"></div></div>
+          <span class="score-bar-val" style="color:var(--gold)">52</span>
+        </div>
+        <div class="score-bar-row">
+          <span class="score-bar-label">Security</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:68%;background:var(--amber)"></div></div>
+          <span class="score-bar-val" style="color:var(--amber)">68</span>
+        </div>
+        <div class="score-bar-row">
+          <span class="score-bar-label">Economic</span>
+          <div class="score-bar-track"><div class="score-bar-fill" style="width:47%;background:var(--gold)"></div></div>
+          <span class="score-bar-val" style="color:var(--gold)">47</span>
+        </div>
+      </div>
+      <a href="/gold-price" class="country-link">View Full Profile →</a>
+    </div>
+
+  </div>
+
+  <!-- Market Risk Heatmap -->
+  <div class="section-title">Market Risk Heatmap</div>
+  <div class="section-subtitle">Asset exposure to active conflict drivers</div>
+  <div class="heatmap-wrap">
+  <table class="heatmap">
+    <thead>
+      <tr>
+        <th>Asset</th>
+        <th>Ukraine-Russia</th>
+        <th>Middle East</th>
+        <th>China-Taiwan</th>
+        <th>India-Pak</th>
+        <th>Iran Nuclear</th>
+        <th>N. Korea</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Gold</td>
+        <td><span class="hm-cell hm-hi">🔴 HIGH</span></td>
+        <td><span class="hm-cell hm-hi">🔴 HIGH</span></td>
+        <td><span class="hm-cell hm-hi">🔴 HIGH</span></td>
+        <td><span class="hm-cell hm-hi">🔴 HIGH</span></td>
+        <td><span class="hm-cell hm-hi">🔴 HIGH</span></td>
+        <td><span class="hm-cell hm-md">🟡 MOD</span></td>
+      </tr>
+      <tr>
+        <td>Oil (Brent)</td>
+        <td><span class="hm-cell hm-md">🟡 MOD</span></td>
+        <td><span class="hm-cell hm-hi">🔴 HIGH</span></td>
+        <td><span class="hm-cell hm-md">🟡 MOD</span></td>
+        <td><span class="hm-cell hm-lo">⚫ LOW</span></td>
+        <td><span class="hm-cell hm-hi">🔴 HIGH</span></td>
+        <td><span class="hm-cell hm-lo">⚫ LOW</span></td>
+      </tr>
+      <tr>
+        <td>Wheat</td>
+        <td><span class="hm-cell hm-hi">🔴 HIGH</span></td>
+        <td><span class="hm-cell hm-md">🟡 MOD</span></td>
+        <td><span class="hm-cell hm-lo">⚫ LOW</span></td>
+        <td><span class="hm-cell hm-md">🟡 MOD</span></td>
+        <td><span class="hm-cell hm-lo">⚫ LOW</span></td>
+        <td><span class="hm-cell hm-lo">⚫ LOW</span></td>
+      </tr>
+      <tr>
+        <td>Natural Gas</td>
+        <td><span class="hm-cell hm-hi">🔴 HIGH</span></td>
+        <td><span class="hm-cell hm-md">🟡 MOD</span></td>
+        <td><span class="hm-cell hm-lo">⚫ LOW</span></td>
+        <td><span class="hm-cell hm-lo">⚫ LOW</span></td>
+        <td><span class="hm-cell hm-md">🟡 MOD</span></td>
+        <td><span class="hm-cell hm-lo">⚫ LOW</span></td>
+      </tr>
+      <tr>
+        <td>Defence Stocks</td>
+        <td><span class="hm-cell hm-hi">🔴 HIGH</span></td>
+        <td><span class="hm-cell hm-hi">🔴 HIGH</span></td>
+        <td><span class="hm-cell hm-hi">🔴 HIGH</span></td>
+        <td><span class="hm-cell hm-md">🟡 MOD</span></td>
+        <td><span class="hm-cell hm-md">🟡 MOD</span></td>
+        <td><span class="hm-cell hm-md">🟡 MOD</span></td>
+      </tr>
+      <tr>
+        <td>Emerging Markets</td>
+        <td><span class="hm-cell hm-md">🟡 MOD</span></td>
+        <td><span class="hm-cell hm-md">🟡 MOD</span></td>
+        <td><span class="hm-cell hm-hi">🔴 HIGH</span></td>
+        <td><span class="hm-cell hm-hi">🔴 HIGH</span></td>
+        <td><span class="hm-cell hm-md">🟡 MOD</span></td>
+        <td><span class="hm-cell hm-lo">⚫ LOW</span></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <div class="faq">
+    <h2>Frequently Asked Questions — Risk Dashboard</h2>
+    <div class="faq-item">
+      <div class="faq-q">What is a geopolitical risk dashboard?</div>
+      <div class="faq-a">A geopolitical risk dashboard is a real-time monitoring tool that tracks political instability, military conflicts, diplomatic crises and other risks across countries and regions, translating them into quantitative risk scores and market impact indicators. Professional investors, risk managers and supply chain analysts use geopolitical risk dashboards to identify emerging threats before they are reflected in asset prices. This dashboard tracks 15 active conflicts, 10 country risk profiles and 6 asset classes, updated daily with the latest intelligence.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Which countries have the highest geopolitical risk in 2026?</div>
+      <div class="faq-a">In 2026, the countries with the highest geopolitical risk scores are Ukraine (88/100), Iran (84/100), Russia (82/100), Pakistan (78/100) and North Korea (76/100). Ukraine's risk is driven by active war with Russia and nuclear signalling; Iran by its nuclear programme and proxy network; Russia by military overextension and sanctions exposure; Pakistan by India-Pakistan tensions and economic fragility; North Korea by accelerating ICBM tests and weapons-grade posture. All five countries show deteriorating or volatile trend indicators heading into mid-2026.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">How do geopolitical risk scores affect commodity prices?</div>
+      <div class="faq-a">Geopolitical risk scores directly drive commodity price volatility through supply disruption risk, safe-haven demand and sanctions-driven trade rerouting. Oil prices are most sensitive to Middle East and Iran risk scores; wheat is driven by Ukraine-Russia and Sahel scores; gold correlates with overall global risk levels, especially nuclear indicators and Middle East tensions. Natural gas in Europe tracks the Ukraine-Russia risk score most closely. When risk scores deteriorate rapidly, commodity markets price in supply risk premiums that can add 10-25% to spot prices within days.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">How often is the Orreryx risk dashboard updated?</div>
+      <div class="faq-a">The Orreryx risk dashboard is updated daily with the latest conflict data, diplomatic developments and military intelligence. During acute crisis events — such as a missile exchange, military exercise or diplomatic breakdown — updates are made in near real-time as events are verified. Risk scores use a 7-day rolling assessment window to avoid over-reaction to single events while remaining responsive to genuine trend changes. Subscribers receive push alerts when any monitored conflict crosses key threshold changes, such as a score move of 10+ points or a status change from VOLATILE to DETERIORATING.</div>
+    </div>
+  </div>
+
+  <div class="cta-box">
+    <h2>Get Real-Time Risk Alerts</h2>
+    <p>Conflict score changes, escalation alerts and market impact notifications — delivered the moment they happen. Free 3-day trial, no card required.</p>
+    <a href="/login?plan=f" class="cta-btn">START FREE TRIAL →</a>
+  </div>
+
+  <div class="related">
+    <a href="/top-risks-2026" class="related-link">
+      <div class="related-link-label">Risk Outlook</div>
+      <div class="related-link-title">Top 10 Risks 2026</div>
+    </a>
+    <a href="/doomsday-clock" class="related-link">
+      <div class="related-link-label">Risk Index</div>
+      <div class="related-link-title">Doomsday Clock 2026</div>
+    </a>
+    <a href="/ukraine-war" class="related-link">
+      <div class="related-link-label">Conflict</div>
+      <div class="related-link-title">Ukraine War News</div>
+    </a>
+    <a href="/israel-gaza" class="related-link">
+      <div class="related-link-label">Conflict</div>
+      <div class="related-link-title">Israel Gaza War</div>
+    </a>
+    <a href="/gold-price" class="related-link">
+      <div class="related-link-label">Markets</div>
+      <div class="related-link-title">Gold Price Today</div>
+    </a>
+    <a href="/ww3-news" class="related-link">
+      <div class="related-link-label">Live Updates</div>
+      <div class="related-link-title">WW3 News Today</div>
+    </a>
+  </div>
+</main>
+
+<footer>
+  <div style="margin-bottom:12px">
+    <a href="/">Home</a><a href="/doomsday-clock">Doomsday Clock</a><a href="/top-risks-2026">Top Risks 2026</a><a href="/global-conflicts-2025">Global Conflicts</a><a href="/ww3-news">WW3 News</a><a href="/ukraine-war">Ukraine War</a><a href="/israel-gaza">Israel Gaza</a><a href="/login?plan=f">Free Trial</a>
+  </div>
+  <div>&copy; 2026 Orreryx. Real-time geopolitical market intelligence.</div>
+</footer>
+<script src="/newsletter-bar.js" defer></script>
+</body>
+</html>
