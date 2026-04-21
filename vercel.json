@@ -2,7 +2,18 @@
   "version": 2,
   "outputDirectory": "public",
   "functions": {
-    "api/*.js": { "maxDuration": 30 }
+    "api/anthropic.js":    { "maxDuration": 30 },
+    "api/paypal.js":       { "maxDuration": 30 },
+    "api/events.js":       { "maxDuration": 30 },
+    "api/gnews.js":        { "maxDuration": 30 },
+    "api/videos.js":       { "maxDuration": 30 },
+    "api/quotes.js":       { "maxDuration": 30 },
+    "api/magic.js":        { "maxDuration": 30 },
+    "api/track.js":        { "maxDuration": 30 },
+    "api/admin.js":        { "maxDuration": 30 },
+    "api/webhook.js":      { "maxDuration": 30 },
+    "api/session-check.js":{ "maxDuration": 30 },
+    "api/newsletter.js":   { "maxDuration": 30 }
   },
   "routes": [
     { "src": "/api/newsletter",       "dest": "/api/newsletter.js" },
@@ -12,8 +23,9 @@
     { "src": "/api/gnews(.*)",       "dest": "/api/gnews.js" },
     { "src": "/api/videos(.*)",     "dest": "/api/videos.js" },
     { "src": "/api/quotes(.*)",     "dest": "/api/quotes.js" },
-    { "src": "/api/send-magic",      "dest": "/api/send-magic.js" },
-    { "src": "/api/verify-magic(.*)", "dest": "/api/verify-magic.js" },
+    { "src": "/api/send-magic",      "dest": "/api/magic.js" },
+    { "src": "/api/verify-magic(.*)", "dest": "/api/magic.js" },
+    { "src": "/api/magic(.*)",        "dest": "/api/magic.js" },
     { "src": "/api/track",           "dest": "/api/track.js" },
     { "src": "/api/admin(.*)",       "dest": "/api/admin.js" },
     { "src": "/api/webhook",         "dest": "/api/webhook.js" },
