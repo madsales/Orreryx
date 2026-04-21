@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google Ads Tag -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18101684972"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag("js", new Date());
+  gtag("config", "AW-18101684972");
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<title>Doomsday Clock 2026 — How Close Are We to World War 3? | Orreryx</title>
+<meta name="description" content="Doomsday Clock 2026: track how close the world is to WW3 with live geopolitical risk data. Ukraine war, nuclear posture, Middle East escalation and market impact — updated daily.">
+<meta name="keywords" content="doomsday clock, doomsday clock 2026, how close to ww3, world war 3 risk, nuclear war risk, geopolitical risk meter, doomsday clock minutes, bulletin of atomic scientists">
+<link rel="canonical" href="https://www.orreryx.io/doomsday-clock">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Doomsday Clock 2026 — How Close Are We to WW3? | Orreryx">
+<meta property="og:description" content="Live geopolitical doomsday risk meter. Track nuclear posture, active conflicts, and market signals for WW3 risk in 2026.">
+<meta property="og:url" content="https://www.orreryx.io/doomsday-clock">
+<meta property="og:image" content="https://www.orreryx.io/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Doomsday Clock 2026 — WW3 Risk Tracker | Orreryx">
+<meta name="twitter:description" content="How close are we to WW3? Live doomsday risk meter with nuclear posture, conflict data and market impact.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://www.orreryx.io/doomsday-clock#webpage",
+      "url": "https://www.orreryx.io/doomsday-clock",
+      "name": "Doomsday Clock 2026 — How Close Are We to World War 3?",
+      "description": "Live geopolitical doomsday risk meter tracking nuclear posture, active conflicts, and market signals for WW3 risk in 2026.",
+      "isPartOf": { "@id": "https://www.orreryx.io/#website" },
+      "datePublished": "2026-04-17",
+      "dateModified": "2026-04-17",
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.orreryx.io/" },
+          { "@type": "ListItem", "position": 2, "name": "Doomsday Clock", "item": "https://www.orreryx.io/doomsday-clock" }
+        ]
+      }
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "What is the Doomsday Clock?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The Doomsday Clock is a symbolic clock maintained by the Bulletin of Atomic Scientists showing how close humanity is to self-destruction — primarily through nuclear war. Midnight represents global catastrophe. As of 2026, the clock stands at 89 seconds to midnight, the closest it has ever been." }
+        },
+        {
+          "@type": "Question",
+          "name": "How close are we to WW3 in 2026?",
+          "acceptedAnswer": { "@type": "Answer", "text": "In 2026 the risk of large-scale conflict is at its highest since the Cold War. Active wars in Ukraine, the Middle East, and rising tensions over Taiwan have pushed the Doomsday Clock to 89 seconds to midnight. Markets are pricing elevated risk through gold near all-time highs and elevated defense stock valuations." }
+        },
+        {
+          "@type": "Question",
+          "name": "Which countries could start WW3?",
+          "acceptedAnswer": { "@type": "Answer", "text": "The highest-risk flashpoints analysts monitor are: Russia-NATO escalation over Ukraine, Iran-Israel-US military exchanges in the Middle East, and China-Taiwan strait tensions. A miscalculation in any of these theaters could trigger a broader conflict." }
+        },
+        {
+          "@type": "Question",
+          "name": "How does geopolitical risk affect markets?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Rising WW3 risk drives gold higher (safe haven), defense stocks up (LMT, NOC, RTX), oil prices volatile, and airline/shipping stocks lower. The VIX fear index spikes during escalation events. Orreryx tracks all of these in real time." }
+        }
+      ]
+    }
+  ]
+}
+</script>
+<link rel="icon" type="image/svg+xml" href="/icon.svg">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#07070a;--bg2:#0d0d12;--bg3:#12121a;--bg4:#1a1a24;
+  --brd:rgba(255,255,255,.06);--brd2:rgba(255,255,255,.1);--brd3:rgba(255,255,255,.16);
+  --txt:#f2f2ee;--txt2:#a8a8a2;--txt3:#585858;
+  --red:#e03836;--red2:rgba(224,56,54,.12);
+  --grn:#3ab860;--gold:#d4a843;
+  --sans:'Inter',system-ui,sans-serif;--mono:'IBM Plex Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:var(--sans);line-height:1.7}
+nav{position:fixed;top:0;left:0;right:0;z-index:200;height:56px;padding:0 40px;display:flex;align-items:center;gap:8px;background:rgba(7,7,10,.8);backdrop-filter:blur(24px);border-bottom:1px solid var(--brd)}
+.nav-logo{display:flex;align-items:center;gap:8px;text-decoration:none;font-family:var(--mono);font-size:14px;font-weight:700;color:var(--txt);letter-spacing:.05em}
+.nav-right{margin-left:auto;display:flex;gap:8px}
+.nav-a{padding:7px 16px;font-size:12px;font-weight:500;color:var(--txt2);text-decoration:none;border-radius:4px;border:1px solid var(--brd2);transition:all .15s}
+.nav-a:hover{color:var(--txt);border-color:var(--brd3)}
+.nav-cta{background:var(--red);border-color:var(--red);color:#fff;font-weight:600}
+.nav-cta:hover{background:#c42e2c;border-color:#c42e2c}
+main{max-width:820px;margin:0 auto;padding:96px 24px 80px}
+.eyebrow{display:inline-flex;align-items:center;gap:8px;background:var(--red2);border:1px solid rgba(224,56,54,.25);border-radius:20px;padding:5px 14px;font-family:var(--mono);font-size:9px;font-weight:700;color:var(--red);letter-spacing:.14em;text-transform:uppercase;margin-bottom:20px}
+.dot{width:5px;height:5px;border-radius:50%;background:var(--red);animation:blink 1.4s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.15}}
+h1{font-size:clamp(28px,4vw,48px);font-weight:800;line-height:1.1;letter-spacing:-.03em;margin-bottom:16px}
+h1 em{font-style:normal;color:var(--red)}
+.lead{font-size:16px;color:var(--txt2);max-width:640px;margin-bottom:40px;line-height:1.8}
+.clock-widget{background:var(--bg2);border:1px solid var(--brd2);border-radius:12px;padding:32px;margin-bottom:40px;display:flex;align-items:center;gap:32px;flex-wrap:wrap}
+.clock-face{width:120px;height:120px;border-radius:50%;border:3px solid var(--red);display:flex;align-items:center;justify-content:center;flex-direction:column;background:var(--bg3);flex-shrink:0;position:relative}
+.clock-face::after{content:'';position:absolute;inset:-8px;border-radius:50%;border:1px solid rgba(224,56,54,.15)}
+.clock-time{font-family:var(--mono);font-size:22px;font-weight:700;color:var(--red);line-height:1}
+.clock-label{font-family:var(--mono);font-size:7px;color:var(--txt3);letter-spacing:.1em;text-transform:uppercase;margin-top:4px}
+.clock-info h2{font-size:18px;font-weight:700;margin-bottom:8px}
+.clock-info p{font-size:13px;color:var(--txt2);line-height:1.7}
+.risk-bars{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:40px}
+.risk-bar{background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:16px}
+.risk-bar-label{font-size:11px;color:var(--txt3);margin-bottom:6px;font-family:var(--mono);letter-spacing:.06em;text-transform:uppercase}
+.risk-bar-track{height:6px;background:var(--bg4);border-radius:3px;overflow:hidden;margin-bottom:6px}
+.risk-bar-fill{height:100%;border-radius:3px}
+.risk-bar-val{font-family:var(--mono);font-size:12px;font-weight:700}
+article h2{font-size:22px;font-weight:700;margin:36px 0 12px;letter-spacing:-.02em}
+article h3{font-size:16px;font-weight:600;margin:24px 0 8px;color:var(--txt2)}
+article p{font-size:14.5px;color:var(--txt2);margin-bottom:16px;line-height:1.8}
+article ul{margin:0 0 16px 20px}
+article li{font-size:14.5px;color:var(--txt2);margin-bottom:8px;line-height:1.7}
+article strong{color:var(--txt)}
+.market-table{width:100%;border-collapse:collapse;margin:20px 0 32px;font-size:13px}
+.market-table th{text-align:left;font-family:var(--mono);font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--txt3);padding:8px 12px;border-bottom:1px solid var(--brd2)}
+.market-table td{padding:10px 12px;border-bottom:1px solid var(--brd);color:var(--txt2)}
+.market-table td:first-child{color:var(--txt);font-weight:500}
+.up{color:var(--grn)}.dn{color:var(--red)}
+.faq{margin:40px 0}
+.faq h2{font-size:22px;font-weight:700;margin-bottom:24px;letter-spacing:-.02em}
+.faq-item{border-bottom:1px solid var(--brd);padding:18px 0}
+.faq-q{font-size:15px;font-weight:600;color:var(--txt);margin-bottom:8px}
+.faq-a{font-size:13.5px;color:var(--txt2);line-height:1.75}
+.related{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin:40px 0}
+.related-link{background:var(--bg2);border:1px solid var(--brd);border-radius:8px;padding:16px;text-decoration:none;transition:border-color .15s}
+.related-link:hover{border-color:var(--brd3)}
+.related-link-label{font-family:var(--mono);font-size:9px;color:var(--txt3);letter-spacing:.08em;text-transform:uppercase;margin-bottom:6px}
+.related-link-title{font-size:13px;font-weight:600;color:var(--txt)}
+.cta-box{background:var(--red2);border:1px solid rgba(224,56,54,.25);border-radius:12px;padding:32px;text-align:center;margin:40px 0}
+.cta-box h2{font-size:20px;font-weight:700;margin-bottom:8px}
+.cta-box p{font-size:13px;color:var(--txt2);margin-bottom:20px}
+.cta-btn{display:inline-block;background:var(--red);color:#fff;text-decoration:none;padding:13px 28px;border-radius:6px;font-size:13px;font-weight:700;letter-spacing:.04em;transition:all .15s}
+.cta-btn:hover{background:#c42e2c;transform:translateY(-1px)}
+footer{border-top:1px solid var(--brd);padding:32px 24px;text-align:center;font-size:12px;color:var(--txt3)}
+footer a{color:var(--txt3);text-decoration:none;margin:0 10px}
+footer a:hover{color:var(--txt2)}
+@media(max-width:600px){.risk-bars{grid-template-columns:1fr}.clock-widget{flex-direction:column}}
+</style>
+</head>
+<body>
+<nav>
+  <a href="/" class="nav-logo">
+    <svg width="20" height="20" viewBox="0 0 32 32"><rect width="32" height="32" rx="4" fill="#f0f0ec"/><ellipse cx="16" cy="16" rx="10" ry="4" fill="none" stroke="#09090a" stroke-width="1" transform="rotate(-30,16,16)"/><circle cx="16" cy="16" r="2" fill="#09090a"/><circle cx="12" cy="20" r="1" fill="#e03836"/></svg>
+    Orreryx
+  </a>
+  <div class="nav-right">
+    <a href="/geopolitical-risk" class="nav-a">Risk Index</a>
+    <a href="/ww3-news" class="nav-a">WW3 News</a>
+    <a href="/login" class="nav-cta nav-a">Free Trial →</a>
+  </div>
+</nav>
+
+<main>
+  <div class="eyebrow"><div class="dot"></div>Live Risk Tracker</div>
+  <h1>Doomsday Clock 2026 — <em>How Close</em> Are We to World War 3?</h1>
+  <p class="lead">The Doomsday Clock stands at <strong>89 seconds to midnight</strong> — the closest to global catastrophe in its 77-year history. Track the live geopolitical signals driving nuclear and conflict risk in real time.</p>
+
+  <div class="clock-widget">
+    <div class="clock-face">
+      <div class="clock-time">89s</div>
+      <div class="clock-label">to midnight</div>
+    </div>
+    <div class="clock-info">
+      <h2>89 Seconds to Midnight — 2026 Reading</h2>
+      <p>Set by the Bulletin of Atomic Scientists, the clock reflects nuclear danger, climate change, and disruptive technologies. The 2026 reading of <strong>89 seconds</strong> is the closest ever recorded — moved forward from 100 seconds in 2023 due to the Ukraine war, Middle East escalation, and deteriorating arms control agreements.</p>
+    </div>
+  </div>
+
+  <div class="risk-bars">
+    <div class="risk-bar">
+      <div class="risk-bar-label">Nuclear Risk</div>
+      <div class="risk-bar-track"><div class="risk-bar-fill" style="width:88%;background:var(--red)"></div></div>
+      <div class="risk-bar-val" style="color:var(--red)">88 / 100</div>
+    </div>
+    <div class="risk-bar">
+      <div class="risk-bar-label">Conflict Escalation</div>
+      <div class="risk-bar-track"><div class="risk-bar-fill" style="width:76%;background:var(--gold)"></div></div>
+      <div class="risk-bar-val" style="color:var(--gold)">76 / 100</div>
+    </div>
+    <div class="risk-bar">
+      <div class="risk-bar-label">Economic Warfare</div>
+      <div class="risk-bar-track"><div class="risk-bar-fill" style="width:71%;background:var(--gold)"></div></div>
+      <div class="risk-bar-val" style="color:var(--gold)">71 / 100</div>
+    </div>
+    <div class="risk-bar">
+      <div class="risk-bar-label">Market Volatility</div>
+      <div class="risk-bar-track"><div class="risk-bar-fill" style="width:65%;background:var(--grn)"></div></div>
+      <div class="risk-bar-val" style="color:var(--grn)">65 / 100</div>
+    </div>
+  </div>
+
+  <article>
+    <h2>What Is the Doomsday Clock?</h2>
+    <p>Created in 1947 by scientists who worked on the Manhattan Project, the <strong>Doomsday Clock</strong> is a symbol representing how close humanity is to destroying civilisation. Midnight represents global catastrophe — specifically nuclear war or an equivalent civilisation-ending event. The clock is maintained by the <strong>Bulletin of Atomic Scientists</strong> and updated annually based on expert assessment of global threats.</p>
+    <p>The clock started at 7 minutes to midnight in 1947. It reached its farthest point — 17 minutes — in 1991 after the Cold War ended. Since 2020 it has sat at 100 seconds, and in 2023 it moved to <strong>90 seconds</strong>. The 2026 reading of <strong>89 seconds</strong> reflects continued nuclear risk from the Ukraine war, Iran's nuclear programme, and North Korea's ballistic missile tests.</p>
+
+    <h2>Why Is the Doomsday Clock So Close in 2026?</h2>
+    <h3>1. Ukraine War — NATO-Russia Escalation Risk</h3>
+    <p>Russia's invasion of Ukraine in 2022 began the sharpest increase in nuclear risk since the Cuban Missile Crisis. Russia has repeatedly made nuclear threats, suspended participation in the New START treaty, and repositioned tactical nuclear weapons to Belarus. Any direct NATO-Russia military exchange — even conventional — raises the risk of nuclear escalation. The war has now entered its fourth year with no end in sight.</p>
+
+    <h3>2. Middle East — Iran Nuclear Programme</h3>
+    <p>Iran enriched uranium to 60% purity in 2026 — a technical step away from weapons-grade 90%. US and Israeli military strikes on Iranian nuclear facilities in 2025-2026 have brought the region to its highest tension in decades. A miscalculation could trigger a regional war involving Israel, Iran, and potentially US forces across multiple theatres simultaneously.</p>
+
+    <h3>3. China-Taiwan — Strait Tensions</h3>
+    <p>Chinese military exercises around Taiwan have become larger and more frequent. The US has reaffirmed its commitment to Taiwan's defence. A Chinese attempt to blockade or invade Taiwan would trigger direct US-China military confrontation — the first between two nuclear powers since the Cold War.</p>
+
+    <h3>4. North Korea — Ballistic Missile Tests</h3>
+    <p>North Korea conducted over 40 ballistic missile tests between 2022 and 2026, developing ICBMs capable of reaching the continental United States. The country has shared missile technology with Russia for use in Ukraine, further destabilising global norms around nuclear-capable delivery systems.</p>
+
+    <h2>How Doomsday Risk Moves Markets</h2>
+    <p>When geopolitical tension rises, capital flows in predictable patterns. Understanding these movements is the edge that professional investors use to position before events are fully priced in.</p>
+    <table class="market-table">
+      <thead><tr><th>Asset</th><th>Crisis Direction</th><th>Reason</th><th>2026 Status</th></tr></thead>
+      <tbody>
+        <tr><td>Gold</td><td class="up">↑ Strong</td><td>Safe-haven store of value</td><td class="up">Near ATH $3,200+</td></tr>
+        <tr><td>Defense Stocks (LMT, NOC, RTX)</td><td class="up">↑ Strong</td><td>Increased military spending</td><td class="up">+30–45% YTD</td></tr>
+        <tr><td>Oil (Brent)</td><td class="up">↑ Volatile</td><td>Supply disruption risk</td><td class="up">$85–95 range</td></tr>
+        <tr><td>Airlines (DAL, UAL)</td><td class="dn">↓ Weak</td><td>Route disruptions, fuel costs</td><td class="dn">−15 to −25% YTD</td></tr>
+        <tr><td>VIX (Fear Index)</td><td class="up">↑ Elevated</td><td>Market uncertainty</td><td class="up">18–28 range</td></tr>
+        <tr><td>USD</td><td class="up">↑ Mild</td><td>Reserve currency flight</td><td>Stable-elevated</td></tr>
+      </tbody>
+    </table>
+    <p>The <a href="/gold-price" style="color:var(--gold)">gold price</a> is the clearest real-time signal of WW3 fear. When tensions spike — a missile test, a military strike, a summit collapse — gold typically moves within hours. Orreryx tracks gold alongside every conflict event so you can see the correlation live.</p>
+
+    <h2>Track Live Doomsday Risk on Orreryx</h2>
+    <p>Orreryx provides the only platform that combines live conflict monitoring with real-time market impact tracking. Every event that increases escalation risk — from nuclear posture changes to military strikes — appears on the Orreryx live map within minutes, with immediate analysis of market impact on gold, oil, defense stocks, and currency.</p>
+  </article>
+
+  <div class="faq">
+    <h2>Frequently Asked Questions</h2>
+    <div class="faq-item">
+      <div class="faq-q">What is the Doomsday Clock currently?</div>
+      <div class="faq-a">As of 2026, the Doomsday Clock stands at 89 seconds to midnight — the closest it has ever been in its 77-year history. This reflects unprecedented nuclear risk from the Ukraine war, Middle East escalation, and the breakdown of arms control frameworks.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">How close are we to WW3 in 2026?</div>
+      <div class="faq-a">The probability of a large-scale conflict is at its highest since the Cold War. Multiple simultaneous flashpoints — Ukraine, Gaza/Iran, Taiwan — mean that a miscalculation in any one theatre could rapidly draw in major powers. Markets are reflecting this with gold near all-time highs and elevated defense stock premiums.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Who decides where the Doomsday Clock is set?</div>
+      <div class="faq-a">The Bulletin of Atomic Scientists' Science and Security Board, with input from the Board of Sponsors which includes 13 Nobel Laureates, sets the clock time annually. It is announced in January each year based on global threat assessment from the previous year.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q">Which countries could start WW3?</div>
+      <div class="faq-a">The highest-risk triggers analysts monitor are: a Russia-NATO military exchange in the Ukraine theatre, an Israeli or US strike on Iranian nuclear infrastructure triggering a broader Middle East war, and a Chinese military action against Taiwan drawing in US forces. Any of these could escalate into a direct conflict between nuclear-armed states.</div>
+    </div>
+  </div>
+
+  <div class="cta-box">
+    <h2>Track the Real-Time Risk Meter</h2>
+    <p>Live conflict events, market impact, AI briefings — all in one platform. Free 3-day trial, no card required.</p>
+    <a href="/login?plan=f" class="cta-btn">START FREE TRIAL →</a>
+  </div>
+
+  <div class="related">
+    <a href="/ww3-news" class="related-link">
+      <div class="related-link-label">Live Updates</div>
+      <div class="related-link-title">WW3 News Today</div>
+    </a>
+    <a href="/ukraine-war" class="related-link">
+      <div class="related-link-label">Conflict</div>
+      <div class="related-link-title">Ukraine War News</div>
+    </a>
+    <a href="/geopolitical-risk" class="related-link">
+      <div class="related-link-label">Intelligence</div>
+      <div class="related-link-title">Geopolitical Risk Index</div>
+    </a>
+    <a href="/gold-price" class="related-link">
+      <div class="related-link-label">Markets</div>
+      <div class="related-link-title">Gold Price Today</div>
+    </a>
+    <a href="/global-conflicts-2025" class="related-link">
+      <div class="related-link-label">Overview</div>
+      <div class="related-link-title">Current Global Conflicts</div>
+    </a>
+  </div>
+</main>
+
+<footer>
+  <a href="/">Orreryx</a>
+  <a href="/geopolitics-news">Geopolitics News</a>
+  <a href="/ww3-news">WW3 News</a>
+  <a href="/ukraine-war">Ukraine War</a>
+  <a href="/gold-price">Gold Price</a>
+  <a href="/geopolitical-risk">Risk Index</a>
+  <a href="/login">Free Trial</a>
+  <p style="margin-top:16px">© 2026 Orreryx · Real-time geopolitical market intelligence</p>
+</footer>
+</body>
+</html>
