@@ -179,6 +179,14 @@ td:first-child{text-align:left;font-weight:500;color:var(--txt);font-size:12px}
 .pay-note{text-align:center;margin-top:24px;font-size:11px;color:var(--txt3);display:flex;align-items:center;justify-content:center;gap:8px}
 .paypal-pill{background:rgba(0,112,243,.12);border:1px solid rgba(0,112,243,.25);color:#4a8fe0;border-radius:3px;padding:2px 8px;font-family:var(--mono);font-size:9px;font-weight:700;letter-spacing:.08em}
 
+/* URGENCY STRIP */
+.urgency-strip{background:rgba(212,168,67,.08);border-bottom:1px solid rgba(212,168,67,.2);padding:9px 24px;display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;color:var(--gold);text-align:center;flex-wrap:wrap}
+.urgency-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--gold);animation:urgency-pulse 1.5s infinite;flex-shrink:0;vertical-align:middle}
+@keyframes urgency-pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.urgency-strip a{color:var(--gold);font-weight:700;text-decoration:none;border-bottom:1px solid rgba(212,168,67,.4)}
+.plan-savings{font-size:11px;color:rgba(58,184,96,.8);margin-bottom:14px;margin-top:-6px}
+.plan-social{font-size:10px;color:var(--txt3);margin-bottom:14px;padding:6px 10px;background:rgba(255,255,255,.03);border:1px solid var(--brd);border-radius:4px;text-align:center}
+
 /* RESPONSIVE */
 @media(max-width:900px){
   .pricing-grid{grid-template-columns:1fr 1fr}
@@ -305,13 +313,15 @@ td:first-child{text-align:left;font-weight:500;color:var(--txt);font-size:12px}
       <div class="plan-div"></div>
       <ul class="plan-features">
         <li class="pf"><span class="pf-yes">✓</span><strong>Everything in Analyst</strong></li>
-        <li class="pf"><span class="pf-yes">✓</span><strong style="color:var(--grn)">🗺️ Interactive Risk Map</strong></li>
-        <li class="pf"><span class="pf-yes">✓</span>13 live conflict zone markers</li>
+        <li class="pf"><span class="pf-yes">✓</span><strong style="color:var(--grn)">🗺️ Interactive Risk Map — live conflict zones</strong></li>
+        <li class="pf"><span class="pf-yes">✓</span><strong style="color:var(--grn)">⚖️ Country Risk Comparison Tool</strong></li>
+        <li class="pf"><span class="pf-yes">✓</span><strong style="color:var(--grn)">💥 Scenario Market Impact Calculator</strong></li>
+        <li class="pf"><span class="pf-yes">✓</span><strong style="color:var(--grn)">📋 Personal Conflict Watchlist</strong></li>
+        <li class="pf"><span class="pf-yes">✓</span><strong style="color:var(--grn)">📅 Geopolitical Risk Timeline 2022–2026</strong></li>
         <li class="pf"><span class="pf-yes">✓</span>Market impact per conflict zone</li>
         <li class="pf"><span class="pf-yes">✓</span>Live crypto — 12 assets + war scores</li>
-        <li class="pf"><span class="pf-yes">✓</span>Public API access</li>
-        <li class="pf"><span class="pf-yes">✓</span>Full 5Y chart history · CSV export</li>
-        <li class="pf"><span class="pf-yes">✓</span>Priority support · Early access</li>
+        <li class="pf"><span class="pf-yes">✓</span>Public API access · CSV export · 5Y history</li>
+        <li class="pf"><span class="pf-yes">✓</span>Priority support · Early access to new tools</li>
       </ul>
       <a href="/login?plan=c" class="plan-btn btn-green">Get Command →</a>
     </div>

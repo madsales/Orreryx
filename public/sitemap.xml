@@ -289,6 +289,62 @@
   </url>
 
   <url>
+    <loc>https://www.orreryx.io/compare</loc>
+    <lastmod>2026-04-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.92</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/market-impact</loc>
+    <lastmod>2026-04-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.92</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/watchlist</loc>
+    <lastmod>2026-04-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/risk-timeline</loc>
+    <lastmod>2026-04-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.91</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/ww3-probability</loc>
+    <lastmod>2026-04-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/geopolitical-risk-investing</loc>
+    <lastmod>2026-04-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.94</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/russia-ukraine-ceasefire</loc>
+    <lastmod>2026-04-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.96</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/taiwan-semiconductor</loc>
+    <lastmod>2026-04-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.94</priority>
+  </url>
+
+  <url>
     <loc>https://www.orreryx.io/pricing</loc>
     <lastmod>2026-04-22</lastmod>
     <changefreq>weekly</changefreq>
