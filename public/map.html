@@ -13,7 +13,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
 <title>Interactive Geopolitical Risk Map 2026 — Live Global Conflict Tracker | Orreryx</title>
-<meta name="description" content="Interactive world map of geopolitical risks and active conflicts in 2026. Click any conflict to see risk scores, market impact and analysis. Free live geopolitical risk map.">
+<meta name="description" content="Interactive world map of geopolitical risks and active conflicts in 2026. Pulsing conflict markers, country risk scores, market impact analysis. Command tier feature — orreryx.io.">
 <meta name="keywords" content="interactive geopolitical risk map, world conflict map 2026, live war map, global risk map, geopolitical map, conflict tracker map, country risk map 2026">
 <link rel="canonical" href="https://www.orreryx.io/map">
 <meta property="og:type" content="website">
@@ -427,6 +427,135 @@
     display: none;
   }
 
+  /* ── PAYWALL ── */
+  .paywall {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(9,9,11,0.82);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    padding: 20px;
+  }
+  .paywall-card {
+    background: #131316;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 12px;
+    padding: 36px 40px;
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 24px 80px rgba(0,0,0,0.7);
+    position: relative;
+  }
+  .paywall-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(58,184,96,0.1);
+    border: 1px solid rgba(58,184,96,0.3);
+    border-radius: 20px;
+    padding: 5px 14px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: #3ab860;
+    margin-bottom: 20px;
+  }
+  .paywall-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #f0f0ec;
+    line-height: 1.25;
+    margin-bottom: 10px;
+  }
+  .paywall-sub {
+    font-size: 13px;
+    color: #6b7280;
+    line-height: 1.65;
+    margin-bottom: 28px;
+  }
+  .paywall-features {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 28px;
+    text-align: left;
+  }
+  .paywall-feature {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px;
+    font-size: 11px;
+    color: #a0a09a;
+    line-height: 1.4;
+  }
+  .paywall-feature .icon {
+    font-size: 14px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .paywall-price {
+    margin-bottom: 20px;
+  }
+  .paywall-price-val {
+    font-size: 36px;
+    font-weight: 800;
+    color: #3ab860;
+    line-height: 1;
+  }
+  .paywall-price-period {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 4px;
+  }
+  .paywall-cta-primary {
+    display: block;
+    background: #3ab860;
+    color: #000;
+    text-decoration: none;
+    padding: 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    margin-bottom: 10px;
+    transition: background 0.15s;
+  }
+  .paywall-cta-primary:hover { background: #2ea050; }
+  .paywall-cta-secondary {
+    display: block;
+    color: #6b7280;
+    text-decoration: none;
+    font-size: 11px;
+    padding: 8px;
+    transition: color 0.15s;
+  }
+  .paywall-cta-secondary:hover { color: #f0f0ec; }
+  .paywall-preview-label {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #e03836;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 20px;
+    white-space: nowrap;
+  }
+
   /* ── MOBILE ── */
   @media (max-width: 768px) {
     .sidebar {
@@ -445,6 +574,39 @@
 </style>
 </head>
 <body>
+
+<!-- PAYWALL OVERLAY (hidden for Command tier users via JS) -->
+<div class="paywall" id="paywall" style="display:none" aria-modal="true" role="dialog">
+  <div class="paywall-card">
+    <div class="paywall-preview-label">⚡ Live Map Preview Below</div>
+    <div class="paywall-badge">
+      <svg width="8" height="8" viewBox="0 0 8 8"><circle cx="4" cy="4" r="4" fill="#3ab860"/></svg>
+      Command Tier
+    </div>
+    <div class="paywall-title">Interactive Risk Map</div>
+    <div class="paywall-sub">
+      Real-time geopolitical conflict map with pulsing risk markers,<br>
+      country profiles and live market impact signals.<br>
+      Exclusive to Command subscribers.
+    </div>
+    <div class="paywall-features">
+      <div class="paywall-feature"><span class="icon">🗺️</span>Live interactive world map — 13 conflict zones</div>
+      <div class="paywall-feature"><span class="icon">📡</span>Pulsing markers colour-coded by live risk score</div>
+      <div class="paywall-feature"><span class="icon">💹</span>Market impact per conflict (oil, gold, defence, FX)</div>
+      <div class="paywall-feature"><span class="icon">🏴</span>10 country risk profiles with full analysis</div>
+      <div class="paywall-feature"><span class="icon">🔔</span>Daily push notifications + email digest</div>
+      <div class="paywall-feature"><span class="icon">🔌</span>Public API access — embed anywhere</div>
+      <div class="paywall-feature"><span class="icon">⚔️</span>Conflict type filters: nuclear, military, energy</div>
+      <div class="paywall-feature"><span class="icon">📊</span>Full risk dashboard + Top 10 countdown</div>
+    </div>
+    <div class="paywall-price">
+      <div class="paywall-price-val">$34.99</div>
+      <div class="paywall-price-period">per month · cancel anytime</div>
+    </div>
+    <a href="/login?plan=c" class="paywall-cta-primary">Upgrade to Command →</a>
+    <a href="/login?plan=f" class="paywall-cta-secondary">Start free 3-day trial first</a>
+  </div>
+</div>
 
 <!-- TOP NAV -->
 <nav class="topbar">
@@ -519,6 +681,21 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WLs=" crossorigin=""></script>
 
 <script>
+// ── AUTH GATE — Command tier only ────────────────────────────────────────────
+(function() {
+  try {
+    const raw = localStorage.getItem('orrery_session');
+    if (raw) {
+      const session = JSON.parse(raw);
+      const plan = (session.plan || '').toLowerCase().trim();
+      // Command plan code is 'c' — allow access
+      if (plan === 'c' || plan === 'command') return;
+    }
+  } catch (_) {}
+  // Not on Command — show paywall over the map (map still renders as teaser)
+  document.getElementById('paywall').style.display = 'flex';
+})();
+
 // ── DATA ──────────────────────────────────────────────────────────────────────
 
 const CONFLICTS = [
