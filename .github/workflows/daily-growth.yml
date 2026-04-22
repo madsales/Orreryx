@@ -1,0 +1,122 @@
+name: Daily Growth Engine
+
+on:
+  schedule:
+    # Runs at 07:00 UTC every day (8am London, 3am New York)
+    - cron: '0 7 * * *'
+  workflow_dispatch: # Allow manual triggers
+
+jobs:
+  process-drip-emails:
+    name: Process Drip Email Sequences
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send due drip emails
+        run: |
+          echo "Processing drip email queue..."
+          RESPONSE=$(curl -s -X POST https://www.orreryx.io/api/newsletter \
+            -H "Content-Type: application/json" \
+            -d "{\"action\":\"process_drip\",\"token\":\"${{ secrets.CRON_SECRET }}\"}")
+          echo "Response: $RESPONSE"
+          SENT=$(echo $RESPONSE | grep -o '"sent":[0-9]*' | grep -o '[0-9]*' || echo "0")
+          echo "Drip emails sent: $SENT"
+
+  daily-digest:
+    name: Broadcast Daily Risk Digest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send daily digest to all subscribers
+        run: |
+          echo "Broadcasting daily digest..."
+          RESPONSE=$(curl -s -X POST https://www.orreryx.io/api/newsletter \
+            -H "Content-Type: application/json" \
+            -d "{\"action\":\"daily_digest\",\"token\":\"${{ secrets.CRON_SECRET }}\"}")
+          echo "Response: $RESPONSE"
+          SENT=$(echo $RESPONSE | grep -o '"sent":[0-9]*' | grep -o '[0-9]*' || echo "0")
+          echo "Daily digest sent to: $SENT subscribers"
+
+  push-broadcast:
+    name: Send Push Notifications
+    runs-on: ubuntu-latest
+    steps:
+      - name: Broadcast push to subscribed users
+        run: |
+          echo "Broadcasting push notifications..."
+          RESPONSE=$(curl -s -X POST https://www.orreryx.io/api/newsletter \
+            -H "Content-Type: application/json" \
+            -d "{\"action\":\"push_broadcast\",\"token\":\"${{ secrets.CRON_SECRET }}\"}")
+          echo "Response: $RESPONSE"
+          SENT=$(echo $RESPONSE | grep -o '"sent":[0-9]*' | grep -o '[0-9]*' || echo "0")
+          echo "Push notifications sent: $SENT"
+
+  ping-search-engines:
+    name: Ping Google & Bing Sitemaps
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Google Search Console
+        run: |
+          echo "Pinging Google sitemap..."
+          curl -s "https://www.google.com/ping?sitemap=https://www.orreryx.io/sitemap.xml"
+          echo "Google pinged"
+      - name: Ping Bing Webmaster
+        run: |
+          echo "Pinging Bing sitemap..."
+          curl -s "https://www.bing.com/ping?sitemap=https://www.orreryx.io/sitemap.xml"
+          echo "Bing pinged"
+      - name: Ping IndexNow (Bing/Yandex fast indexing)
+        run: |
+          curl -s -X POST "https://api.indexnow.org/indexnow" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "host": "www.orreryx.io",
+              "key": "orrery2026indexnow",
+              "keyLocation": "https://www.orreryx.io/orrery2026indexnow.txt",
+              "urlList": [
+                "https://www.orreryx.io/",
+                "https://www.orreryx.io/global-conflicts-2025",
+                "https://www.orreryx.io/gold-price",
+                "https://www.orreryx.io/oil-price",
+                "https://www.orreryx.io/inflation-2026",
+                "https://www.orreryx.io/india-pakistan",
+                "https://www.orreryx.io/south-china-sea",
+                "https://www.orreryx.io/nuclear-war-risk",
+                "https://www.orreryx.io/bitcoin-crash",
+                "https://www.orreryx.io/ukraine-war",
+                "https://www.orreryx.io/ww3-news",
+                "https://www.orreryx.io/top-risks-2026",
+                "https://www.orreryx.io/risk-dashboard",
+                "https://www.orreryx.io/newsletter",
+                "https://www.orreryx.io/country/ukraine",
+                "https://www.orreryx.io/country/russia",
+                "https://www.orreryx.io/country/china",
+                "https://www.orreryx.io/country/iran",
+                "https://www.orreryx.io/country/india",
+                "https://www.orreryx.io/country/israel",
+                "https://www.orreryx.io/country/pakistan",
+                "https://www.orreryx.io/country/north-korea",
+                "https://www.orreryx.io/country/taiwan",
+                "https://www.orreryx.io/country/saudi-arabia"
+              ]
+            }' || echo "IndexNow ping complete"
+
+  health-check:
+    name: Site Health & Stats
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check critical pages are live
+        run: |
+          PAGES=("/" "/gold-price" "/oil-price" "/inflation-2026" "/india-pakistan" "/enterprise" "/risk-dashboard" "/top-risks-2026" "/newsletter" "/country/ukraine" "/api/risks" "/api/newsletter")
+          for path in "${PAGES[@]}"; do
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" "https://www.orreryx.io${path}")
+            if [ "$STATUS" = "200" ] || [ "$STATUS" = "405" ]; then
+              echo "✅ $path → $STATUS"
+            else
+              echo "⚠️ $path → $STATUS (ISSUE)"
+            fi
+          done
+      - name: Get newsletter stats
+        run: |
+          STATS=$(curl -s -X POST https://www.orreryx.io/api/newsletter \
+            -H "Content-Type: application/json" \
+            -d "{\"action\":\"stats\",\"token\":\"${{ secrets.CRON_SECRET }}\"}") || echo "{}"
+          echo "📧 Newsletter stats: $STATS"
