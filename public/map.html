@@ -1,0 +1,848 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<!-- Google Ads Tag -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=AW-18101684972"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag("js", new Date());
+  gtag("config", "AW-18101684972");
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+<title>Interactive Geopolitical Risk Map 2026 — Live Global Conflict Tracker | Orreryx</title>
+<meta name="description" content="Interactive world map of geopolitical risks and active conflicts in 2026. Click any conflict to see risk scores, market impact and analysis. Free live geopolitical risk map.">
+<meta name="keywords" content="interactive geopolitical risk map, world conflict map 2026, live war map, global risk map, geopolitical map, conflict tracker map, country risk map 2026">
+<link rel="canonical" href="https://www.orreryx.io/map">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Interactive Geopolitical Risk Map 2026 | Orreryx">
+<meta property="og:description" content="Interactive world map of active conflicts and geopolitical risks. Click any hotspot to see risk scores, market impact and country analysis.">
+<meta property="og:url" content="https://www.orreryx.io/map">
+<meta property="og:image" content="https://www.orreryx.io/og-image.svg">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Interactive Geopolitical Risk Map 2026 | Orreryx">
+<meta name="twitter:description" content="Live interactive map of global conflicts and geopolitical risks. Free, updated daily.">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "@id": "https://www.orreryx.io/map#webpage",
+  "url": "https://www.orreryx.io/map",
+  "name": "Interactive Geopolitical Risk Map 2026",
+  "description": "Interactive world map tracking active conflicts, geopolitical risks and country risk scores with market impact analysis. Updated daily.",
+  "isPartOf": { "@id": "https://www.orreryx.io/#website" },
+  "datePublished": "2026-01-01",
+  "dateModified": "2026-04-22",
+  "breadcrumb": {
+    "@type": "BreadcrumbList",
+    "itemListElement": [
+      { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://www.orreryx.io/" },
+      { "@type": "ListItem", "position": 2, "name": "Risk Map", "item": "https://www.orreryx.io/map" }
+    ]
+  }
+}
+</script>
+
+<!-- Leaflet CSS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #09090b;
+    color: #f0f0ec;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ── TOP NAV ── */
+  .topbar {
+    background: #09090b;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    padding: 0 16px;
+    height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0;
+    z-index: 1000;
+    position: relative;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 20px; }
+  .logo { font-size: 18px; font-weight: 800; color: #f0f0ec; text-decoration: none; letter-spacing: -0.5px; }
+  .logo span { color: #e03836; }
+  .page-title { font-size: 13px; color: #6b7280; }
+
+  .topbar-stats { display: flex; align-items: center; gap: 16px; }
+  .stat-pill {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 20px;
+    padding: 4px 10px;
+    font-size: 11px;
+    color: #a0a09a;
+  }
+  .stat-pill .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .dot-red { background: #e03836; animation: pulse-dot 2s infinite; }
+  .dot-yellow { background: #f59e0b; }
+  .dot-green { background: #10b981; }
+  @keyframes pulse-dot { 0%,100%{opacity:1} 50%{opacity:0.4} }
+
+  .topbar-right { display: flex; align-items: center; gap: 8px; }
+  .nav-btn {
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+  }
+  .nav-btn-ghost {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #f0f0ec;
+  }
+  .nav-btn-ghost:hover { background: rgba(255,255,255,0.1); }
+  .nav-btn-primary { background: #e03836; color: #fff; }
+  .nav-btn-primary:hover { background: #c42f2d; }
+
+  /* ── MAIN LAYOUT ── */
+  .main {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    position: relative;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    width: 300px;
+    flex-shrink: 0;
+    background: #0d0d0f;
+    border-right: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    z-index: 500;
+    transition: transform 0.3s ease;
+  }
+  .sidebar.collapsed { transform: translateX(-300px); position: absolute; top: 0; bottom: 0; left: 0; }
+
+  .sidebar-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+    flex-shrink: 0;
+  }
+  .sidebar-title { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; margin-bottom: 10px; }
+
+  /* Filter tabs */
+  .filters { display: flex; gap: 4px; flex-wrap: wrap; }
+  .filter-btn {
+    padding: 4px 9px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.04);
+    color: #9e9e9e;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover { background: rgba(255,255,255,0.08); color: #f0f0ec; }
+  .filter-btn.active { background: #e03836; border-color: #e03836; color: #fff; }
+
+  .sidebar-list { flex: 1; overflow-y: auto; }
+  .sidebar-list::-webkit-scrollbar { width: 4px; }
+  .sidebar-list::-webkit-scrollbar-track { background: transparent; }
+  .sidebar-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+
+  .conflict-item {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    cursor: pointer;
+    transition: background 0.15s;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .conflict-item:hover { background: rgba(255,255,255,0.04); }
+  .conflict-item.active { background: rgba(224,56,54,0.08); border-left: 2px solid #e03836; }
+
+  .conflict-score {
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: 800;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .score-critical { background: rgba(224,56,54,0.15); color: #e03836; border: 1px solid rgba(224,56,54,0.3); }
+  .score-high     { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+  .score-elevated { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
+  .score-moderate { background: rgba(16,185,129,0.12); color: #10b981; border: 1px solid rgba(16,185,129,0.25); }
+
+  .conflict-info { flex: 1; min-width: 0; }
+  .conflict-name { font-size: 12px; font-weight: 700; color: #f0f0ec; line-height: 1.3; margin-bottom: 3px; }
+  .conflict-region { font-size: 10px; color: #6b7280; display: flex; align-items: center; gap: 4px; }
+  .trend-up   { color: #e03836; }
+  .trend-down { color: #10b981; }
+  .trend-stable { color: #6b7280; }
+
+  /* ── MAP ── */
+  #map {
+    flex: 1;
+    background: #0a0a0c;
+  }
+
+  /* Leaflet overrides */
+  .leaflet-container { background: #0a0a0c !important; }
+  .leaflet-control-zoom a {
+    background: #1a1a1e !important;
+    color: #f0f0ec !important;
+    border-color: rgba(255,255,255,0.1) !important;
+  }
+  .leaflet-control-zoom a:hover { background: #2a2a2e !important; }
+  .leaflet-control-attribution {
+    background: rgba(9,9,11,0.8) !important;
+    color: #484844 !important;
+    font-size: 9px !important;
+  }
+  .leaflet-control-attribution a { color: #666 !important; }
+
+  /* ── CUSTOM POPUP ── */
+  .leaflet-popup-content-wrapper {
+    background: #131316 !important;
+    border: 1px solid rgba(255,255,255,0.12) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
+    padding: 0 !important;
+    min-width: 260px;
+  }
+  .leaflet-popup-content { margin: 0 !important; }
+  .leaflet-popup-tip { background: #131316 !important; }
+  .leaflet-popup-close-button { color: #6b7280 !important; font-size: 16px !important; top: 8px !important; right: 10px !important; }
+  .leaflet-popup-close-button:hover { color: #f0f0ec !important; }
+
+  .popup-inner { padding: 16px; }
+  .popup-badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 3px 8px; border-radius: 4px;
+    font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    margin-bottom: 10px;
+  }
+  .popup-badge-critical { background: rgba(224,56,54,0.15); color: #e03836; border: 1px solid rgba(224,56,54,0.3); }
+  .popup-badge-high     { background: rgba(245,158,11,0.15); color: #f59e0b; border: 1px solid rgba(245,158,11,0.3); }
+  .popup-badge-elevated { background: rgba(251,191,36,0.12); color: #fbbf24; border: 1px solid rgba(251,191,36,0.25); }
+  .popup-badge-moderate { background: rgba(16,185,129,0.12); color: #10b981; border: 1px solid rgba(16,185,129,0.25); }
+
+  .popup-title { font-size: 14px; font-weight: 800; color: #f0f0ec; margin-bottom: 4px; line-height: 1.3; }
+  .popup-region { font-size: 11px; color: #6b7280; margin-bottom: 12px; }
+
+  .popup-scores {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 6px; margin-bottom: 12px;
+  }
+  .popup-score-box {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 6px; padding: 8px;
+    text-align: center;
+  }
+  .popup-score-val { font-size: 18px; font-weight: 800; }
+  .popup-score-lbl { font-size: 9px; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px; }
+
+  .popup-summary { font-size: 12px; color: #a0a09a; line-height: 1.6; margin-bottom: 14px; }
+
+  .popup-markets { margin-bottom: 14px; }
+  .popup-markets-title { font-size: 10px; font-weight: 700; color: #6b7280; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .popup-market-tags { display: flex; flex-wrap: wrap; gap: 4px; }
+  .popup-market-tag {
+    padding: 2px 7px; border-radius: 3px;
+    font-size: 10px; font-weight: 600;
+    background: rgba(245,158,11,0.1); color: #f59e0b;
+    border: 1px solid rgba(245,158,11,0.2);
+  }
+  .popup-market-tag.critical { background: rgba(224,56,54,0.12); color: #e03836; border-color: rgba(224,56,54,0.25); }
+
+  .popup-cta {
+    display: block; text-align: center; text-decoration: none;
+    background: #e03836; color: #fff;
+    padding: 10px; border-radius: 4px;
+    font-size: 12px; font-weight: 700;
+    transition: background 0.15s;
+  }
+  .popup-cta:hover { background: #c42f2d; }
+
+  /* ── PULSING CIRCLE MARKERS ── */
+  .conflict-marker {
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; color: #fff;
+    border: 2px solid rgba(255,255,255,0.3);
+  }
+  .conflict-marker.critical {
+    background: rgba(224,56,54,0.85);
+    box-shadow: 0 0 0 0 rgba(224,56,54,0.5);
+    animation: pulse-critical 2s infinite;
+  }
+  .conflict-marker.high {
+    background: rgba(245,158,11,0.85);
+    box-shadow: 0 0 0 0 rgba(245,158,11,0.5);
+    animation: pulse-high 2.5s infinite;
+  }
+  .conflict-marker.elevated {
+    background: rgba(251,191,36,0.8);
+    box-shadow: 0 0 0 0 rgba(251,191,36,0.4);
+  }
+  .conflict-marker.moderate {
+    background: rgba(16,185,129,0.8);
+  }
+  @keyframes pulse-critical {
+    0%   { box-shadow: 0 0 0 0 rgba(224,56,54,0.6); }
+    70%  { box-shadow: 0 0 0 14px rgba(224,56,54,0); }
+    100% { box-shadow: 0 0 0 0 rgba(224,56,54,0); }
+  }
+  @keyframes pulse-high {
+    0%   { box-shadow: 0 0 0 0 rgba(245,158,11,0.5); }
+    70%  { box-shadow: 0 0 0 10px rgba(245,158,11,0); }
+    100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+  }
+
+  /* Country markers */
+  .country-marker {
+    font-size: 22px;
+    cursor: pointer;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
+    transition: transform 0.15s;
+  }
+  .country-marker:hover { transform: scale(1.2); }
+
+  /* ── MAP CONTROLS OVERLAY ── */
+  .map-overlay-tl {
+    position: absolute;
+    top: 12px; left: 12px;
+    z-index: 400;
+    display: flex; gap: 6px;
+  }
+  .overlay-btn {
+    background: rgba(13,13,15,0.92);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #f0f0ec;
+    padding: 7px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 5px;
+  }
+  .overlay-btn:hover { background: rgba(30,30,34,0.95); border-color: rgba(255,255,255,0.2); }
+  .overlay-btn.active { background: rgba(224,56,54,0.2); border-color: rgba(224,56,54,0.4); color: #e03836; }
+
+  /* ── LEGEND ── */
+  .legend {
+    position: absolute;
+    bottom: 28px; right: 12px;
+    z-index: 400;
+    background: rgba(13,13,15,0.92);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px;
+    padding: 12px 14px;
+    backdrop-filter: blur(8px);
+    min-width: 150px;
+  }
+  .legend-title { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #6b7280; margin-bottom: 8px; }
+  .legend-item { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; font-size: 11px; color: #a0a09a; }
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  .legend-dot.critical { background: #e03836; }
+  .legend-dot.high     { background: #f59e0b; }
+  .legend-dot.elevated { background: #fbbf24; }
+  .legend-dot.moderate { background: #10b981; }
+  .legend-dot.country  { background: #6366f1; }
+  .legend-sep { border-top: 1px solid rgba(255,255,255,0.06); margin: 6px 0; }
+
+  /* ── TICKER ── */
+  .ticker {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 28px;
+    background: rgba(13,13,15,0.95);
+    border-top: 1px solid rgba(255,255,255,0.06);
+    z-index: 400;
+    overflow: hidden;
+    display: flex; align-items: center;
+  }
+  .ticker-label {
+    background: #e03836;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0 10px;
+    height: 100%;
+    display: flex; align-items: center;
+    flex-shrink: 0;
+    white-space: nowrap;
+  }
+  .ticker-track {
+    flex: 1;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .ticker-inner {
+    display: inline-block;
+    animation: ticker-scroll 60s linear infinite;
+    font-size: 11px;
+    color: #a0a09a;
+    padding-left: 20px;
+  }
+  .ticker-inner:hover { animation-play-state: paused; }
+  .ticker-item { display: inline; margin-right: 48px; }
+  .ticker-item span { color: #e03836; font-weight: 700; margin-right: 6px; }
+  @keyframes ticker-scroll {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+  }
+
+  /* ── SIDEBAR TOGGLE ── */
+  .sidebar-toggle {
+    position: absolute;
+    top: 12px; left: 12px;
+    z-index: 450;
+    display: none;
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 768px) {
+    .sidebar {
+      position: absolute;
+      top: 0; bottom: 0; left: 0;
+      z-index: 600;
+      width: 280px;
+      transform: translateX(-280px);
+    }
+    .sidebar.open { transform: translateX(0); }
+    .sidebar-toggle { display: flex; }
+    .topbar-stats { display: none; }
+    .legend { bottom: 36px; }
+    .map-overlay-tl { top: 50px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP NAV -->
+<nav class="topbar">
+  <div class="topbar-left">
+    <a href="/" class="logo">⊕ Orre<span>ryx</span></a>
+    <span class="page-title">Live Geopolitical Risk Map</span>
+  </div>
+  <div class="topbar-stats">
+    <div class="stat-pill"><div class="dot dot-red"></div>9 Critical/High</div>
+    <div class="stat-pill"><div class="dot dot-yellow"></div>4 Elevated</div>
+    <div class="stat-pill"><div class="dot dot-green"></div>Updated Daily</div>
+  </div>
+  <div class="topbar-right">
+    <a href="/risk-dashboard" class="nav-btn nav-btn-ghost">Dashboard</a>
+    <a href="/newsletter" class="nav-btn nav-btn-primary">Free Alerts</a>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="main">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-title">Active Conflicts & Risks</div>
+      <div class="filters">
+        <button class="filter-btn active" data-filter="all">All</button>
+        <button class="filter-btn" data-filter="critical">Critical 80+</button>
+        <button class="filter-btn" data-filter="conflict">Conflicts</button>
+        <button class="filter-btn" data-filter="nuclear">Nuclear</button>
+        <button class="filter-btn" data-filter="countries">Countries</button>
+      </div>
+    </div>
+    <div class="sidebar-list" id="sidebarList"></div>
+  </div>
+
+  <!-- MAP CONTAINER (position:relative for overlays) -->
+  <div style="flex:1; position:relative;">
+
+    <!-- MAP -->
+    <div id="map"></div>
+
+    <!-- TOP-LEFT OVERLAY BUTTONS -->
+    <div class="map-overlay-tl" id="mapOverlayTl">
+      <button class="overlay-btn active" id="btnConflicts" onclick="toggleLayer('conflicts')">⚔ Conflicts</button>
+      <button class="overlay-btn active" id="btnCountries" onclick="toggleLayer('countries')">🏳 Countries</button>
+    </div>
+
+    <!-- LEGEND -->
+    <div class="legend">
+      <div class="legend-title">Risk Level</div>
+      <div class="legend-item"><div class="legend-dot critical"></div>Critical (80–100)</div>
+      <div class="legend-item"><div class="legend-dot high"></div>High (65–79)</div>
+      <div class="legend-item"><div class="legend-dot elevated"></div>Elevated (50–64)</div>
+      <div class="legend-item"><div class="legend-dot moderate"></div>Moderate (&lt;50)</div>
+      <div class="legend-sep"></div>
+      <div class="legend-item"><div class="legend-dot" style="background:#6366f1"></div>Country Profile</div>
+    </div>
+
+    <!-- LIVE TICKER -->
+    <div class="ticker">
+      <div class="ticker-label">⚠ Live Risk</div>
+      <div class="ticker-track">
+        <div class="ticker-inner" id="tickerInner"></div>
+      </div>
+    </div>
+
+  </div><!-- end map container -->
+</div><!-- end main -->
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WLs=" crossorigin=""></script>
+
+<script>
+// ── DATA ──────────────────────────────────────────────────────────────────────
+
+const CONFLICTS = [
+  { id:'ukraine-russia',      name:'Russia-Ukraine War',             type:'conflict', risk:94, trend:'up',     region:'Europe',       lat:49.0,  lng:31.0,   countries:['Ukraine','Russia'], summary:'Full-scale invasion ongoing. Spring offensive underway. NATO logistics active.', markets:{natural_gas:'critical',wheat:'high',gold:'moderate',defence:'high'}, url:'/russia-ukraine-war' },
+  { id:'israel-gaza',         name:'Israel-Gaza War',                type:'conflict', risk:91, trend:'stable', region:'Middle East',  lat:31.5,  lng:34.5,   countries:['Israel','Palestine'], summary:'Ground operations ongoing in Rafah. Humanitarian corridors contested.', markets:{oil:'moderate',gold:'high',defence:'moderate'}, url:'/israel-gaza' },
+  { id:'india-pakistan',      name:'India-Pakistan Tensions',        type:'conflict', risk:88, trend:'up',     region:'South Asia',   lat:30.5,  lng:73.0,   countries:['India','Pakistan'], summary:'LoC violations at 2-year high. Both sides mobilising reserves.', markets:{gold:'high',oil:'moderate',EM_equities:'high'}, url:'/india-pakistan' },
+  { id:'doomsday-clock',      name:'Doomsday Clock — 89 Seconds',   type:'nuclear',  risk:89, trend:'stable', region:'Global',       lat:55.0,  lng:37.6,   countries:['Global'], summary:'Closest to midnight in 77-year history. Set January 2025. Multiple nuclear states in conflict adjacency.', markets:{gold:'high',defence:'moderate'}, url:'/doomsday-clock' },
+  { id:'iran-nuclear',        name:'Iran Nuclear Crisis',            type:'nuclear',  risk:84, trend:'stable', region:'Middle East',  lat:32.4,  lng:53.7,   countries:['Iran','Israel','USA'], summary:'Enrichment at 60%. IAEA access restricted. Breakout window 1–2 weeks.', markets:{oil:'critical',gold:'high',defence:'high'}, url:'/iran-nuclear' },
+  { id:'middle-east-regional',name:'Middle East Multi-Front War',   type:'conflict', risk:82, trend:'up',     region:'Middle East',  lat:33.5,  lng:36.3,   countries:['Iran','Lebanon','Yemen','Syria'], summary:'Hezbollah, Houthi, IRGC proxy coordination increasing. Multi-front escalation risk.', markets:{oil:'critical',gold:'high',shipping:'high'}, url:'/middle-east-war' },
+  { id:'russia-nato',         name:'Russia–NATO Escalation',        type:'nuclear',  risk:79, trend:'up',     region:'Europe',       lat:54.0,  lng:23.0,   countries:['Russia','NATO'], summary:'Nuclear signalling intensifying. Article 5 red lines being tested at Baltic border.', markets:{natural_gas:'high',defence:'high',gold:'high'}, url:'/nuclear-war-risk' },
+  { id:'south-china-sea',     name:'South China Sea Standoff',      type:'conflict', risk:76, trend:'up',     region:'Asia-Pacific', lat:14.0,  lng:115.0,  countries:['China','Philippines','Vietnam'], summary:'Philippines confrontations at Second Thomas Shoal. US treaty obligations tested.', markets:{shipping:'high',oil:'moderate',semiconductors:'moderate'}, url:'/south-china-sea' },
+  { id:'north-korea',         name:'North Korea Missile Crisis',    type:'nuclear',  risk:76, trend:'stable', region:'Asia-Pacific', lat:40.3,  lng:127.0,  countries:['North Korea','South Korea','Japan'], summary:'ICBM tests continuing. Russia arms deal providing revenue and satellite tech.', markets:{JPY:'high',KOSPI:'moderate',defence:'high'}, url:'/north-korea' },
+  { id:'china-taiwan',        name:'China-Taiwan Strait Crisis',    type:'conflict', risk:74, trend:'up',     region:'Asia-Pacific', lat:24.0,  lng:120.0,  countries:['China','Taiwan','USA'], summary:'PLA air incursions surpassing 1,700 ADIZ violations in 2023. Blockade scenario more likely than invasion.', markets:{semiconductors:'critical',gold:'high',shipping:'high'}, url:'/china-taiwan-war' },
+  { id:'europe-energy',       name:'Europe Energy Crisis',          type:'energy',   risk:65, trend:'stable', region:'Europe',       lat:50.5,  lng:10.0,   countries:['EU','Norway'], summary:'LNG import dependency. Storage below 5-year average. Winter risk window returning.', markets:{natural_gas:'critical',EUR:'high',inflation:'high'}, url:'/europe-energy-crisis' },
+  { id:'sudan-war',           name:'Sudan Civil War',               type:'conflict', risk:68, trend:'stable', region:'Africa',       lat:15.5,  lng:30.0,   countries:['Sudan'], summary:"RSF vs SAF conflict. World's largest displacement crisis. 7M+ displaced.", markets:{wheat:'moderate',gold:'low'}, url:'/sudan-war' },
+  { id:'myanmar',             name:'Myanmar Civil War',             type:'conflict', risk:65, trend:'up',     region:'Asia-Pacific', lat:17.0,  lng:96.5,   countries:['Myanmar'], summary:'Resistance forces controlling 60% of territory. Junta supply lines disrupted.', markets:{EM_equities:'low'}, url:'/global-conflicts-2025' },
+];
+
+const COUNTRIES = [
+  { id:'ukraine',      name:'Ukraine',       flag:'🇺🇦', risk:88, trend:'up',     lat:49.0,  lng:31.0,   url:'/country/ukraine' },
+  { id:'russia',       name:'Russia',        flag:'🇷🇺', risk:82, trend:'stable', lat:61.5,  lng:90.0,   url:'/country/russia' },
+  { id:'china',        name:'China',         flag:'🇨🇳', risk:71, trend:'up',     lat:35.0,  lng:105.0,  url:'/country/china' },
+  { id:'iran',         name:'Iran',          flag:'🇮🇷', risk:84, trend:'stable', lat:32.4,  lng:53.7,   url:'/country/iran' },
+  { id:'israel',       name:'Israel',        flag:'🇮🇱', risk:79, trend:'stable', lat:31.8,  lng:34.9,   url:'/country/israel' },
+  { id:'india',        name:'India',         flag:'🇮🇳', risk:67, trend:'up',     lat:20.6,  lng:78.9,   url:'/country/india' },
+  { id:'pakistan',     name:'Pakistan',      flag:'🇵🇰', risk:78, trend:'up',     lat:30.4,  lng:69.3,   url:'/country/pakistan' },
+  { id:'north-korea',  name:'North Korea',   flag:'🇰🇵', risk:76, trend:'stable', lat:40.3,  lng:127.5,  url:'/country/north-korea' },
+  { id:'taiwan',       name:'Taiwan',        flag:'🇹🇼', risk:69, trend:'up',     lat:23.7,  lng:121.0,  url:'/country/taiwan' },
+  { id:'saudi-arabia', name:'Saudi Arabia',  flag:'🇸🇦', risk:58, trend:'stable', lat:24.7,  lng:46.7,   url:'/country/saudi-arabia' },
+];
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
+
+function riskClass(score) {
+  if (score >= 80) return 'critical';
+  if (score >= 65) return 'high';
+  if (score >= 50) return 'elevated';
+  return 'moderate';
+}
+
+function riskLabel(score) {
+  if (score >= 80) return 'CRITICAL';
+  if (score >= 65) return 'HIGH';
+  if (score >= 50) return 'ELEVATED';
+  return 'MODERATE';
+}
+
+function riskColor(score) {
+  if (score >= 80) return '#e03836';
+  if (score >= 65) return '#f59e0b';
+  if (score >= 50) return '#fbbf24';
+  return '#10b981';
+}
+
+function trendIcon(t) {
+  return t === 'up' ? '↑' : t === 'down' ? '↓' : '→';
+}
+function trendClass(t) {
+  return t === 'up' ? 'trend-up' : t === 'down' ? 'trend-down' : 'trend-stable';
+}
+
+function markerSize(score) {
+  if (score >= 85) return 36;
+  if (score >= 75) return 30;
+  if (score >= 65) return 26;
+  return 22;
+}
+
+// ── MAP INIT ─────────────────────────────────────────────────────────────────
+
+const map = L.map('map', {
+  center: [25, 20],
+  zoom: 3,
+  minZoom: 2,
+  maxZoom: 10,
+  zoomControl: true,
+  scrollWheelZoom: true,
+});
+
+// Dark tile layer (CartoDB Dark Matter)
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a> | <a href="https://www.orreryx.io">Orreryx Intelligence</a>',
+  subdomains: 'abcd',
+  maxZoom: 19,
+}).addTo(map);
+
+// ── CONFLICT MARKERS ─────────────────────────────────────────────────────────
+
+const conflictLayerGroup = L.layerGroup().addTo(map);
+const conflictMarkers = {};
+
+function buildPopup(c) {
+  const cls = riskClass(c.risk);
+  const marketTags = Object.entries(c.markets || {})
+    .map(([asset, level]) => `<span class="popup-market-tag ${level === 'critical' ? 'critical' : ''}">${asset.replace(/_/g,' ').toUpperCase()}: ${level.toUpperCase()}</span>`)
+    .join('');
+  return `
+    <div class="popup-inner">
+      <div class="popup-badge popup-badge-${cls}">${riskLabel(c.risk)} RISK</div>
+      <div class="popup-title">${c.name}</div>
+      <div class="popup-region">${c.region} &nbsp;·&nbsp; ${c.countries.join(', ')}</div>
+      <div class="popup-scores">
+        <div class="popup-score-box">
+          <div class="popup-score-val" style="color:${riskColor(c.risk)}">${c.risk}</div>
+          <div class="popup-score-lbl">Risk Score</div>
+        </div>
+        <div class="popup-score-box">
+          <div class="popup-score-val" style="color:${c.trend==='up'?'#e03836':c.trend==='down'?'#10b981':'#6b7280'}">${trendIcon(c.trend)}</div>
+          <div class="popup-score-lbl">Trend</div>
+        </div>
+        <div class="popup-score-box">
+          <div class="popup-score-val" style="font-size:12px;color:#f59e0b">${c.type.toUpperCase()}</div>
+          <div class="popup-score-lbl">Type</div>
+        </div>
+      </div>
+      <div class="popup-summary">${c.summary}</div>
+      ${marketTags ? `<div class="popup-markets"><div class="popup-markets-title">Market Impact</div><div class="popup-market-tags">${marketTags}</div></div>` : ''}
+      <a href="${c.url}" class="popup-cta">View Full Analysis →</a>
+    </div>`;
+}
+
+CONFLICTS.forEach(c => {
+  const size = markerSize(c.risk);
+  const cls  = riskClass(c.risk);
+  const icon = L.divIcon({
+    className: '',
+    html: `<div class="conflict-marker ${cls}" style="width:${size}px;height:${size}px;font-size:${Math.round(size*0.38)}px">${c.risk}</div>`,
+    iconSize: [size, size],
+    iconAnchor: [size/2, size/2],
+    popupAnchor: [0, -size/2 - 4],
+  });
+  const marker = L.marker([c.lat, c.lng], { icon })
+    .bindPopup(buildPopup(c), { maxWidth: 300, minWidth: 265 })
+    .on('click', () => setActive(c.id));
+  conflictLayerGroup.addLayer(marker);
+  conflictMarkers[c.id] = marker;
+});
+
+// ── COUNTRY MARKERS ───────────────────────────────────────────────────────────
+
+const countryLayerGroup = L.layerGroup().addTo(map);
+const countryMarkers = {};
+
+COUNTRIES.forEach(co => {
+  const icon = L.divIcon({
+    className: '',
+    html: `<div class="country-marker" title="${co.name} — Risk ${co.risk}/100">${co.flag}</div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -16],
+  });
+  const popup = `
+    <div class="popup-inner">
+      <div class="popup-badge popup-badge-${riskClass(co.risk)}">${riskLabel(co.risk)} RISK</div>
+      <div class="popup-title">${co.flag} ${co.name}</div>
+      <div class="popup-region">Country Risk Profile</div>
+      <div class="popup-scores">
+        <div class="popup-score-box">
+          <div class="popup-score-val" style="color:${riskColor(co.risk)}">${co.risk}</div>
+          <div class="popup-score-lbl">Overall</div>
+        </div>
+        <div class="popup-score-box">
+          <div class="popup-score-val" style="color:${co.trend==='up'?'#e03836':co.trend==='down'?'#10b981':'#6b7280'}">${trendIcon(co.trend)}</div>
+          <div class="popup-score-lbl">Trend</div>
+        </div>
+        <div class="popup-score-box">
+          <div class="popup-score-val" style="font-size:11px;color:#a0a09a">COUNTRY</div>
+          <div class="popup-score-lbl">Type</div>
+        </div>
+      </div>
+      <a href="${co.url}" class="popup-cta">Full Country Report →</a>
+    </div>`;
+  const marker = L.marker([co.lat, co.lng], { icon })
+    .bindPopup(popup, { maxWidth: 280, minWidth: 250 });
+  countryLayerGroup.addLayer(marker);
+  countryMarkers[co.id] = marker;
+});
+
+// ── LAYER TOGGLES ─────────────────────────────────────────────────────────────
+
+let showConflicts = true;
+let showCountries = true;
+
+function toggleLayer(which) {
+  if (which === 'conflicts') {
+    showConflicts = !showConflicts;
+    if (showConflicts) { conflictLayerGroup.addTo(map); document.getElementById('btnConflicts').classList.add('active'); }
+    else               { map.removeLayer(conflictLayerGroup); document.getElementById('btnConflicts').classList.remove('active'); }
+  }
+  if (which === 'countries') {
+    showCountries = !showCountries;
+    if (showCountries) { countryLayerGroup.addTo(map); document.getElementById('btnCountries').classList.add('active'); }
+    else               { map.removeLayer(countryLayerGroup); document.getElementById('btnCountries').classList.remove('active'); }
+  }
+}
+
+// ── SIDEBAR ───────────────────────────────────────────────────────────────────
+
+let activeFilter = 'all';
+let activeId = null;
+
+function setActive(id) {
+  activeId = id;
+  document.querySelectorAll('.conflict-item').forEach(el => {
+    el.classList.toggle('active', el.dataset.id === id);
+  });
+}
+
+function renderSidebar(filter) {
+  const list = document.getElementById('sidebarList');
+  list.innerHTML = '';
+
+  if (filter === 'countries') {
+    // Show countries
+    [...COUNTRIES].sort((a,b) => b.risk - a.risk).forEach(co => {
+      const div = document.createElement('div');
+      div.className = 'conflict-item';
+      div.dataset.id = 'country-' + co.id;
+      div.innerHTML = `
+        <div class="conflict-score score-${riskClass(co.risk)}">${co.risk}</div>
+        <div class="conflict-info">
+          <div class="conflict-name">${co.flag} ${co.name}</div>
+          <div class="conflict-region">
+            Country Profile &nbsp;
+            <span class="${trendClass(co.trend)}">${trendIcon(co.trend)} ${co.trend}</span>
+          </div>
+        </div>`;
+      div.onclick = () => {
+        const m = countryMarkers[co.id];
+        if (m) { map.setView([co.lat, co.lng], 5, {animate:true}); m.openPopup(); }
+        setActive('country-' + co.id);
+      };
+      list.appendChild(div);
+    });
+    return;
+  }
+
+  let items = [...CONFLICTS];
+  if (filter === 'critical') items = items.filter(c => c.risk >= 80);
+  if (filter === 'conflict') items = items.filter(c => c.type === 'conflict');
+  if (filter === 'nuclear')  items = items.filter(c => c.type === 'nuclear');
+  items.sort((a,b) => b.risk - a.risk);
+
+  items.forEach(c => {
+    const div = document.createElement('div');
+    div.className = 'conflict-item' + (c.id === activeId ? ' active' : '');
+    div.dataset.id = c.id;
+    div.innerHTML = `
+      <div class="conflict-score score-${riskClass(c.risk)}">${c.risk}</div>
+      <div class="conflict-info">
+        <div class="conflict-name">${c.name}</div>
+        <div class="conflict-region">
+          ${c.region} &nbsp;·&nbsp;
+          <span class="${trendClass(c.trend)}">${trendIcon(c.trend)}</span>
+          &nbsp;·&nbsp; ${c.type}
+        </div>
+      </div>`;
+    div.onclick = () => {
+      const m = conflictMarkers[c.id];
+      if (m) { map.setView([c.lat, c.lng], 5, {animate:true}); m.openPopup(); }
+      setActive(c.id);
+    };
+    list.appendChild(div);
+  });
+}
+
+// Filter buttons
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.filter;
+    renderSidebar(activeFilter);
+  });
+});
+
+renderSidebar('all');
+
+// ── TICKER ────────────────────────────────────────────────────────────────────
+
+function buildTicker() {
+  const items = [...CONFLICTS].sort((a,b) => b.risk - a.risk).slice(0, 8);
+  const html = items.map(c =>
+    `<span class="ticker-item"><span>${c.name} ${trendIcon(c.trend)}</span>Risk Score: ${c.risk}/100 — ${c.summary.slice(0,70)}…</span>`
+  ).join('');
+  // Duplicate for seamless loop
+  document.getElementById('tickerInner').innerHTML = html + html;
+}
+buildTicker();
+
+// ── MOBILE SIDEBAR TOGGLE ─────────────────────────────────────────────────────
+
+// Add toggle button to map overlay
+const toggleBtn = document.createElement('button');
+toggleBtn.className = 'overlay-btn';
+toggleBtn.textContent = '☰ Conflicts';
+toggleBtn.style.cssText = 'display:none';
+toggleBtn.onclick = () => {
+  document.getElementById('sidebar').classList.toggle('open');
+};
+document.getElementById('mapOverlayTl').prepend(toggleBtn);
+
+if (window.innerWidth <= 768) {
+  toggleBtn.style.display = 'flex';
+}
+window.addEventListener('resize', () => {
+  toggleBtn.style.display = window.innerWidth <= 768 ? 'flex' : 'none';
+});
+
+// Close sidebar on map click (mobile)
+map.on('click', () => {
+  if (window.innerWidth <= 768) {
+    document.getElementById('sidebar').classList.remove('open');
+  }
+});
+
+// ── FIT BOUNDS TO SHOW MAIN HOTSPOTS ─────────────────────────────────────────
+
+// Pan to show Europe/Asia/Middle East — the main conflict zones
+setTimeout(() => {
+  map.fitBounds([[10, -10], [55, 135]], { padding: [20, 20], animate: true });
+}, 300);
+
+</script>
+
+</body>
+</html>

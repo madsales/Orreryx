@@ -68,6 +68,7 @@
     { "src": "/china-taiwan-war",    "dest": "/china-taiwan-war.html" },
     { "src": "/russia-ukraine-war",  "dest": "/russia-ukraine-war.html" },
     { "src": "/uranium-price",       "dest": "/uranium-price.html" },
+    { "src": "/map",                     "dest": "/map.html" },
     { "src": "/top-risks-2026",          "dest": "/top-risks-2026.html" },
     { "src": "/risk-dashboard",         "dest": "/risk-dashboard.html" },
     { "src": "/country/ukraine",        "dest": "/ukraine-risk.html" },
