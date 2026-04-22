@@ -74,7 +74,11 @@ function emailTemplates(email) {
           <div style="font-size:12px;color:#ff9800;font-weight:700;margin-bottom:6px">🟠 SOUTH CHINA SEA — RISK 76/100</div>
           <div style="font-size:13px;color:#c0c0b8;line-height:1.7">China-Philippines standoff intensifying near Second Thomas Shoal. <strong style="color:#f0f0ec">Watch: Taiwan ETF (EWT), semiconductor stocks (TSMC), shipping indices.</strong></div>
         </div>
-        <a href="${HOST}/global-conflicts-2025" style="display:block;background:rgba(255,255,255,.06);color:#f0f0ec;text-decoration:none;text-align:center;padding:12px;border-radius:4px;font-size:13px;margin-bottom:16px;border:1px solid rgba(255,255,255,.1)">See All 56 Active Conflicts → orreryx.io</a>
+        <div style="background:rgba(58,184,96,.07);border:1px solid rgba(58,184,96,.2);border-radius:8px;padding:16px;margin-bottom:16px">
+          <div style="font-size:11px;font-weight:700;color:#3ab860;margin-bottom:8px">⚡ COMMAND EXCLUSIVE — Interactive Risk Map</div>
+          <div style="font-size:12px;color:#c0c0b8;line-height:1.65;margin-bottom:12px">13 live conflict zones on an interactive world map. Click any hotspot → see risk score, market impact (oil, gold, defence, FX), and full country analysis. The kind of tool Bloomberg charges $2,400/mo for.</div>
+          <a href="${HOST}/map" style="display:block;background:#3ab860;color:#000;text-decoration:none;text-align:center;padding:11px;border-radius:4px;font-weight:800;font-size:12px">🗺️ See the Risk Map — Command $34.99/mo →</a>
+        </div>
         <a href="${HOST}/login?plan=f" style="display:block;background:#e03836;color:#fff;text-decoration:none;text-align:center;padding:14px;border-radius:4px;font-weight:700;font-size:14px">Track These Live — Free Trial →</a>
       `)
     },
