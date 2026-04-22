@@ -15,6 +15,19 @@ export default async function handler(req, res) {
     if (!url || !token) return res.status(200).json({ ok: false, reason: 'no_redis' });
 
     const body   = req.body || {};
+    // ── Push subscription storage (separate from analytics pipeline) ──────────
+    if (body.action === 'push_subscribe' && body.subscription?.endpoint) {
+      const ep   = body.subscription.endpoint;
+      const hash = ep.split('/').pop().slice(-28).replace(/[^a-zA-Z0-9]/g, '') ||
+                   Math.random().toString(36).slice(2);
+      await fetch(`${url}/pipeline`, {
+        method:  'POST',
+        headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+        body:    JSON.stringify([['SET', `push:${hash}`, JSON.stringify(body.subscription)]]),
+      });
+      return res.status(200).json({ ok: true });
+    }
+
     const event  = body.event  || 'pv';
     const page   = body.page   || '/';
     const ref    = body.ref    || '';

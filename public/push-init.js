@@ -3,7 +3,7 @@
 // Then call: OrreryxPush.subscribe() on button click
 
 window.OrreryxPush = {
-  VAPID_PUBLIC_KEY: 'BEl62iUYgUivxIkv69yViEuiBIa40HI80NM9LdsDkDNK8MlLmGJCN3aSC5KF_aJnBo9gNSbNYqDFrMJc6HMY', // placeholder — replace with real VAPID key
+  VAPID_PUBLIC_KEY: 'BN4QZ4_ulkA1JMnpaR8qhDcXbetA3aUG460ZIiBLYn2TmUR-XLfzzJGtL8PQVSynVwOB8KdBIyCR_vM25vXWqEE', // placeholder — replace with real VAPID key
 
   async subscribe() {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {

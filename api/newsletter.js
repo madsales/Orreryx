@@ -1,8 +1,9 @@
-// api/newsletter.js — Email capture + drip sequence + daily digest broadcast
-// POST { email, source }                → subscribe + schedule drip sequence
-// POST { action:'process_drip', token } → cron: send due drip emails
-// POST { action:'daily_digest', token } → cron: broadcast daily digest to all subscribers
-// POST { action:'stats', token }        → return subscriber stats
+// api/newsletter.js — Email capture + drip sequence + daily digest + push broadcast
+// POST { email, source }                  → subscribe + schedule drip sequence
+// POST { action:'process_drip', token }   → cron: send due drip emails
+// POST { action:'daily_digest', token }   → cron: broadcast daily digest to all subscribers
+// POST { action:'push_broadcast', token } → cron: send push notification to all subscribers
+// POST { action:'stats', token }          → return subscriber stats
 
 const R_URL   = process.env.UPSTASH_REDIS_REST_URL;
 const R_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -287,6 +288,58 @@ async function broadcastDailyDigest() {
   return { sent, skipped };
 }
 
+// ── PUSH NOTIFICATION BROADCAST ───────────────────────────────────────────────
+async function broadcastPush() {
+  if (!process.env.VAPID_PUBLIC_KEY || !process.env.VAPID_PRIVATE_KEY) {
+    return { ok: false, reason: 'VAPID keys not configured' };
+  }
+
+  // Dynamic import — web-push is CJS, works fine in ESM context
+  const webpush = (await import('web-push')).default;
+  webpush.setVapidDetails(
+    'mailto:alerts@orreryx.io',
+    process.env.VAPID_PUBLIC_KEY,
+    process.env.VAPID_PRIVATE_KEY
+  );
+
+  const today   = new Date().toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' });
+  const payload = JSON.stringify({
+    title: `☢ Orrery Risk Brief — ${today}`,
+    body:  'Top geopolitical risk signals updated. Tap to view.',
+    icon:  '/icon-192.png',
+    badge: '/badge-72.png',
+    url:   `${HOST}/risk-dashboard`,
+  });
+
+  let cursor = 0, sent = 0, removed = 0;
+  do {
+    const result = await redis('SCAN', cursor, 'MATCH', 'push:*', 'COUNT', 100);
+    if (!result) break;
+    const [nextCursor, keys] = result;
+    cursor = parseInt(nextCursor) || 0;
+    if (!keys || !keys.length) break;
+
+    for (const key of keys) {
+      try {
+        const raw = await redis('GET', key);
+        if (!raw) continue;
+        const sub = JSON.parse(raw);
+        await webpush.sendNotification(sub, payload);
+        sent++;
+      } catch (e) {
+        // 410 Gone / 404 Not Found = subscription expired, clean up
+        if (e.statusCode === 410 || e.statusCode === 404) {
+          await redis('DEL', key);
+          removed++;
+        }
+        // Other errors: skip silently (don't remove — could be transient)
+      }
+    }
+  } while (cursor !== 0);
+
+  return { sent, removed };
+}
+
 // ── MAIN HANDLER ─────────────────────────────────────────────────────────────
 export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -332,6 +385,12 @@ export default async function handler(req, res) {
   if (body.action === 'daily_digest') {
     if (body.token !== CRON_SECRET) return res.status(401).json({ error: 'Unauthorized' });
     const result = await broadcastDailyDigest();
+    return res.status(200).json({ ok: true, ...result });
+  }
+
+  if (body.action === 'push_broadcast') {
+    if (body.token !== CRON_SECRET) return res.status(401).json({ error: 'Unauthorized' });
+    const result = await broadcastPush();
     return res.status(200).json({ ok: true, ...result });
   }
 
