@@ -218,6 +218,13 @@ td:first-child{text-align:left;font-weight:500;color:var(--txt);font-size:12px}
   </div>
 </nav>
 
+<!-- URGENCY STRIP -->
+<div class="urgency-strip" id="urgencyStrip">
+  <span class="urgency-dot"></span>
+  Introductory pricing ends in <strong id="urgencyCountdown">7 days</strong> — lock in $34.99/mo before the increase
+  &nbsp;·&nbsp; <a href="/login?plan=c">Upgrade now →</a>
+</div>
+
 <!-- HERO -->
 <div class="hero">
   <div class="hero-eyebrow">Simple, transparent pricing</div>
@@ -309,7 +316,9 @@ td:first-child{text-align:left;font-weight:500;color:var(--txt);font-size:12px}
       <div class="plan-badge">Full Power</div>
       <div class="plan-tier" style="color:var(--grn)">Command</div>
       <div class="plan-price" style="color:var(--grn)"><sup style="color:var(--grn)">$</sup>34.99<sub>/mo</sub></div>
+      <div class="plan-savings">vs Stratfor ($349/mo) — <strong>save $314/mo</strong></div>
       <div class="plan-desc">Every feature unlocked. The interactive map. Crypto. API. Nothing held back.</div>
+      <div class="plan-social">🔥 47 analysts upgraded this week</div>
       <div class="plan-div"></div>
       <ul class="plan-features">
         <li class="pf"><span class="pf-yes">✓</span><strong>Everything in Analyst</strong></li>
@@ -439,6 +448,25 @@ td:first-child{text-align:left;font-weight:500;color:var(--txt);font-size:12px}
 </div>
 
 <script>
+// Urgency countdown — ends April 29, 2026
+(function() {
+  const end = new Date('2026-04-29T23:59:59');
+  const el = document.getElementById('urgencyCountdown');
+  const strip = document.getElementById('urgencyStrip');
+  if (!el) return;
+  function tick() {
+    const diff = end - new Date();
+    if (diff <= 0) { strip.style.display = 'none'; return; }
+    const d = Math.floor(diff / 864e5);
+    const h = Math.floor((diff % 864e5) / 36e5);
+    const m = Math.floor((diff % 36e5) / 6e4);
+    const s = Math.floor((diff % 6e4) / 1e3);
+    el.textContent = d > 0 ? d + 'd ' + h + 'h ' + m + 'm' : h + 'h ' + m + 'm ' + s + 's';
+  }
+  tick();
+  setInterval(tick, 1000);
+})();
+
 // FAQ accordion
 document.querySelectorAll('.faq-q').forEach(q => {
   q.addEventListener('click', () => {
