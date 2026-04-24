@@ -226,48 +226,68 @@ async function processDrip() {
   return { processed: due.length, sent };
 }
 
-// ── DAILY DIGEST — top 5 risk signals, broadcast to all active subscribers ────
-const DAILY_RISKS = [
-  { score:94, flag:'🇺🇦', label:'Ukraine–Russia', note:'Spring offensive. NATO corridor activity elevated.' },
-  { score:88, flag:'🇮🇳', label:'India–Pakistan', note:'LoC violations at 2-year high. Mobilisation confirmed.' },
-  { score:84, flag:'🇮🇷', label:'Iran Nuclear', note:'Enrichment at 60%. IAEA access restricted.' },
-  { score:82, flag:'🌍', label:'Middle East Multi-Front', note:'Hezbollah, Houthis, IRGC coordination increasing.' },
-  { score:76, flag:'🇰🇵', label:'North Korea', note:'ICBM test cycle ongoing. Russia arms deal active.' },
-];
+// ── DAILY DIGEST — broadcast to all active subscribers ───────────────────────
+function dailyDigestHtml(email) {
+  const dateStr = new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' });
+  const unsubUrl = `https://www.orreryx.io/unsubscribe?email=${encodeURIComponent(email)}`;
+  return `<div style="background:#09090b;color:#e8e8e2;font-family:Inter,sans-serif;max-width:600px;margin:0 auto;padding:32px 24px">
+  <div style="margin-bottom:24px">
+    <span style="font-family:monospace;font-size:18px;font-weight:700">⊕ Orreryx</span>
+    <span style="font-size:11px;color:#585858;margin-left:8px">Daily Geopolitical Brief</span>
+  </div>
 
-function dailyDigestHtml(date) {
-  const unsub = `${HOST}/unsubscribe`;
-  const dateStr = new Date(date).toLocaleDateString('en-GB', { weekday:'long', day:'numeric', month:'long', year:'numeric' });
-  const rows = DAILY_RISKS.map(r => {
-    const color = r.score >= 85 ? '#e03836' : r.score >= 70 ? '#f59e0b' : '#10b981';
-    return `<tr><td style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);font-size:20px">${r.flag}</td><td style="padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.06)"><div style="font-size:13px;font-weight:700;color:#f0f0ec">${r.label}</div><div style="font-size:12px;color:#9e9e9e">${r.note}</div></td><td style="padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06);text-align:right"><span style="background:${color}20;color:${color};border:1px solid ${color}40;border-radius:4px;padding:3px 8px;font-size:12px;font-weight:700">${r.score}</span></td></tr>`;
-  }).join('');
-  return `<div style="background:#09090b;color:#f0f0ec;padding:40px;max-width:520px;margin:0 auto;border:1px solid rgba(255,255,255,.1);border-radius:8px;font-family:'Helvetica Neue',sans-serif">
-    <div style="margin-bottom:20px;font-size:16px;font-weight:800">⊕ Orrery</div>
-    <div style="font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:1px;margin-bottom:8px">Daily Risk Briefing · ${dateStr}</div>
-    <div style="font-size:20px;font-weight:800;margin-bottom:20px">Top 5 Risk Signals Today</div>
-    <table style="width:100%;border-collapse:collapse">${rows}</table>
-    <div style="margin-top:24px">
-      <a href="${HOST}/risk-dashboard" style="display:block;background:#e03836;color:#fff;text-decoration:none;text-align:center;padding:13px;border-radius:4px;font-weight:700;font-size:14px;margin-bottom:12px">View Full Risk Dashboard →</a>
-      <a href="${HOST}/gold-price" style="display:inline-block;background:rgba(245,158,11,.1);color:#f59e0b;text-decoration:none;padding:8px 14px;border-radius:4px;font-size:12px;margin-right:8px">Gold Price</a>
-      <a href="${HOST}/oil-price" style="display:inline-block;background:rgba(245,158,11,.1);color:#f59e0b;text-decoration:none;padding:8px 14px;border-radius:4px;font-size:12px;margin-right:8px">Oil Price</a>
-      <a href="${HOST}/geopolitics-news" style="display:inline-block;background:rgba(245,158,11,.1);color:#f59e0b;text-decoration:none;padding:8px 14px;border-radius:4px;font-size:12px">Latest News</a>
+  <div style="background:#1a1a24;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:20px;margin-bottom:16px">
+    <div style="font-size:11px;color:#e03836;font-weight:700;letter-spacing:0.1em;margin-bottom:12px">TOP RISKS TODAY</div>
+    <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.06)">
+      <span style="font-family:monospace;font-size:22px;font-weight:700;color:#e03836">94</span>
+      <span style="font-size:14px;font-weight:600;margin-left:8px">Russia–Ukraine War</span>
+      <div style="font-size:12px;color:#a8a8a2;margin-top:4px">Spring offensive active. Frontline grinding in Donetsk. NATO logistics active.</div>
     </div>
-    <div style="margin-top:28px;padding-top:16px;border-top:1px solid rgba(255,255,255,.08);font-size:11px;color:#484844">© 2026 Orrery Intelligence · <a href="${HOST}" style="color:#484844">orreryx.io</a> · <a href="${unsub}" style="color:#484844">Unsubscribe</a></div>
-  </div>`;
+    <div style="margin-bottom:12px;padding-bottom:12px;border-bottom:1px solid rgba(255,255,255,0.06)">
+      <span style="font-family:monospace;font-size:22px;font-weight:700;color:#e03836">91</span>
+      <span style="font-size:14px;font-weight:600;margin-left:8px">Israel–Gaza War</span>
+      <div style="font-size:12px;color:#a8a8a2;margin-top:4px">Ground operations ongoing. Regional escalation risk elevated.</div>
+    </div>
+    <div>
+      <span style="font-family:monospace;font-size:22px;font-weight:700;color:#e03836">88</span>
+      <span style="font-size:14px;font-weight:600;margin-left:8px">India–Pakistan Tensions</span>
+      <div style="font-size:12px;color:#a8a8a2;margin-top:4px">LoC violations at 2-year high. Nuclear-armed standoff.</div>
+    </div>
+  </div>
+
+  <div style="background:#1a1a24;border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:20px;margin-bottom:16px">
+    <div style="font-size:11px;color:#d4a843;font-weight:700;letter-spacing:0.1em;margin-bottom:12px">MARKET WATCH</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px">
+      <tr><td style="padding:6px 0;color:#a8a8a2">Gold</td><td style="color:#3a9e6e;text-align:right">↑ Safe haven demand elevated</td></tr>
+      <tr><td style="padding:6px 0;color:#a8a8a2">Brent Crude</td><td style="color:#e03836;text-align:right">⚠ Middle East risk premium active</td></tr>
+      <tr><td style="padding:6px 0;color:#a8a8a2">Defense Stocks</td><td style="color:#3a9e6e;text-align:right">↑ NATO budget expansion</td></tr>
+      <tr><td style="padding:6px 0;color:#a8a8a2">European TTF Gas</td><td style="color:#e03836;text-align:right">⚠ Winter storage concerns</td></tr>
+    </table>
+  </div>
+
+  <div style="text-align:center;padding:24px;background:linear-gradient(135deg,rgba(16,185,129,0.1),rgba(5,150,105,0.08));border:1px solid rgba(16,185,129,0.3);border-radius:8px;margin-bottom:24px">
+    <div style="font-size:16px;font-weight:700;margin-bottom:8px">🗺️ Unlock the Risk Map</div>
+    <div style="font-size:13px;color:#a8a8a2;margin-bottom:16px">Command tier: interactive map, watchlist alerts, market impact calculator</div>
+    <a href="https://www.orreryx.io/login?plan=c" style="background:#10b981;color:#fff;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:700;font-size:13px">Upgrade to Command →</a>
+  </div>
+
+  <div style="text-align:center;font-size:11px;color:#585858">
+    <a href="https://www.orreryx.io" style="color:#585858">orreryx.io</a> ·
+    <a href="${unsubUrl}" style="color:#585858">Unsubscribe</a>
+  </div>
+</div>`;
 }
 
 async function broadcastDailyDigest() {
-  // Scan all newsletter:* keys and send to active subscribers (batch of 100)
-  let cursor = 0, sent = 0, skipped = 0;
+  // Scan all newsletter:*@* keys and send to active subscribers (batch of 100)
+  let cursor = 0, sent = 0, failed = 0;
   const today = new Date().toISOString().split('T')[0];
-  const digestHtml = dailyDigestHtml(Date.now());
-  const subject = `☢ Daily Risk Brief — ${new Date().toLocaleDateString('en-GB', { weekday:'short', day:'numeric', month:'short' })}`;
+  const dateLabel = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
+  const subject = `⚡ Orreryx Daily Brief — ${dateLabel}`;
 
   do {
     const result = await redis('SCAN', cursor, 'MATCH', 'newsletter:*@*', 'COUNT', 100);
     if (!result) break;
-    [cursor, ...[]]; // satisfy linter
     const [nextCursor, keys] = result;
     cursor = parseInt(nextCursor) || 0;
     if (!keys || !keys.length) break;
@@ -277,19 +297,25 @@ async function broadcastDailyDigest() {
         const raw = await redis('GET', key);
         if (!raw) continue;
         const sub = JSON.parse(raw);
-        if (sub.unsubscribed) { skipped++; continue; }
+        if (sub.unsubscribed) continue;
         // Avoid re-sending same day
-        if (sub.last_digest === today) { skipped++; continue; }
+        if (sub.last_digest === today) continue;
+        const digestHtml = dailyDigestHtml(sub.email);
         const ok = await sendEmail(sub.email, subject, digestHtml);
         if (ok) {
           sent++;
           await redis('SET', key, JSON.stringify({ ...sub, last_digest: today }));
+        } else {
+          failed++;
         }
-      } catch (e) { /* skip bad records */ }
+      } catch (e) {
+        console.error('[Digest] error sending to key:', key, e.message);
+        failed++;
+      }
     }
   } while (cursor !== 0);
 
-  return { sent, skipped };
+  return { sent, failed };
 }
 
 // ── PUSH NOTIFICATION BROADCAST ───────────────────────────────────────────────

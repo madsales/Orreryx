@@ -178,6 +178,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="dns-prefetch" href="https://unpkg.com">
 <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 <link rel="preload" as="image" href="/icon.svg">
 <script src="https://unpkg.com/globe.gl@2.30.0/dist/globe.gl.min.js" defer></script>
 <link rel="manifest" href="/manifest.json">
@@ -372,6 +373,22 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;height:56px;padding:0 40px;d
 .st-chg{font-family:var(--mono);font-size:10px;font-weight:600;text-align:right}
 .st-war{display:flex;justify-content:flex-end}
 .st-warb{font-size:6px;padding:2px 5px;border-radius:2px;font-family:var(--mono);font-weight:600}
+
+/* ── LIVE RISK MAP ────────────────────── */
+.riskmap-section{padding:90px 60px;border-top:1px solid var(--brd);background:var(--bg)}
+.riskmap-inner{max-width:1000px;margin:0 auto}
+.riskmap-hd{text-align:center;margin-bottom:36px}
+.riskmap-container{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--brd2);box-shadow:0 24px 60px rgba(0,0,0,.6),0 0 0 1px var(--brd)}
+#risk-map-el{width:100%;height:380px}
+.riskmap-paywall{display:flex;align-items:center;gap:14px;background:rgba(13,13,18,.92);border:1px solid var(--brd2);border-top:1px solid rgba(58,184,96,.15);border-radius:0 0 12px 12px;padding:16px 22px;flex-wrap:wrap}
+.riskmap-paywall-txt{flex:1;font-size:12.5px;color:var(--txt2);min-width:200px}
+.riskmap-paywall-txt strong{color:var(--txt)}
+.riskmap-paywall-btns{display:flex;gap:10px;flex-shrink:0;flex-wrap:wrap}
+.riskmap-btn-unlock{padding:9px 18px;border-radius:5px;font-size:11px;font-weight:600;text-decoration:none;background:var(--grn);color:#000;letter-spacing:.02em;transition:all .15s}
+.riskmap-btn-unlock:hover{opacity:.88;transform:translateY(-1px)}
+.riskmap-btn-trial{padding:9px 18px;border-radius:5px;font-size:11px;font-weight:500;text-decoration:none;color:var(--txt2);border:1px solid var(--brd2);transition:all .15s}
+.riskmap-btn-trial:hover{color:var(--txt);border-color:var(--brd3)}
+@keyframes pulse-ring{0%{transform:scale(1);opacity:.9}70%{transform:scale(2.2);opacity:0}100%{transform:scale(2.2);opacity:0}}
 
 /* ── PRICING ──────────────────────────── */
 .pricing-section{padding:90px 60px;border-top:1px solid var(--brd);background:var(--bg2)}
@@ -664,6 +681,7 @@ footer{border-top:1px solid var(--brd);padding:32px 60px;display:flex;align-item
     <div class="hero-btns">
       <a href="/login?plan=f" class="btn-hero-p">Start Free — 3 Days, No Card →</a>
       <a href="/demo" class="btn-hero-s">▶ Watch Demo</a>
+      <button id="push-btn" onclick="subscribePush()" style="display:inline-flex;align-items:center;gap:7px;padding:14px 20px;border-radius:6px;font-size:13px;font-weight:500;background:rgba(255,255,255,.05);color:var(--txt2);border:1px solid var(--brd2);cursor:pointer;transition:all .18s;white-space:nowrap;font-family:var(--sans)" onmouseover="this.style.background='rgba(255,255,255,.09)';this.style.color='var(--txt)'" onmouseout="this.style.background='rgba(255,255,255,.05)';this.style.color='var(--txt2)'">🔔 Push Alerts</button>
     </div>
     <div class="hero-stats">
       <div class="hero-stat">
@@ -1161,6 +1179,27 @@ footer{border-top:1px solid var(--brd);padding:32px 60px;display:flex;align-item
   <div style="width:1px;height:28px;background:var(--brd)"></div>
   <div class="lcs-item">🌍 <span class="lcs-num">250+</span><span>cities monitored globally</span></div>
 </div>
+
+<!-- ── LIVE RISK MAP ──────────────────────────── -->
+<section class="riskmap-section" id="risk-map">
+  <div class="riskmap-inner">
+    <div class="riskmap-hd">
+      <div class="section-eyebrow">Live Intelligence</div>
+      <h2 class="section-h">Live Geopolitical Risk Map</h2>
+      <p class="section-sub" style="margin:0 auto">13 active conflict zones. Real-time risk scores. Click any marker for analysis.</p>
+    </div>
+    <div class="riskmap-container">
+      <div id="risk-map-el"></div>
+      <div class="riskmap-paywall">
+        <div class="riskmap-paywall-txt">🔒 <strong>Full interactive map</strong> with 13 conflicts, country drill-downs &amp; real-time alerts — Command tier</div>
+        <div class="riskmap-paywall-btns">
+          <a href="/login?plan=c" class="riskmap-btn-unlock">Unlock Map →</a>
+          <a href="/login?plan=f" class="riskmap-btn-trial">Start Free Trial</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
 
 <!-- ── PRICING ─────────────────────────────────── -->
 <section class="pricing-section" id="pricing">
@@ -1981,6 +2020,82 @@ document.addEventListener('keydown',function(e){if(e.key==='Escape')closeLegal()
     el.textContent = n + '+';
   }, 5000);
 })();
+</script>
+
+<!-- ── LEAFLET RISK MAP INIT ── -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+(function(){
+  var el = document.getElementById('risk-map-el');
+  if (!el) return;
+  var map = L.map('risk-map-el', {
+    center: [25, 20],
+    zoom: 2,
+    scrollWheelZoom: false,
+    zoomControl: false,
+    dragging: false,
+    attributionControl: false
+  });
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    subdomains: 'abcd',
+    maxZoom: 19
+  }).addTo(map);
+  var conflicts = [
+    { latlng:[49.0, 32.0], name:'Ukraine\u2013Russia', score:94, color:'#ef4444' },
+    { latlng:[31.5, 34.8], name:'Israel\u2013Gaza', score:91, color:'#ef4444' },
+    { latlng:[31.0, 74.0], name:'India\u2013Pakistan', score:88, color:'#ef4444' },
+    { latlng:[32.0, 53.0], name:'Iran Nuclear', score:84, color:'#f59e0b' },
+    { latlng:[25.3, 51.5], name:'Middle East', score:82, color:'#f59e0b' },
+    { latlng:[21.0, 39.0], name:'Red Sea / Houthis', score:78, color:'#f59e0b' },
+    { latlng:[23.0, 121.0], name:'China\u2013Taiwan', score:74, color:'#f59e0b' },
+    { latlng:[39.0, 125.0], name:'North Korea', score:76, color:'#f59e0b' }
+  ];
+  conflicts.forEach(function(c) {
+    L.circleMarker(c.latlng, {
+      radius: 8,
+      color: c.color,
+      fillColor: c.color,
+      fillOpacity: 0.7,
+      weight: 2,
+      opacity: 0.9
+    }).bindPopup('<b>' + c.name + '</b><br>Risk: ' + c.score + '/100').addTo(map);
+  });
+})();
+</script>
+
+<!-- ── PUSH NOTIFICATIONS ── -->
+<script>
+async function subscribePush() {
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    alert('Push notifications not supported in this browser.');
+    return;
+  }
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    const sub = await reg.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDkBnE5zsAiDd9ATqzMxiPYJnbq4gGMM7oKBsHmvLFY0'
+    });
+    await fetch('/api/track', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify({ action: 'push_subscribe', subscription: sub })
+    });
+    document.getElementById('push-btn').textContent = '✓ Alerts enabled';
+    document.getElementById('push-btn').style.background = '#10b981';
+    document.getElementById('push-btn').style.color = '#fff';
+    document.getElementById('push-btn').style.borderColor = '#10b981';
+  } catch(e) {
+    console.log('Push subscribe failed:', e);
+  }
+}
+</script>
+
+<!-- ── SERVICE WORKER REGISTRATION ── -->
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js').catch(console.error);
+}
 </script>
 </body>
 </html>
