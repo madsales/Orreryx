@@ -73,8 +73,13 @@
       align-items: center;
       gap: 5px;
       transition: background 0.15s;
+      animation: ory-cta-pulse 2.5s infinite;
     }
     #ory-promo-cta:hover { background: #2ea050; }
+    @keyframes ory-cta-pulse {
+      0%, 100% { box-shadow: 0 0 0 0 rgba(58,184,96,.5); }
+      70% { box-shadow: 0 0 0 8px rgba(58,184,96,0); }
+    }
     #ory-promo-trial {
       color: #6b7280;
       font-size: 11px;
@@ -100,15 +105,32 @@
   const bar = document.createElement('div');
   bar.id = 'ory-promo-bar';
   bar.setAttribute('role', 'banner');
+  // Page-aware message
+  const _path = window.location.pathname;
+  let _promoText, _promoCta, _promoCtaHref;
+  if (/^\/country\//i.test(_path)) {
+    const _country = _path.replace(/^\/country\//i, '').split('?')[0]
+      .replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+    _promoText = `<strong>🌍 ${_country}</strong> data is free. Get the full interactive risk map with live market impact — Command $34.99/mo`;
+    _promoCta = '🗺️ Unlock Map — $34.99/mo';
+    _promoCtaHref = '/login?plan=c';
+  } else if (/^\/(risk-dashboard|dashboard)/i.test(_path)) {
+    _promoText = '<strong>📊 Risk Dashboard is free.</strong> The interactive map with live market impact per conflict is Command-only.';
+    _promoCta = '🗺️ Upgrade to Command — $34.99/mo';
+    _promoCtaHref = '/login?plan=c';
+  } else {
+    _promoText = '<strong>Interactive Risk Map</strong> — live conflict markers, market impact &amp; country risk profiles. Command exclusive.';
+    _promoCta = '🗺️ Unlock Map — $34.99/mo';
+    _promoCtaHref = '/map';
+  }
+
   bar.innerHTML = `
     <div id="ory-promo-left">
       <div id="ory-promo-badge">⚡ COMMAND</div>
-      <div id="ory-promo-text">
-        <strong>Interactive Risk Map</strong> — live conflict markers, market impact &amp; country risk profiles. Command exclusive.
-      </div>
+      <div id="ory-promo-text">${_promoText}</div>
     </div>
     <div id="ory-promo-right">
-      <a href="/map" id="ory-promo-cta">🗺️ Unlock Map — $34.99/mo</a>
+      <a href="${_promoCtaHref}" id="ory-promo-cta">${_promoCta}</a>
       <a href="/login?plan=f" id="ory-promo-trial">Free trial</a>
       <button id="ory-promo-close" aria-label="Dismiss">×</button>
     </div>

@@ -442,4 +442,19 @@
     <priority>0.91</priority>
   </url>
 
+
+  <url>
+    <loc>https://www.orreryx.io/russia-sanctions</loc>
+    <lastmod>2026-04-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/oil-price-forecast-2026</loc>
+    <lastmod>2026-04-24</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+
 </urlset>
