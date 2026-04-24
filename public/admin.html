@@ -992,10 +992,25 @@ function renderStatsCards(d) {
       <div class="stat-val">$${fmtNum(d.revenue)}</div>
       <div class="stat-sub">${d.totalPayments} payments</div>
     </div>
+    <div class="stat-card" style="border-color:rgba(56,188,120,.3)">
+      <div class="stat-lbl">Free Tier Users</div>
+      <div class="stat-val" style="color:#38bc78">${fmtNum(d.plans.f||0)}</div>
+      <div class="stat-sub">active free trials</div>
+    </div>
+    <div class="stat-card" style="border-color:rgba(212,168,67,.3)">
+      <div class="stat-lbl">Analyst Users</div>
+      <div class="stat-val" style="color:var(--gld)">${fmtNum(d.plans.a||0)}</div>
+      <div class="stat-sub">$14.99/mo · ${((d.plans.a||0)*14.99).toFixed(0)} MRR</div>
+    </div>
+    <div class="stat-card" style="border-color:rgba(58,184,96,.3)">
+      <div class="stat-lbl">Command Users</div>
+      <div class="stat-val" style="color:var(--grn)">${fmtNum(d.plans.c||0)}</div>
+      <div class="stat-sub">$34.99/mo · ${((d.plans.c||0)*34.99).toFixed(0)} MRR</div>
+    </div>
     <div class="stat-card">
-      <div class="stat-lbl">Plan Split</div>
-      <div class="stat-val">${d.plans.a + d.plans.c}</div>
-      <div class="stat-sub">${d.plans.f||0} free · ${d.plans.s} starter · ${d.plans.a} analyst · ${d.plans.c} cmd</div>
+      <div class="stat-lbl">Starter Users</div>
+      <div class="stat-val">${fmtNum(d.plans.s||0)}</div>
+      <div class="stat-sub">$0.99/mo · total MRR: $${(((d.plans.s||0)*0.99)+((d.plans.a||0)*14.99)+((d.plans.c||0)*34.99)).toFixed(0)}</div>
     </div>`;
 }
 

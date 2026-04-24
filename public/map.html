@@ -203,6 +203,9 @@
   /* ── MAP ── */
   #map {
     flex: 1;
+    width: 100%;
+    height: 100%;
+    min-height: 400px;
     background: #0a0a0c;
   }
 
@@ -667,7 +670,7 @@
   </div>
 
   <!-- MAP CONTAINER (position:relative for overlays) -->
-  <div style="flex:1; position:relative;">
+  <div style="flex:1; position:relative; display:flex; flex-direction:column;">
 
     <!-- MAP -->
     <div id="map"></div>
@@ -701,7 +704,7 @@
 </div><!-- end main -->
 
 <!-- Leaflet JS -->
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV/XN/WLs=" crossorigin=""></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
 // ── AUTH GATE — Command tier only ────────────────────────────────────────────
@@ -799,10 +802,11 @@ const map = L.map('map', {
 });
 
 // Dark tile layer (CartoDB Dark Matter)
-L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a> | <a href="https://www.orreryx.io">Orreryx Intelligence</a>',
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png', {
+  attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a> | Orreryx',
   subdomains: 'abcd',
   maxZoom: 19,
+  crossOrigin: true,
 }).addTo(map);
 
 // ── CONFLICT MARKERS ─────────────────────────────────────────────────────────
