@@ -2617,10 +2617,12 @@ async function fetchGNews(signal) {
     if (lang && lang !== 'all') params.set('lang', lang);
     const qs = params.toString() ? '?' + params.toString() : '';
     const fetchSignal = signal
-      ? AbortSignal.any([signal, AbortSignal.timeout(12000)])
+      ? (AbortSignal.any
+          ? AbortSignal.any([signal, AbortSignal.timeout(12000)])
+          : signal)
       : AbortSignal.timeout(12000);
     const r = await fetch('/api/gnews' + qs, { signal: fetchSignal });
-    if (!r.ok) return;
+    if (!r.ok) { renderIntelFeed(); return; }
     const data = await r.json();
 
     const existingIds   = new Set(feedEvents.map(e => e.id));
@@ -2649,10 +2651,12 @@ async function fetchLiveEvents(signal) {
     if (lang && lang !== 'all') params.set('lang', lang);
     const qs = params.toString() ? '?' + params.toString() : '';
     const fetchSignal = signal
-      ? AbortSignal.any([signal, AbortSignal.timeout(12000)])
+      ? (AbortSignal.any
+          ? AbortSignal.any([signal, AbortSignal.timeout(12000)])
+          : signal)
       : AbortSignal.timeout(12000);
     const r = await fetch('/api/events' + qs, { signal: fetchSignal });
-    if (!r.ok) return;
+    if (!r.ok) { renderIntelFeed(); return; }
     const data = await r.json();
     if (!data.events || data.events.length === 0) {
       renderIntelFeed();
