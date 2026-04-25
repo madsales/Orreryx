@@ -1711,23 +1711,26 @@ let liveEventIdx = 0;
 let activeFilter = 'all';
 // ── COUNTRY + LANGUAGE FILTER STATE ──
 let feedFilter = { country: 'all', lang: 'en' }; // 'en' default preserves existing behavior
+let feedFetchController = null;
 
 function setLang(btn, lang) {
-  document.querySelectorAll('.lang-pill').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('#lang-pills .lang-pill').forEach(p => p.classList.remove('active'));
   btn.classList.add('active');
   feedFilter.lang = lang;
   applyFeedFilter();
 }
 
 function applyFeedFilter() {
+  if (feedFetchController) feedFetchController.abort();
+  feedFetchController = new AbortController();
   const sel = document.getElementById('filter-country');
   if (sel) feedFilter.country = sel.value;
   // Clear feed and re-fetch with new params
   feedEvents = feedEvents.filter(e => e.isDemo);
   const body = document.getElementById('intel-feed-body');
   if (body) body.innerHTML = '<div style="padding:24px 16px;text-align:center;color:var(--txt4);font:500 10px/1 var(--mono);letter-spacing:.08em">LOADING FILTERED FEED...</div>';
-  fetchLiveEvents();
-  fetchGNews();
+  fetchLiveEvents(feedFetchController.signal);
+  fetchGNews(feedFetchController.signal);
 }
 let stockFilter = 'all';
 let scrSortKey = 'sym';
@@ -2606,22 +2609,24 @@ async function fetchCryptoPrices() {
   }
 }
 
-async function fetchGNews() {
+async function fetchGNews(signal) {
   try {
     const { country, lang } = feedFilter;
     const params = new URLSearchParams();
     if (country && country !== 'all') params.set('country', country);
     if (lang && lang !== 'all') params.set('lang', lang);
     const qs = params.toString() ? '?' + params.toString() : '';
-    const r = await fetch('/api/gnews' + qs, { signal: AbortSignal.timeout(12000) });
+    const fetchSignal = signal
+      ? AbortSignal.any([signal, AbortSignal.timeout(12000)])
+      : AbortSignal.timeout(12000);
+    const r = await fetch('/api/gnews' + qs, { signal: fetchSignal });
     if (!r.ok) return;
     const data = await r.json();
-    if (!data.articles || data.articles.length === 0) return;
 
     const existingIds   = new Set(feedEvents.map(e => e.id));
     const existingTitles = new Set(feedEvents.map(e => e.txt.toLowerCase().substring(0, 70)));
 
-    const fresh = data.articles
+    const fresh = (data.articles || [])
       .filter(a => !existingIds.has(a.id) && !existingTitles.has(a.txt.toLowerCase().substring(0, 70)))
       .map(a => ({ ...a, time: new Date(a.time || Date.now()), newest: false }));
 
@@ -2631,21 +2636,28 @@ async function fetchGNews() {
     // Always re-render — clears loading state even if no new events
     renderIntelFeed();
   } catch(e) {
+    if (e.name === 'AbortError') return;
     // silently ignore — RSS feeds are supplementary
   }
 }
 
-async function fetchLiveEvents() {
+async function fetchLiveEvents(signal) {
   try {
     const { country, lang } = feedFilter;
     const params = new URLSearchParams();
     if (country && country !== 'all') params.set('country', country);
     if (lang && lang !== 'all') params.set('lang', lang);
     const qs = params.toString() ? '?' + params.toString() : '';
-    const r = await fetch('/api/events' + qs, { signal: AbortSignal.timeout(12000) });
+    const fetchSignal = signal
+      ? AbortSignal.any([signal, AbortSignal.timeout(12000)])
+      : AbortSignal.timeout(12000);
+    const r = await fetch('/api/events' + qs, { signal: fetchSignal });
     if (!r.ok) return;
     const data = await r.json();
-    if (!data.events || data.events.length === 0) return;
+    if (!data.events || data.events.length === 0) {
+      renderIntelFeed();
+      return;
+    }
 
     liveEventsLoaded = true;
 
@@ -2680,6 +2692,7 @@ async function fetchLiveEvents() {
     if (currentPage === 'map') updateMapSidebar();
 
   } catch (e) {
+    if (e.name === 'AbortError') return;
     // Silently fall back — network errors are non-fatal
   }
 }
