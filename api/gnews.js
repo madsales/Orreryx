@@ -704,10 +704,9 @@ export default async function handler(req, res) {
     return res.status(200).json(cached.data);
   }
 
-  // For filtered requests, only fetch feeds matching the requested language
-  const feedsToFetch = lang === 'all' ? FEEDS : FEEDS.filter(f => f.lang === lang);
-  // Always include 'en' feeds as fallback if no feeds match the language
-  const activeFeed = feedsToFetch.length > 0 ? feedsToFetch : FEEDS.filter(f => f.lang === 'en');
+  // For filtered requests, only fetch feeds matching the requested language.
+  // If no feeds match (e.g. a language with no RSS coverage), return empty — don't fall back to EN.
+  const activeFeed = lang === 'all' ? FEEDS : FEEDS.filter(f => f.lang === lang);
 
   try {
     const results = await Promise.allSettled(
