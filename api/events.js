@@ -1,9 +1,32 @@
 // api/events.js - Orrery Global News Coverage
-// Uses GDELT Article API (mode=artlist) - updates every 15 minutes, NOT the GeoJSON endpoint
-// which can lag 2-3 days. Article API gives real seendate timestamps.
+// Uses GDELT Article API (mode=artlist) - updates every 15 minutes
+// Supports ?country=XX&lang=XX query params
 
 const CACHE_TTL = 5 * 60 * 1000;
-let cache = null, cacheTime = 0;
+const cacheMap = new Map(); // key: 'country:lang' → { data, time }
+
+// ISO country code extraction — same map as gnews.js
+const CC_MAP = {
+  ' india ':'IN',' mali ':'ML',' somalia ':'SO',
+  'ukraine':'UA','russia':'RU','china':'CN','israel':'IL','iran':'IR',
+  'pakistan':'PK','north korea':'KP','taiwan':'TW',
+  'saudi arabia':'SA','south korea':'KR','united states':'US',' us ':'US',
+  'germany':'DE','france':'FR','japan':'JP','syria':'SY','yemen':'YE',
+  'sudan':'SD','ethiopia':'ET','nigeria':'NG','turkey':'TR',
+  'brazil':'BR','venezuela':'VE','colombia':'CO','myanmar':'MM',
+  'afghanistan':'AF','iraq':'IQ','lebanon':'LB','libya':'LY',
+  'belarus':'BY','egypt':'EG','zimbabwe':'ZW','finland':'FI','sweden':'SE',
+  'poland':'PL','georgia':'GE','gaza':'IL','west bank':'IL',
+  'crimea':'UA','donbas':'UA','kherson':'UA','zaporizhzhia':'UA',
+};
+
+function extractCC(loc, txt) {
+  const s = ' ' + ((loc || '') + ' ' + (txt || '')).toLowerCase() + ' ';
+  for (const [kw, cc] of Object.entries(CC_MAP)) {
+    if (s.includes(kw)) return cc;
+  }
+  return null;
+}
 
 const STREAMS = [
   {
@@ -63,12 +86,19 @@ const STREAMS = [
   },
 ];
 
+// GDELT language code map
+const GDELT_LANG = {
+  en:'english', ar:'arabic', fr:'french', de:'german',
+  es:'spanish', ru:'russian', zh:'chinese', ja:'japanese', hi:'hindi', pt:'portuguese',
+};
+
 // GDELT Article API - fresh articles, updates every 15 min
-function gdeltUrl(query, max) {
+function gdeltUrl(query, max, sourcelang) {
+  const langParam = sourcelang ? '&sourcelang=' + sourcelang : '&sourcelang=english';
   return (
     'https://api.gdeltproject.org/api/v2/doc/doc' +
     '?query=' + encodeURIComponent(query) +
-    '&mode=artlist&format=json&timespan=12h&maxrecords=' + max + '&sort=DateDesc&sourcelang=english'
+    '&mode=artlist&format=json&timespan=12h&maxrecords=' + max + '&sort=DateDesc' + langParam
   );
 }
 
@@ -598,6 +628,7 @@ function parseArticles(articles) {
         id:       stableId(a.url, title),
         cat, catLabel, severity,
         lat, lng, loc,
+        cc:       extractCC(loc, title),
         txt:      title,
         url:      a.url || '',
         source:   a.domain || '',
@@ -624,14 +655,22 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'public, max-age=300, stale-while-revalidate=60');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  if (cache && Date.now() - cacheTime < CACHE_TTL) {
-    return res.status(200).json(cache);
+  const country = (req.query.country || 'all').toUpperCase();
+  const lang    = (req.query.lang    || 'en').toLowerCase();
+  const cacheKey = `${country}:${lang}`;
+
+  const cached = cacheMap.get(cacheKey);
+  if (cached && Date.now() - cached.time < CACHE_TTL) {
+    return res.status(200).json(cached.data);
   }
+
+  // Map UI lang code → GDELT sourcelang param value. 'all' = omit (multilingual).
+  const sourcelang = lang === 'all' ? null : (GDELT_LANG[lang] || 'english');
 
   try {
     const results = await Promise.allSettled(
       STREAMS.map(s =>
-        fetch(gdeltUrl(s.query, s.max), {
+        fetch(gdeltUrl(s.query, s.max, sourcelang), {
           headers: { 'User-Agent': 'OrreryIntelligence/1.0 (https://www.orreryx.io)' },
           signal:  AbortSignal.timeout(9000),
         })
@@ -644,23 +683,29 @@ export default async function handler(req, res) {
     let all = [];
     results.forEach(r => { if (r.status === 'fulfilled') all = all.concat(r.value); });
 
+    // Filter by country code if requested
+    if (country !== 'ALL') {
+      all = all.filter(e => e.cc === country);
+    }
+
     all.sort((a, b) => new Date(b.time) - new Date(a.time));
     const final = dedup(all).slice(0, 200);
 
     const counts = {};
     final.forEach(e => { counts[e.cat] = (counts[e.cat] || 0) + 1; });
 
-    cache = {
+    const data = {
       events:  final,
       fetched: Date.now(),
       count:   final.length,
       bycat:   counts,
       source:  'gdelt-articles',
+      country, lang,
     };
-    cacheTime = Date.now();
+    cacheMap.set(cacheKey, { data, time: Date.now() });
 
-    console.log('[Events] GDELT: ' + final.length + ' events, newest: ' + (final[0] && final[0].time || 'n/a'));
-    return res.status(200).json(cache);
+    console.log('[Events] GDELT: ' + final.length + ' events [' + cacheKey + '], newest: ' + (final[0] && final[0].time || 'n/a'));
+    return res.status(200).json(data);
 
   } catch (err) {
     console.error('[Events] Fatal:', err.message);
