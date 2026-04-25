@@ -15,7 +15,7 @@ const CC_MAP = {
   'brazil':'BR','venezuela':'VE','colombia':'CO','myanmar':'MM',
   'afghanistan':'AF','iraq':'IQ','lebanon':'LB','libya':'LY',' mali ':'ML',
   'belarus':'BY','egypt':'EG','zimbabwe':'ZW','finland':'FI','sweden':'SE',
-  'poland':'PL','georgia':'GE','gaza':'IL','west bank':'IL',
+  'poland':'PL',' georgia ':'GE','gaza':'IL','west bank':'IL',
   'crimea':'UA','donbas':'UA','kherson':'UA','zaporizhzhia':'UA',
 };
 

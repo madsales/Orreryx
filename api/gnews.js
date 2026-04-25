@@ -14,7 +14,7 @@ const CC_MAP = {
   'brazil':'BR','venezuela':'VE','colombia':'CO','myanmar':'MM',
   'afghanistan':'AF','iraq':'IQ','lebanon':'LB','libya':'LY',' mali ':'ML',
   'belarus':'BY','egypt':'EG','zimbabwe':'ZW','finland':'FI','sweden':'SE',
-  'poland':'PL','georgia':'GE','gaza':'IL','west bank':'IL',
+  'poland':'PL',' georgia ':'GE','gaza':'IL','west bank':'IL',
   'crimea':'UA','donbas':'UA','kherson':'UA','zaporizhzhia':'UA',
 };
 
@@ -124,7 +124,7 @@ const FEEDS = [
   { url: 'https://tass.ru/rss/v2.xml',                                         source: 'TASS',                lang: 'ru' },
   { url: 'https://meduza.io/rss2/all',                                         source: 'Meduza',              lang: 'ru' },
 
-  // --- CHINESE (ZH) ---
+  // --- CHINA (EN) — Chinese state media publishing in English ---
   { url: 'https://www.cgtn.com/subscribe/rss/section/world.xml',               source: 'CGTN',                lang: 'en' },
   { url: 'https://www.globaltimes.cn/rss/outbrain.xml',                        source: 'Global Times',        lang: 'en' },
 
