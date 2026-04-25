@@ -2073,8 +2073,18 @@ function startPlatform() {
 
   // ── LIVE NEWS — fetch immediately on start, then every 90 seconds ──
   // Run for ALL plans (intel feed is available to everyone)
-  setTimeout(() => { fetchLiveEvents(); fetchGNews(); }, 800);
-  setInterval(() => { fetchLiveEvents(); fetchGNews(); }, 90 * 1000);
+  setTimeout(() => {
+    if (feedFetchController) feedFetchController.abort();
+    feedFetchController = new AbortController();
+    fetchLiveEvents(feedFetchController.signal);
+    fetchGNews(feedFetchController.signal);
+  }, 800);
+  setInterval(() => {
+    if (feedFetchController) feedFetchController.abort();
+    feedFetchController = new AbortController();
+    fetchLiveEvents(feedFetchController.signal);
+    fetchGNews(feedFetchController.signal);
+  }, 90 * 1000);
 
   // ── REAL-TIME QUOTES — all plans get polling every 15s (stocks via Yahoo Finance) ──
   const _allQuoteSyms = [
@@ -2560,8 +2570,10 @@ function initGlobe() {
   // Plot whatever events we already have (fetched at startup)
   // then trigger a fresh fetch so the map is always up to date
   updateGlobePoints();
-  fetchLiveEvents();
-  fetchGNews();
+  if (feedFetchController) feedFetchController.abort();
+  feedFetchController = new AbortController();
+  fetchLiveEvents(feedFetchController.signal);
+  fetchGNews(feedFetchController.signal);
 }
 
 // ── LIVE CRYPTO PRICES ──
@@ -2612,10 +2624,9 @@ async function fetchCryptoPrices() {
 async function fetchGNews(signal) {
   const { country: snapCountry, lang: snapLang } = feedFilter;
   try {
-    const { country, lang } = feedFilter;
     const params = new URLSearchParams();
-    if (country && country !== 'all') params.set('country', country);
-    if (lang && lang !== 'all') params.set('lang', lang);
+    if (snapCountry && snapCountry !== 'all') params.set('country', snapCountry);
+    if (snapLang && snapLang !== 'all') params.set('lang', snapLang);
     const qs = params.toString() ? '?' + params.toString() : '';
     const hasTimeout = typeof AbortSignal.timeout === 'function';
     const hasAny = typeof AbortSignal.any === 'function';
@@ -2643,17 +2654,16 @@ async function fetchGNews(signal) {
     renderIntelFeed();
   } catch(e) {
     if (e.name === 'AbortError') return;
-    // silently ignore — RSS feeds are supplementary
+    renderIntelFeed(); // clear loading spinner on network failure
   }
 }
 
 async function fetchLiveEvents(signal) {
   const { country: snapCountry, lang: snapLang } = feedFilter;
   try {
-    const { country, lang } = feedFilter;
     const params = new URLSearchParams();
-    if (country && country !== 'all') params.set('country', country);
-    if (lang && lang !== 'all') params.set('lang', lang);
+    if (snapCountry && snapCountry !== 'all') params.set('country', snapCountry);
+    if (snapLang && snapLang !== 'all') params.set('lang', snapLang);
     const qs = params.toString() ? '?' + params.toString() : '';
     const hasTimeout = typeof AbortSignal.timeout === 'function';
     const hasAny = typeof AbortSignal.any === 'function';
@@ -2705,7 +2715,7 @@ async function fetchLiveEvents(signal) {
 
   } catch (e) {
     if (e.name === 'AbortError') return;
-    // Silently fall back — network errors are non-fatal
+    renderIntelFeed(); // clear loading spinner on network failure
   }
 }
 
