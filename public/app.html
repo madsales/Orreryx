@@ -169,6 +169,24 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
 .c-hlt{background:rgba(140,20,80,.15);color:#d060a0}
 .c-biz{background:rgba(20,80,50,.15);color:#40b878}
 .c-fin{background:rgba(20,100,160,.15);color:#30a8e0}
+.feed-country-bar{display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--brd);background:var(--bg2);flex-shrink:0}
+.feed-country-lbl{font:700 7px/1 var(--mono);letter-spacing:.1em;color:var(--txt4);flex-shrink:0}
+#filter-country{background:var(--bg3);border:1px solid var(--brd2);border-radius:var(--radius-sm);color:var(--txt2);font:500 11px/1 var(--sans);padding:3px 7px;cursor:pointer;flex:1;min-width:0;max-width:180px}
+.lang-pills{display:flex;gap:2px;flex-shrink:0;flex-wrap:nowrap}
+.lang-pill{background:var(--bg3);border:1px solid var(--brd);border-radius:var(--radius-sm);color:var(--txt3);font:600 8px/1 var(--mono);padding:3px 6px;cursor:pointer;transition:all .12s;white-space:nowrap}
+.lang-pill:hover{color:var(--txt2);border-color:var(--brd2)}
+.lang-pill.active{background:rgba(59,130,246,.15);border-color:#3b82f6;color:#3b82f6}
+.lang-badge{font:600 7px/1 var(--mono);border-radius:2px;padding:1px 4px;flex-shrink:0;margin-left:2px}
+.lb-en{background:rgba(59,130,246,.15);color:#3b82f6}
+.lb-ar{background:rgba(139,92,246,.15);color:#8b5cf6}
+.lb-fr{background:rgba(20,184,166,.15);color:#14b8a6}
+.lb-de{background:rgba(234,179,8,.15);color:#eab308}
+.lb-es{background:rgba(249,115,22,.15);color:#f97316}
+.lb-ru{background:rgba(239,68,68,.15);color:#ef4444}
+.lb-zh{background:rgba(236,72,153,.15);color:#ec4899}
+.lb-ja{background:rgba(168,85,247,.15);color:#a855f7}
+.lb-hi{background:rgba(245,158,11,.15);color:#f59e0b}
+.lb-pt{background:rgba(34,197,94,.15);color:#22c55e}
 /* ── INTEL FILTER BAR ── */
 .intel-filter-bar{padding:6px 12px;border-bottom:1px solid var(--brd);display:flex;gap:4px;overflow-x:auto;flex-shrink:0;scrollbar-width:none;background:var(--bg2)}
 .intel-filter-bar::-webkit-scrollbar{display:none}
@@ -718,6 +736,59 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
         <div style="display:flex;align-items:center;gap:5px">
           <div style="width:6px;height:6px;border-radius:50%;background:var(--grn);animation:blink 1.4s infinite"></div>
           <span style="font:500 8px/1 var(--mono);color:var(--txt4)">Global coverage · all categories</span>
+        </div>
+      </div>
+      <div class="feed-country-bar" id="feed-country-bar">
+        <span class="feed-country-lbl">FILTER</span>
+        <select id="filter-country" onchange="applyFeedFilter()">
+          <option value="all">🌍 All Countries</option>
+          <option value="UA">🇺🇦 Ukraine</option>
+          <option value="RU">🇷🇺 Russia</option>
+          <option value="CN">🇨🇳 China</option>
+          <option value="IL">🇮🇱 Israel</option>
+          <option value="IR">🇮🇷 Iran</option>
+          <option value="IN">🇮🇳 India</option>
+          <option value="PK">🇵🇰 Pakistan</option>
+          <option value="KP">🇰🇵 North Korea</option>
+          <option value="TW">🇹🇼 Taiwan</option>
+          <option value="SA">🇸🇦 Saudi Arabia</option>
+          <option value="AF">🇦🇫 Afghanistan</option>
+          <option value="BY">🇧🇾 Belarus</option>
+          <option value="BR">🇧🇷 Brazil</option>
+          <option value="CO">🇨🇴 Colombia</option>
+          <option value="EG">🇪🇬 Egypt</option>
+          <option value="ET">🇪🇹 Ethiopia</option>
+          <option value="DE">🇩🇪 Germany</option>
+          <option value="FR">🇫🇷 France</option>
+          <option value="IQ">🇮🇶 Iraq</option>
+          <option value="JP">🇯🇵 Japan</option>
+          <option value="LB">🇱🇧 Lebanon</option>
+          <option value="LY">🇱🇾 Libya</option>
+          <option value="ML">🇲🇱 Mali</option>
+          <option value="MM">🇲🇲 Myanmar</option>
+          <option value="NG">🇳🇬 Nigeria</option>
+          <option value="SO">🇸🇴 Somalia</option>
+          <option value="KR">🇰🇷 South Korea</option>
+          <option value="SD">🇸🇩 Sudan</option>
+          <option value="SY">🇸🇾 Syria</option>
+          <option value="TR">🇹🇷 Turkey</option>
+          <option value="US">🇺🇸 United States</option>
+          <option value="VE">🇻🇪 Venezuela</option>
+          <option value="YE">🇾🇪 Yemen</option>
+          <option value="ZW">🇿🇼 Zimbabwe</option>
+        </select>
+        <div class="lang-pills" id="lang-pills">
+          <button class="lang-pill" data-lang="all" onclick="setLang(this,'all')">All</button>
+          <button class="lang-pill active" data-lang="en" onclick="setLang(this,'en')">EN</button>
+          <button class="lang-pill" data-lang="ar" onclick="setLang(this,'ar')">AR</button>
+          <button class="lang-pill" data-lang="fr" onclick="setLang(this,'fr')">FR</button>
+          <button class="lang-pill" data-lang="de" onclick="setLang(this,'de')">DE</button>
+          <button class="lang-pill" data-lang="es" onclick="setLang(this,'es')">ES</button>
+          <button class="lang-pill" data-lang="ru" onclick="setLang(this,'ru')">RU</button>
+          <button class="lang-pill" data-lang="zh" onclick="setLang(this,'zh')">ZH</button>
+          <button class="lang-pill" data-lang="ja" onclick="setLang(this,'ja')">JA</button>
+          <button class="lang-pill" data-lang="hi" onclick="setLang(this,'hi')">HI</button>
+          <button class="lang-pill" data-lang="pt" onclick="setLang(this,'pt')">PT</button>
         </div>
       </div>
       <div class="intel-filter-bar">
@@ -1638,6 +1709,26 @@ let timerSec = 60;
 let timerInterval = null;
 let liveEventIdx = 0;
 let activeFilter = 'all';
+// ── COUNTRY + LANGUAGE FILTER STATE ──
+let feedFilter = { country: 'all', lang: 'en' }; // 'en' default preserves existing behavior
+
+function setLang(btn, lang) {
+  document.querySelectorAll('.lang-pill').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  feedFilter.lang = lang;
+  applyFeedFilter();
+}
+
+function applyFeedFilter() {
+  const sel = document.getElementById('filter-country');
+  if (sel) feedFilter.country = sel.value;
+  // Clear feed and re-fetch with new params
+  feedEvents = feedEvents.filter(e => e.isDemo);
+  const body = document.getElementById('intel-feed-body');
+  if (body) body.innerHTML = '<div style="padding:24px 16px;text-align:center;color:var(--txt4);font:500 10px/1 var(--mono);letter-spacing:.08em">LOADING FILTERED FEED...</div>';
+  fetchLiveEvents();
+  fetchGNews();
+}
 let stockFilter = 'all';
 let scrSortKey = 'sym';
 let scrSortAsc = true;
@@ -2330,6 +2421,8 @@ function buildEventCard(e) {
   const tags = (e.tags || []).map(t => `<span class="tag ${t.up ? 'tag-up' : 'tag-dn'}">${t.t}</span>`).join('');
   const srcUrl = e.url || ('https://news.google.com/search?q=' + encodeURIComponent(e.txt.substring(0, 80)));
   const srcLabel = e.source ? e.source : 'Source';
+  const langCode = e.lang || 'en';
+  const langBadge = `<span class="lang-badge lb-${langCode}">${langCode.toUpperCase()}</span>`;
   const vpq = buildVideoQuery(e);
   return `<div class="ev-card ${e.newest ? 'newest' : ''}" data-evid="${e.id}" data-vpq="${vpq}" onclick="handleEvClick(this)">
     <div class="ev-top">
@@ -2338,7 +2431,7 @@ function buildEventCard(e) {
       <span class="ev-ts">${timeStr}</span>
     </div>
     <div class="ev-txt">${e.txt}</div>
-    <div class="ev-foot">${tags}<span class="tag" style="background:var(--bg4);color:var(--txt3);cursor:pointer" onclick="event.stopPropagation();handleEvStockClick(this)">🤖 AI Brief →</span><a class="tag ev-src-link" href="${srcUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Read original source">🔗 ${srcLabel} →</a></div>
+    <div class="ev-foot">${tags}${langBadge}<span class="tag" style="background:var(--bg4);color:var(--txt3);cursor:pointer" onclick="event.stopPropagation();handleEvStockClick(this)">🤖 AI Brief →</span><a class="tag ev-src-link" href="${srcUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Read original source">🔗 ${srcLabel} →</a></div>
   </div>`;
 }
 
@@ -2515,7 +2608,12 @@ async function fetchCryptoPrices() {
 
 async function fetchGNews() {
   try {
-    const r = await fetch('/api/gnews', { signal: AbortSignal.timeout(12000) });
+    const { country, lang } = feedFilter;
+    const params = new URLSearchParams();
+    if (country && country !== 'all') params.set('country', country);
+    if (lang && lang !== 'all') params.set('lang', lang);
+    const qs = params.toString() ? '?' + params.toString() : '';
+    const r = await fetch('/api/gnews' + qs, { signal: AbortSignal.timeout(12000) });
     if (!r.ok) return;
     const data = await r.json();
     if (!data.articles || data.articles.length === 0) return;
@@ -2539,7 +2637,12 @@ async function fetchGNews() {
 
 async function fetchLiveEvents() {
   try {
-    const r = await fetch('/api/events', { signal: AbortSignal.timeout(12000) });
+    const { country, lang } = feedFilter;
+    const params = new URLSearchParams();
+    if (country && country !== 'all') params.set('country', country);
+    if (lang && lang !== 'all') params.set('lang', lang);
+    const qs = params.toString() ? '?' + params.toString() : '';
+    const r = await fetch('/api/events' + qs, { signal: AbortSignal.timeout(12000) });
     if (!r.ok) return;
     const data = await r.json();
     if (!data.events || data.events.length === 0) return;
