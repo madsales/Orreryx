@@ -7,14 +7,13 @@ const cacheMap = new Map(); // key: 'country:lang' → { data, time }
 
 // ISO country code extraction — same map as gnews.js
 const CC_MAP = {
-  ' india ':'IN',' mali ':'ML',' somalia ':'SO',
   'ukraine':'UA','russia':'RU','china':'CN','israel':'IL','iran':'IR',
-  'pakistan':'PK','north korea':'KP','taiwan':'TW',
-  'saudi arabia':'SA','south korea':'KR','united states':'US',' us ':'US',
-  'germany':'DE','france':'FR','japan':'JP','syria':'SY','yemen':'YE',
-  'sudan':'SD','ethiopia':'ET','nigeria':'NG','turkey':'TR',
+  ' india ':'IN','pakistan':'PK','north korea':'KP','taiwan':'TW',
+  'saudi arabia':'SA','south korea':'KR','united states':'US',' us ':'US','germany':'DE',
+  'france':'FR','japan':'JP','syria':'SY','yemen':'YE',
+  'sudan':'SD','ethiopia':'ET','nigeria':'NG',' somalia ':'SO','turkey':'TR',
   'brazil':'BR','venezuela':'VE','colombia':'CO','myanmar':'MM',
-  'afghanistan':'AF','iraq':'IQ','lebanon':'LB','libya':'LY',
+  'afghanistan':'AF','iraq':'IQ','lebanon':'LB','libya':'LY',' mali ':'ML',
   'belarus':'BY','egypt':'EG','zimbabwe':'ZW','finland':'FI','sweden':'SE',
   'poland':'PL','georgia':'GE','gaza':'IL','west bank':'IL',
   'crimea':'UA','donbas':'UA','kherson':'UA','zaporizhzhia':'UA',
@@ -675,7 +674,7 @@ export default async function handler(req, res) {
           signal:  AbortSignal.timeout(9000),
         })
           .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
-          .then(j => parseArticles(j.articles))
+          .then(j => parseArticles(j.articles).map(e => ({ ...e, lang: lang === 'all' ? 'en' : lang })))
           .catch(() => [])
       )
     );
