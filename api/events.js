@@ -94,7 +94,7 @@ const GDELT_LANG = {
 
 // GDELT Article API - fresh articles, updates every 15 min
 function gdeltUrl(query, max, sourcelang) {
-  const langParam = sourcelang ? '&sourcelang=' + sourcelang : '&sourcelang=english';
+  const langParam = sourcelang ? '&sourcelang=' + sourcelang : '';
   return (
     'https://api.gdeltproject.org/api/v2/doc/doc' +
     '?query=' + encodeURIComponent(query) +
