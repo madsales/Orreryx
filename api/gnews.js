@@ -1,8 +1,30 @@
 // api/gnews.js - Live RSS from 45+ global news outlets
-// Covers every major region: Americas, Europe, Middle East, Africa, Asia, Oceania, India
+// Supports ?country=XX&lang=XX query params for filtered feeds
 
 const CACHE_TTL = 8 * 60 * 1000;
-let cache = null, cacheTime = 0;
+const cacheMap = new Map(); // key: 'country:lang' → { data, time }
+
+// ISO country code extraction from article geo location + title
+const CC_MAP = {
+  'ukraine':'UA','russia':'RU','china':'CN','israel':'IL','iran':'IR',
+  'india':'IN','pakistan':'PK','north korea':'KP','taiwan':'TW',
+  'saudi arabia':'SA','united states':'US',' us ':'US','germany':'DE',
+  'france':'FR','japan':'JP','south korea':'KR','syria':'SY','yemen':'YE',
+  'sudan':'SD','ethiopia':'ET','nigeria':'NG','somalia':'SO','turkey':'TR',
+  'brazil':'BR','venezuela':'VE','colombia':'CO','myanmar':'MM',
+  'afghanistan':'AF','iraq':'IQ','lebanon':'LB','libya':'LY','mali':'ML',
+  'belarus':'BY','egypt':'EG','zimbabwe':'ZW','finland':'FI','sweden':'SE',
+  'poland':'PL','georgia':'GE','gaza':'IL','west bank':'IL',
+  'crimea':'UA','donbas':'UA','kherson':'UA','zaporizhzhia':'UA',
+};
+
+function extractCC(loc, txt) {
+  const s = ' ' + ((loc || '') + ' ' + (txt || '')).toLowerCase() + ' ';
+  for (const [kw, cc] of Object.entries(CC_MAP)) {
+    if (s.includes(kw)) return cc;
+  }
+  return null;
+}
 
 // Stable ID - same article always same ID across polls (FNV-1a 32-bit, range 10000001-19999999)
 function stableId(url, title) {
@@ -16,69 +38,105 @@ function stableId(url, title) {
 }
 
 const FEEDS = [
-  // --- GLOBAL WIRE SERVICES ---
-  { url: 'https://feeds.bbci.co.uk/news/world/rss.xml',                        source: 'BBC World' },
-  { url: 'https://www.theguardian.com/world/rss',                              source: 'The Guardian' },
-  { url: 'https://feeds.skynews.com/feeds/rss/world.xml',                      source: 'Sky News' },
-  { url: 'https://rss.dw.com/rdf/rss-en-all',                                  source: 'Deutsche Welle' },
-  { url: 'https://www.france24.com/en/rss',                                    source: 'France 24' },
-  { url: 'https://feeds.npr.org/1004/rss.xml',                                 source: 'NPR News' },
-  { url: 'https://www.aljazeera.com/xml/rss/all.xml',                          source: 'Al Jazeera' },
-  { url: 'https://www.rfi.fr/en/rss',                                          source: 'RFI English' },
-  { url: 'https://feeds.reuters.com/reuters/worldNews',                        source: 'Reuters World' },
+  // --- GLOBAL WIRE SERVICES (EN) ---
+  { url: 'https://feeds.bbci.co.uk/news/world/rss.xml',                        source: 'BBC World',           lang: 'en' },
+  { url: 'https://www.theguardian.com/world/rss',                              source: 'The Guardian',        lang: 'en' },
+  { url: 'https://feeds.skynews.com/feeds/rss/world.xml',                      source: 'Sky News',            lang: 'en' },
+  { url: 'https://rss.dw.com/rdf/rss-en-all',                                  source: 'Deutsche Welle',      lang: 'en' },
+  { url: 'https://www.france24.com/en/rss',                                    source: 'France 24',           lang: 'en' },
+  { url: 'https://feeds.npr.org/1004/rss.xml',                                 source: 'NPR News',            lang: 'en' },
+  { url: 'https://www.aljazeera.com/xml/rss/all.xml',                          source: 'Al Jazeera',          lang: 'en' },
+  { url: 'https://www.rfi.fr/en/rss',                                          source: 'RFI English',         lang: 'en' },
+  { url: 'https://feeds.reuters.com/reuters/worldNews',                        source: 'Reuters World',       lang: 'en' },
 
-  // --- BBC REGIONAL (most reliable regional feeds) ---
-  { url: 'https://feeds.bbci.co.uk/news/world/africa/rss.xml',                 source: 'BBC Africa' },
-  { url: 'https://feeds.bbci.co.uk/news/world/middle_east/rss.xml',            source: 'BBC Middle East' },
-  { url: 'https://feeds.bbci.co.uk/news/world/latin_america/rss.xml',          source: 'BBC Latin America' },
-  { url: 'https://feeds.bbci.co.uk/news/world/asia/rss.xml',                   source: 'BBC Asia' },
-  { url: 'https://feeds.bbci.co.uk/news/world/europe/rss.xml',                 source: 'BBC Europe' },
-  { url: 'https://feeds.bbci.co.uk/news/world/us_and_canada/rss.xml',          source: 'BBC US & Canada' },
-  { url: 'https://feeds.bbci.co.uk/news/business/rss.xml',                     source: 'BBC Business' },
-  { url: 'https://feeds.bbci.co.uk/news/technology/rss.xml',                   source: 'BBC Technology' },
+  // --- BBC REGIONAL (EN) ---
+  { url: 'https://feeds.bbci.co.uk/news/world/africa/rss.xml',                 source: 'BBC Africa',          lang: 'en' },
+  { url: 'https://feeds.bbci.co.uk/news/world/middle_east/rss.xml',            source: 'BBC Middle East',     lang: 'en' },
+  { url: 'https://feeds.bbci.co.uk/news/world/latin_america/rss.xml',          source: 'BBC Latin America',   lang: 'en' },
+  { url: 'https://feeds.bbci.co.uk/news/world/asia/rss.xml',                   source: 'BBC Asia',            lang: 'en' },
+  { url: 'https://feeds.bbci.co.uk/news/world/europe/rss.xml',                 source: 'BBC Europe',          lang: 'en' },
+  { url: 'https://feeds.bbci.co.uk/news/world/us_and_canada/rss.xml',          source: 'BBC US & Canada',     lang: 'en' },
+  { url: 'https://feeds.bbci.co.uk/news/business/rss.xml',                     source: 'BBC Business',        lang: 'en' },
+  { url: 'https://feeds.bbci.co.uk/news/technology/rss.xml',                   source: 'BBC Technology',      lang: 'en' },
 
-  // --- ASIA & OCEANIA ---
-  { url: 'https://www3.nhk.or.jp/rss/news/cat0.xml',                           source: 'NHK World' },
-  { url: 'https://www.japantimes.co.jp/feed/topstories/',                      source: 'Japan Times' },
-  { url: 'https://www.abc.net.au/news/feed/51120/rss.xml',                     source: 'ABC Australia' },
-  { url: 'https://www.cbc.ca/cmlink/rss-world',                                source: 'CBC Canada' },
-  { url: 'https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml', source: 'Channel News Asia' },
-  { url: 'https://www.straitstimes.com/news/world/rss.xml',                    source: 'Straits Times' },
-  { url: 'https://www.scmp.com/rss/91/feed',                                   source: 'South China Morning Post' },
+  // --- ASIA & OCEANIA (EN) ---
+  { url: 'https://www3.nhk.or.jp/rss/news/cat0.xml',                           source: 'NHK World',           lang: 'en' },
+  { url: 'https://www.japantimes.co.jp/feed/topstories/',                      source: 'Japan Times',         lang: 'en' },
+  { url: 'https://www.abc.net.au/news/feed/51120/rss.xml',                     source: 'ABC Australia',       lang: 'en' },
+  { url: 'https://www.cbc.ca/cmlink/rss-world',                                source: 'CBC Canada',          lang: 'en' },
+  { url: 'https://www.channelnewsasia.com/api/v1/rss-outbound-feed?_format=xml', source: 'Channel News Asia', lang: 'en' },
+  { url: 'https://www.straitstimes.com/news/world/rss.xml',                    source: 'Straits Times',       lang: 'en' },
+  { url: 'https://www.scmp.com/rss/91/feed',                                   source: 'South China Morning Post', lang: 'en' },
 
-  // --- MIDDLE EAST ---
-  { url: 'https://www.arabnews.com/rss.xml',                                   source: 'Arab News' },
-  { url: 'https://english.alarabiya.net/rss.xml',                              source: 'Al Arabiya' },
-  { url: 'https://www.jpost.com/rss/rssfeedsfrontpage.aspx',                   source: 'Jerusalem Post' },
-  { url: 'https://gulfnews.com/rss',                                           source: 'Gulf News' },
-  { url: 'https://www.middleeasteye.net/rss',                                  source: 'Middle East Eye' },
-  { url: 'https://www.dailysabah.com/rssfeed/home',                            source: 'Daily Sabah' },
+  // --- MIDDLE EAST (EN) ---
+  { url: 'https://www.arabnews.com/rss.xml',                                   source: 'Arab News',           lang: 'en' },
+  { url: 'https://english.alarabiya.net/rss.xml',                              source: 'Al Arabiya',          lang: 'en' },
+  { url: 'https://www.jpost.com/rss/rssfeedsfrontpage.aspx',                   source: 'Jerusalem Post',      lang: 'en' },
+  { url: 'https://gulfnews.com/rss',                                           source: 'Gulf News',           lang: 'en' },
+  { url: 'https://www.middleeasteye.net/rss',                                  source: 'Middle East Eye',     lang: 'en' },
+  { url: 'https://www.dailysabah.com/rssfeed/home',                            source: 'Daily Sabah',         lang: 'en' },
 
-  // --- EUROPE ---
-  { url: 'https://feeds.feedburner.com/euronews/en/home',                      source: 'Euronews' },
-  { url: 'https://kyivindependent.com/feed/',                                  source: 'Kyiv Independent' },
-  { url: 'https://www.themoscowtimes.com/rss/news',                            source: 'Moscow Times' },
+  // --- EUROPE (EN) ---
+  { url: 'https://feeds.feedburner.com/euronews/en/home',                      source: 'Euronews',            lang: 'en' },
+  { url: 'https://kyivindependent.com/feed/',                                  source: 'Kyiv Independent',    lang: 'en' },
+  { url: 'https://www.themoscowtimes.com/rss/news',                            source: 'Moscow Times',        lang: 'en' },
 
-  // --- SOUTH ASIA / PAKISTAN ---
-  { url: 'https://www.dawn.com/feeds/home',                                    source: 'Dawn Pakistan' },
-  { url: 'https://feeds.feedburner.com/ndtvnews-top-stories',                  source: 'NDTV' },
-  { url: 'https://timesofindia.indiatimes.com/rssfeedstopstories.cms',         source: 'Times of India' },
-  { url: 'https://www.thehindu.com/news/national/feeder/default.rss',          source: 'The Hindu' },
-  { url: 'https://economictimes.indiatimes.com/rssfeedstopstories.cms',        source: 'Economic Times' },
-  { url: 'https://feeds.feedburner.com/ndtvnews-india-news',                   source: 'NDTV India' },
-  { url: 'https://www.livemint.com/rss/news',                                  source: 'Mint' },
-  { url: 'https://www.business-standard.com/rss/home_page_top_stories.rss',   source: 'Business Standard' },
-  { url: 'https://www.indiatoday.in/rss/home',                                 source: 'India Today' },
-  { url: 'https://www.thehindu.com/business/feeder/default.rss',               source: 'The Hindu Business' },
+  // --- SOUTH ASIA (EN) ---
+  { url: 'https://www.dawn.com/feeds/home',                                    source: 'Dawn Pakistan',       lang: 'en' },
+  { url: 'https://feeds.feedburner.com/ndtvnews-top-stories',                  source: 'NDTV',                lang: 'en' },
+  { url: 'https://timesofindia.indiatimes.com/rssfeedstopstories.cms',         source: 'Times of India',      lang: 'en' },
+  { url: 'https://www.thehindu.com/news/national/feeder/default.rss',          source: 'The Hindu',           lang: 'en' },
+  { url: 'https://economictimes.indiatimes.com/rssfeedstopstories.cms',        source: 'Economic Times',      lang: 'en' },
+  { url: 'https://feeds.feedburner.com/ndtvnews-india-news',                   source: 'NDTV India',          lang: 'en' },
+  { url: 'https://www.livemint.com/rss/news',                                  source: 'Mint',                lang: 'en' },
+  { url: 'https://www.business-standard.com/rss/home_page_top_stories.rss',   source: 'Business Standard',   lang: 'en' },
+  { url: 'https://www.indiatoday.in/rss/home',                                 source: 'India Today',         lang: 'en' },
+  { url: 'https://www.thehindu.com/business/feeder/default.rss',               source: 'The Hindu Business',  lang: 'en' },
 
-  // --- AFRICA ---
-  { url: 'https://www.theeastafrican.co.ke/tea/rss',                           source: 'The East African' },
-  { url: 'https://www.dailymaverick.co.za/rss/',                               source: 'Daily Maverick SA' },
+  // --- AFRICA (EN) ---
+  { url: 'https://www.theeastafrican.co.ke/tea/rss',                           source: 'The East African',    lang: 'en' },
+  { url: 'https://www.dailymaverick.co.za/rss/',                               source: 'Daily Maverick SA',   lang: 'en' },
 
-  // --- FINANCE & MARKETS ---
-  { url: 'https://feeds.content.dowjones.io/public/rss/mw_realtimeheadlines',  source: 'MarketWatch' },
-  { url: 'https://www.france24.com/en/economy/rss',                            source: 'France24 Economy' },
-  { url: 'https://www.cnbc.com/id/100727362/device/rss/rss.html',              source: 'CNBC World' },
+  // --- FINANCE & MARKETS (EN) ---
+  { url: 'https://feeds.content.dowjones.io/public/rss/mw_realtimeheadlines',  source: 'MarketWatch',         lang: 'en' },
+  { url: 'https://www.france24.com/en/economy/rss',                            source: 'France24 Economy',    lang: 'en' },
+  { url: 'https://www.cnbc.com/id/100727362/device/rss/rss.html',              source: 'CNBC World',          lang: 'en' },
+
+  // --- ARABIC (AR) ---
+  { url: 'https://www.aljazeera.net/xml/rss2.0.xml',                           source: 'Al Jazeera AR',       lang: 'ar' },
+  { url: 'https://feeds.bbci.co.uk/arabic/rss.xml',                            source: 'BBC Arabic',          lang: 'ar' },
+  { url: 'https://www.france24.com/ar/rss',                                    source: 'France 24 AR',        lang: 'ar' },
+
+  // --- FRENCH (FR) ---
+  { url: 'https://www.france24.com/fr/rss',                                    source: 'France 24 FR',        lang: 'fr' },
+  { url: 'https://www.rfi.fr/fr/rss',                                          source: 'RFI Français',        lang: 'fr' },
+  { url: 'https://www.lemonde.fr/rss/une.xml',                                 source: 'Le Monde',            lang: 'fr' },
+
+  // --- GERMAN (DE) ---
+  { url: 'https://rss.dw.com/rdf/rss-de-all',                                  source: 'DW Deutsch',          lang: 'de' },
+  { url: 'https://www.spiegel.de/schlagzeilen/index.rss',                      source: 'Der Spiegel',         lang: 'de' },
+
+  // --- SPANISH (ES) ---
+  { url: 'https://feeds.bbci.co.uk/mundo/rss.xml',                             source: 'BBC Mundo',           lang: 'es' },
+  { url: 'https://www.france24.com/es/rss',                                    source: 'France 24 ES',        lang: 'es' },
+
+  // --- RUSSIAN (RU) ---
+  { url: 'https://tass.ru/rss/v2.xml',                                         source: 'TASS',                lang: 'ru' },
+  { url: 'https://meduza.io/rss2/all',                                         source: 'Meduza',              lang: 'ru' },
+
+  // --- CHINESE (ZH) ---
+  { url: 'https://www.cgtn.com/subscribe/rss/section/world.xml',               source: 'CGTN',                lang: 'zh' },
+  { url: 'https://www.globaltimes.cn/rss/outbrain.xml',                        source: 'Global Times',        lang: 'zh' },
+
+  // --- JAPANESE (JA) ---
+  { url: 'https://www.nhk.or.jp/rss/news/cat0.xml',                            source: 'NHK Japanese',        lang: 'ja' },
+
+  // --- HINDI (HI) ---
+  { url: 'https://feeds.bbci.co.uk/hindi/rss.xml',                             source: 'BBC Hindi',           lang: 'hi' },
+  { url: 'https://feeds.feedburner.com/ndtvnews-hindi-top-stories',             source: 'NDTV Hindi',          lang: 'hi' },
+
+  // --- PORTUGUESE (PT) ---
+  { url: 'https://feeds.bbci.co.uk/portuguese/rss.xml',                        source: 'BBC Português',       lang: 'pt' },
 ];
 
 // GEO LOOKUP - 250+ cities and regions worldwide
@@ -570,7 +628,8 @@ function categorize(title) {
   return { cat:'pol', catLabel:'POLITICS', severity:'low' };
 }
 
-function parseRss(xml, fallbackSource) {
+function parseRss(xml, feed) {
+  const fallbackSource = feed.source; const feedLang = feed.lang || 'en';
   const items = [];
   const itemRe = /<item>([\s\S]*?)<\/item>/g;
   let m, i = 0;
@@ -597,12 +656,15 @@ function parseRss(xml, fallbackSource) {
 
     const { cat, catLabel, severity } = categorize(title);
     const { lat, lng, loc: geoLoc } = geolocate(title);
+    const locStr = geoLoc || fallbackSource;
     items.push({
       id:      stableId(rawLink.trim(), title),
       isDemo:  false,
       cat, catLabel, severity,
       lat, lng,
-      loc:     geoLoc || rawSrc.replace(/<[^>]+>/g,'').trim() || fallbackSource,
+      loc:     locStr,
+      cc:      extractCC(locStr, title),
+      lang:    feedLang,
       txt:     title,
       url:     rawLink.trim(),
       source:  rawSrc.replace(/<[^>]+>/g,'').trim() || fallbackSource,
@@ -632,13 +694,24 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'public, max-age=480, stale-while-revalidate=60');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  if (cache && Date.now() - cacheTime < CACHE_TTL) {
-    return res.status(200).json(cache);
+  const country = (req.query.country || 'all').toUpperCase();
+  const lang    = (req.query.lang    || 'en').toLowerCase();
+  const cacheKey = `${country}:${lang}`;
+  const cacheTTL = (country === 'ALL' && lang === 'en') ? CACHE_TTL : 5 * 60 * 1000;
+
+  const cached = cacheMap.get(cacheKey);
+  if (cached && Date.now() - cached.time < cacheTTL) {
+    return res.status(200).json(cached.data);
   }
+
+  // For filtered requests, only fetch feeds matching the requested language
+  const feedsToFetch = lang === 'all' ? FEEDS : FEEDS.filter(f => f.lang === lang);
+  // Always include 'en' feeds as fallback if no feeds match the language
+  const activeFeed = feedsToFetch.length > 0 ? feedsToFetch : FEEDS.filter(f => f.lang === 'en');
 
   try {
     const results = await Promise.allSettled(
-      FEEDS.map(feed =>
+      activeFeed.map(feed =>
         fetch(feed.url, {
           headers: {
             'User-Agent': 'OrreryIntelligence/1.0 (https://www.orreryx.io)',
@@ -647,7 +720,7 @@ export default async function handler(req, res) {
           signal: AbortSignal.timeout(8000),
         })
           .then(r => r.ok ? r.text() : Promise.reject(new Error('HTTP ' + r.status)))
-          .then(xml => parseRss(xml, feed.source))
+          .then(xml => parseRss(xml, feed))
           .catch(e => { console.error('[GNews] ' + feed.source + ' failed:', e.message); return []; })
       )
     );
@@ -655,15 +728,20 @@ export default async function handler(req, res) {
     let all = [];
     results.forEach(r => { if (r.status === 'fulfilled') all = all.concat(r.value); });
 
+    // Filter by country code if requested
+    if (country !== 'ALL') {
+      all = all.filter(a => a.cc === country);
+    }
+
     all.sort((a, b) => new Date(b.time) - new Date(a.time));
     const final = dedupByTitle(all).slice(0, 200);
 
     const successFeeds = results.filter(r => r.status === 'fulfilled' && r.value.length > 0).length;
-    cache = { articles: final, fetched: Date.now(), count: final.length, source: 'rss', feeds: successFeeds };
-    cacheTime = Date.now();
+    const data = { articles: final, fetched: Date.now(), count: final.length, source: 'rss', feeds: successFeeds, country, lang };
+    cacheMap.set(cacheKey, { data, time: Date.now() });
 
-    console.log('[GNews] ' + final.length + ' articles from ' + successFeeds + '/' + FEEDS.length + ' feeds');
-    return res.status(200).json(cache);
+    console.log('[GNews] ' + final.length + ' articles from ' + successFeeds + '/' + activeFeed.length + ' feeds [' + cacheKey + ']');
+    return res.status(200).json(data);
 
   } catch (err) {
     console.error('[GNews] Fatal:', err.message);
