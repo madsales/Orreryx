@@ -7,12 +7,12 @@ const cacheMap = new Map(); // key: 'country:lang' → { data, time }
 // ISO country code extraction from article geo location + title
 const CC_MAP = {
   'ukraine':'UA','russia':'RU','china':'CN','israel':'IL','iran':'IR',
-  'india':'IN','pakistan':'PK','north korea':'KP','taiwan':'TW',
-  'saudi arabia':'SA','united states':'US',' us ':'US','germany':'DE',
-  'france':'FR','japan':'JP','south korea':'KR','syria':'SY','yemen':'YE',
-  'sudan':'SD','ethiopia':'ET','nigeria':'NG','somalia':'SO','turkey':'TR',
+  ' india ':'IN','pakistan':'PK','north korea':'KP','taiwan':'TW',
+  'saudi arabia':'SA','south korea':'KR','united states':'US',' us ':'US','germany':'DE',
+  'france':'FR','japan':'JP','syria':'SY','yemen':'YE',
+  'sudan':'SD','ethiopia':'ET','nigeria':'NG',' somalia ':'SO','turkey':'TR',
   'brazil':'BR','venezuela':'VE','colombia':'CO','myanmar':'MM',
-  'afghanistan':'AF','iraq':'IQ','lebanon':'LB','libya':'LY','mali':'ML',
+  'afghanistan':'AF','iraq':'IQ','lebanon':'LB','libya':'LY',' mali ':'ML',
   'belarus':'BY','egypt':'EG','zimbabwe':'ZW','finland':'FI','sweden':'SE',
   'poland':'PL','georgia':'GE','gaza':'IL','west bank':'IL',
   'crimea':'UA','donbas':'UA','kherson':'UA','zaporizhzhia':'UA',
@@ -125,8 +125,8 @@ const FEEDS = [
   { url: 'https://meduza.io/rss2/all',                                         source: 'Meduza',              lang: 'ru' },
 
   // --- CHINESE (ZH) ---
-  { url: 'https://www.cgtn.com/subscribe/rss/section/world.xml',               source: 'CGTN',                lang: 'zh' },
-  { url: 'https://www.globaltimes.cn/rss/outbrain.xml',                        source: 'Global Times',        lang: 'zh' },
+  { url: 'https://www.cgtn.com/subscribe/rss/section/world.xml',               source: 'CGTN',                lang: 'en' },
+  { url: 'https://www.globaltimes.cn/rss/outbrain.xml',                        source: 'Global Times',        lang: 'en' },
 
   // --- JAPANESE (JA) ---
   { url: 'https://www.nhk.or.jp/rss/news/cat0.xml',                            source: 'NHK Japanese',        lang: 'ja' },
