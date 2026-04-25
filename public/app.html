@@ -2610,18 +2610,22 @@ async function fetchCryptoPrices() {
 }
 
 async function fetchGNews(signal) {
+  const { country: snapCountry, lang: snapLang } = feedFilter;
   try {
     const { country, lang } = feedFilter;
     const params = new URLSearchParams();
     if (country && country !== 'all') params.set('country', country);
     if (lang && lang !== 'all') params.set('lang', lang);
     const qs = params.toString() ? '?' + params.toString() : '';
+    const hasTimeout = typeof AbortSignal.timeout === 'function';
+    const hasAny = typeof AbortSignal.any === 'function';
     const fetchSignal = signal
-      ? (AbortSignal.any
+      ? (hasAny && hasTimeout
           ? AbortSignal.any([signal, AbortSignal.timeout(12000)])
           : signal)
-      : AbortSignal.timeout(12000);
+      : (hasTimeout ? AbortSignal.timeout(12000) : undefined);
     const r = await fetch('/api/gnews' + qs, { signal: fetchSignal });
+    if (feedFilter.country !== snapCountry || feedFilter.lang !== snapLang) return;
     if (!r.ok) { renderIntelFeed(); return; }
     const data = await r.json();
 
@@ -2644,18 +2648,22 @@ async function fetchGNews(signal) {
 }
 
 async function fetchLiveEvents(signal) {
+  const { country: snapCountry, lang: snapLang } = feedFilter;
   try {
     const { country, lang } = feedFilter;
     const params = new URLSearchParams();
     if (country && country !== 'all') params.set('country', country);
     if (lang && lang !== 'all') params.set('lang', lang);
     const qs = params.toString() ? '?' + params.toString() : '';
+    const hasTimeout = typeof AbortSignal.timeout === 'function';
+    const hasAny = typeof AbortSignal.any === 'function';
     const fetchSignal = signal
-      ? (AbortSignal.any
+      ? (hasAny && hasTimeout
           ? AbortSignal.any([signal, AbortSignal.timeout(12000)])
           : signal)
-      : AbortSignal.timeout(12000);
+      : (hasTimeout ? AbortSignal.timeout(12000) : undefined);
     const r = await fetch('/api/events' + qs, { signal: fetchSignal });
+    if (feedFilter.country !== snapCountry || feedFilter.lang !== snapLang) return;
     if (!r.ok) { renderIntelFeed(); return; }
     const data = await r.json();
     if (!data.events || data.events.length === 0) {
