@@ -66,18 +66,61 @@ async function handleQuotes(req, res) {
 
 // ─────────── VIDEOS (YouTube RSS) ────────────────────────────────────────────
 const CHANNELS=[
-  {name:'CNN',id:'UCupvZG-5ko_eiXAupbDfxWw'},{name:'BBC News',id:'UCnUYZLuoy1rq1aVMwx4aTzw'},
-  {name:'Reuters',id:'UChqUTb7kYRX8-EiaN3XFrSQ'},{name:'Al Jazeera',id:'UCNye-wNBqNL5ZzHSJdba5zA'},
-  {name:'Sky News',id:'UCIK31bDqkH8lsYsYMoHcFJQ'},{name:'France 24',id:'UCQfwfsi5VrQ8yKZ-UWmAEFg'},
-  {name:'DW News',id:'UCknLrEdhRCp1aegoMqRaCZg'},{name:'NBC News',id:'UCeY0bbntWzzVIaj2z3QigXg'},
-  {name:'ABC News',id:'UCBi2mrWuNuyYy4gbM6fU18Q'},
+  // Global English
+  {name:'CNN',        id:'UCupvZG-5ko_eiXAupbDfxWw'},
+  {name:'BBC News',   id:'UCnUYZLuoy1rq1aVMwx4aTzw'},
+  {name:'Reuters',    id:'UChqUTb7kYRX8-EiaN3XFrSQ'},
+  {name:'Al Jazeera', id:'UCNye-wNBqNL5ZzHSJj3l8Bg'},
+  {name:'Sky News',   id:'UCIK31bDqkH8lsYsYMoHcFJQ'},
+  {name:'France 24',  id:'UCQfwfsi5VrQ8yKZ-UWmAEFg'},
+  {name:'DW News',    id:'UCknLrEdhRCp1aegoMqRaCZg'},
+  {name:'NBC News',   id:'UCeY0bbntWzzVIaj2z3QigXg'},
+  {name:'ABC News',   id:'UCBi2mrWuNuyYy4gbM6fU18Q'},
+  {name:'CGTN',       id:'UCIdxT5oAFTCw8KGsH6PCUSA'},
+  {name:'TRT World',  id:'UCg7Bc_rHNf8t-5LAamIDivg'},
+  {name:'Euronews',   id:'UCKy1dAqELo0zrOtPkf0aNSg'},
+  {name:'NHK World',  id:'UCa-g4n1NsKvHvJlKIFIDSAg'},
+  {name:'PBS NewsHour',id:'UCjIsgXPblEE73-ekFAt8tDg'},
+  {name:'Bloomberg',  id:'UCIALMKvObZNtJ6Ts-4BLBPQ'},
+  {name:'WION',       id:'UCsHBMYP0M2Z8S9Kxmv0exgg'},
+  // Regional — South Asia
+  {name:'NDTV',       id:'UCZFMm1mMw0F81Z37aaEzTUA'},
+  {name:'India Today',id:'UCYPvAwZP8pZhSMW8qs7cVCw'},
+  {name:'Geo News',   id:'UCEHsKBHMEeH-5xO9JPVXCJA'},
+  // Regional — Middle East
+  {name:'Al Arabiya', id:'UCQfwfsi5VrQ8yKZ-UGuJ-TA'},
+  {name:'i24 News',   id:'UCFqcDdWEC3GKNKouADkuAqQ'},
+  // Regional — Africa
+  {name:'Channels TV',id:'UCmqVQJhDjIBT2mFHLbLZ4nQ'},
+  // Regional — East Asia
+  {name:'Arirang',    id:'UCVGaKt26MkEWnrHFo4pqNaQ'},
+  // Investigative
+  {name:'Associated Press',id:'UC16niRr50-MSBwiO3He6o8A'},
+  {name:'TOLOnews',   id:'UCJuTXHKQ7tD8tF35wR3oPsA'},
 ];
-const SYNONYMS={military:['military','war','attack','strike','troops','army','airstrike','missile','drone'],
-  conflict:['conflict','war','fighting','battle','clash'],oil:['oil','crude','opec','petroleum','energy'],
-  nuclear:['nuclear','atomic','uranium','iaea','warhead'],economy:['economy','economic','gdp','inflation','recession'],
-  iran:['iran','iranian','tehran'],russia:['russia','russian','kremlin','putin'],
-  china:['china','chinese','beijing'],ukraine:['ukraine','ukrainian','kyiv'],
-  israel:['israel','israeli','gaza','idf','hamas']};
+const SYNONYMS={
+  military:  ['military','war','attack','strike','troops','army','airstrike','missile','drone','combat','offensive','forces'],
+  conflict:  ['conflict','war','fighting','battle','clash','siege','frontline'],
+  oil:       ['oil','crude','opec','petroleum','energy','barrel','brent'],
+  nuclear:   ['nuclear','atomic','uranium','iaea','warhead','nuke'],
+  economy:   ['economy','economic','gdp','inflation','recession','sanctions','tariff'],
+  iran:      ['iran','iranian','tehran','irgc','hormuz'],
+  russia:    ['russia','russian','kremlin','putin','moscow'],
+  china:     ['china','chinese','beijing','pla','ccp'],
+  ukraine:   ['ukraine','ukrainian','kyiv','zelensky','donbas'],
+  israel:    ['israel','israeli','gaza','idf','hamas','netanyahu','west bank'],
+  india:     ['india','indian','modi','delhi','mumbai','kashmir'],
+  pakistan:  ['pakistan','pakistani','islamabad','karachi','imf'],
+  korea:     ['korea','korean','pyongyang','kim jong','seoul'],
+  taiwan:    ['taiwan','taiwanese','strait','tsai'],
+  turkey:    ['turkey','turkish','erdogan','ankara'],
+  syria:     ['syria','syrian','damascus','aleppo'],
+  yemen:     ['yemen','yemeni','houthi','sanaa'],
+  sudan:     ['sudan','sudanese','khartoum','darfur'],
+  somalia:   ['somalia','somali','mogadishu','al-shabaab'],
+  afghanistan:['afghanistan','afghan','taliban','kabul'],
+  myanmar:   ['myanmar','burma','burmese','junta','rangoon'],
+};
 const chanCache=new Map(); const vidCache=new Map();
 const CHAN_TTL=30*60*1000; const VID_TTL=10*60*1000;
 const STOP=new Set(['that','this','with','from','they','have','been','will','says','said','their','about','into','news']);
@@ -110,7 +153,9 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method==='OPTIONS') return res.status(200).end();
   if (req.method!=='GET') return res.status(405).json({error:'GET only'});
-  const type = (req.query.type||'quotes').toLowerCase();
+  // Detect videos path — /api/videos routes here without type param
+  const isVideosPath = (req.url||'').split('?')[0].endsWith('/videos');
+  const type = isVideosPath ? 'videos' : (req.query.type||'quotes').toLowerCase();
   if (type==='videos') return handleVideos(req,res);
   return handleQuotes(req,res); // default: quotes
 }
