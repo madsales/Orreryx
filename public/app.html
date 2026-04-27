@@ -222,6 +222,8 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
 .ev-txt{font:400 12.5px/1.65 var(--sans);color:var(--txt);margin-bottom:8px}
 .ev-foot{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .ev-src-link{text-decoration:none;color:var(--txt4)!important;background:var(--bg4);}
+.ev-share-btn{background:var(--bg4);border:1px solid var(--brd);color:var(--txt3);font:600 8px/1 var(--mono);padding:2px 7px;border-radius:3px;cursor:pointer;transition:all .12s}
+.ev-share-btn:hover{border-color:var(--brd2);color:var(--txt2)}
 /* event source badge */
 .ev-src{font:500 8px/1 var(--mono);color:var(--txt4);background:var(--bg4);padding:2px 7px;border-radius:3px;border:1px solid var(--brd)}
 /* AI brief button */
@@ -2696,10 +2698,18 @@ function buildEventCard(e) {
       <span class="ev-ts">${timeStr}</span>
     </div>
     <div class="ev-txt">${e.txt}</div>
-    <div class="ev-foot">${tags}${langBadge}<span class="tag" style="background:var(--bg4);color:var(--txt3);cursor:pointer" onclick="event.stopPropagation();handleEvStockClick(this)">🤖 AI Brief →</span><a class="tag ev-src-link" href="${srcUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Read original source">🔗 ${srcLabel} →</a></div>
+    <div class="ev-foot">${tags}${langBadge}<span class="tag" style="background:var(--bg4);color:var(--txt3);cursor:pointer" onclick="event.stopPropagation();handleEvStockClick(this)">🤖 AI Brief →</span><a class="tag ev-src-link" href="${srcUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Read original source">🔗 ${srcLabel} →</a><button class="tag ev-share-btn" onclick="event.stopPropagation();shareEvent('tw','${e.txt.substring(0,120).replace(/'/g,"\\'").replace(/`/g,'')}')" title="Share on X/Twitter">𝕏 Share</button><button class="tag ev-share-btn" onclick="event.stopPropagation();shareEvent('wa','${e.txt.substring(0,120).replace(/'/g,"\\'").replace(/`/g,'')}')" title="Share on WhatsApp">💬 WA</button></div>
   </div>`;
 }
 
+function shareEvent(platform, txt) {
+  const msg = txt.replace(/"/g, '') + ' — Live tracking: https://orreryx.io';
+  if (platform === 'tw') {
+    window.open('https://twitter.com/intent/tweet?text=' + encodeURIComponent(msg), '_blank', 'width=550,height=420');
+  } else if (platform === 'wa') {
+    window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  }
+}
 function handleEvClick(el) {
   const id = parseInt(el.getAttribute('data-evid'));
   const e = feedEvents.find(x => x.id === id) || WAR_EVENTS.find(x => x.id === id);
