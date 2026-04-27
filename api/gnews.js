@@ -588,11 +588,12 @@ function geolocate(title) {
     if (t.includes(kw)) return { lat: coord[0], lng: coord[1], loc: coord[2] };
   }
   const fb = [
-    [48.5,31.5,'Ukraine'],[31.4,34.3,'Middle East'],[35,105,'China'],
-    [38,-97,'US'],[50,10,'Europe'],[0,20,'Africa'],[4,-72,'Latin America'],
+    [48.5,31.5],[31.4,34.3],[35,105],
+    [38,-97],[50,10],[0,20],[4,-72],
   ];
   const f = fb[Math.floor(Math.random() * fb.length)];
-  return { lat: f[0], lng: f[1], loc: f[2] };
+  // loc: null so extractCC uses title text only — avoids random country misclassification
+  return { lat: f[0], lng: f[1], loc: null };
 }
 
 function categorize(title) {

@@ -92,12 +92,13 @@ const GDELT_LANG = {
 };
 
 // GDELT Article API - fresh articles, updates every 15 min
-function gdeltUrl(query, max, sourcelang) {
+function gdeltUrl(query, max, sourcelang, locationcc) {
   const langParam = sourcelang ? '&sourcelang=' + sourcelang : '';
+  const ccParam   = locationcc ? '&LOCATIONCC=' + locationcc : '';
   return (
     'https://api.gdeltproject.org/api/v2/doc/doc' +
     '?query=' + encodeURIComponent(query) +
-    '&mode=artlist&format=json&timespan=12h&maxrecords=' + max + '&sort=DateDesc' + langParam
+    '&mode=artlist&format=json&timespan=12h&maxrecords=' + max + '&sort=DateDesc' + langParam + ccParam
   );
 }
 
@@ -608,12 +609,13 @@ function geolocate(title) {
   }
   // Fallback: scatter across known hotspots so globe always has dots
   const fallbacks = [
-    [48.5,31.5,'Ukraine'],[31.4,34.3,'Middle East'],[20,38,'Red Sea'],
-    [39.9,116.4,'China'],[35,105,'Asia'],[38,-97,'US'],[50,10,'Europe'],
-    [0,20,'Africa'],[4,-72,'Latin America'],
+    [48.5,31.5],[31.4,34.3],[20,38],
+    [39.9,116.4],[35,105],[38,-97],[50,10],
+    [0,20],[4,-72],
   ];
   const f = fallbacks[Math.floor(Math.random() * fallbacks.length)];
-  return { lat: f[0], lng: f[1], loc: f[2] };
+  // loc: null so extractCC uses title text only — avoids random country misclassification
+  return { lat: f[0], lng: f[1], loc: null };
 }
 
 function parseArticles(articles) {
@@ -669,7 +671,7 @@ export default async function handler(req, res) {
   try {
     const results = await Promise.allSettled(
       STREAMS.map(s =>
-        fetch(gdeltUrl(s.query, s.max, sourcelang), {
+        fetch(gdeltUrl(s.query, s.max, sourcelang, country !== 'ALL' ? country : null), {
           headers: { 'User-Agent': 'OrreryIntelligence/1.0 (https://www.orreryx.io)' },
           signal:  AbortSignal.timeout(9000),
         })
