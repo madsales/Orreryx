@@ -758,44 +758,12 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
           <div class="vid-hd-left">
             <span class="vid-red-dot"></span>
             <span class="vid-hd-title">VIDEO COVERAGE</span>
-            <span style="font:500 8px/1 var(--mono);color:var(--txt4);margin-left:2px">· 4 live channels</span>
+            <span style="font:500 8px/1 var(--mono);color:var(--txt4);margin-left:2px" id="vid-ch-count">· live channels</span>
           </div>
           <span class="vid-chevron closed" id="vid-chevron">▾</span>
         </div>
-        <div class="vid-grid hidden" id="vid-grid">
-          <!-- Al Jazeera English 24/7 -->
-          <div class="vid-card">
-            <iframe class="vid-frame" id="vf-aje"
-              src="about:blank"
-              data-src="https://www.youtube.com/embed/F-POzRZVFqE?autoplay=1&mute=1&rel=0&modestbranding=1"
-              allow="autoplay; encrypted-media" allowfullscreen loading="lazy" frameborder="0"></iframe>
-            <div class="vid-card-lbl">AL JAZEERA ENGLISH</div>
-          </div>
-          <!-- France 24 English 24/7 -->
-          <div class="vid-card">
-            <iframe class="vid-frame" id="vf-f24"
-              src="about:blank"
-              data-src="https://www.youtube.com/embed/h3MuIUNCCX0?autoplay=1&mute=1&rel=0&modestbranding=1"
-              allow="autoplay; encrypted-media" allowfullscreen loading="lazy" frameborder="0"></iframe>
-            <div class="vid-card-lbl">FRANCE 24 ENGLISH</div>
-          </div>
-          <!-- DW News English 24/7 -->
-          <div class="vid-card">
-            <iframe class="vid-frame" id="vf-dw"
-              src="about:blank"
-              data-src="https://www.youtube.com/embed/ggT-KR2Xu_E?autoplay=1&mute=1&rel=0&modestbranding=1"
-              allow="autoplay; encrypted-media" allowfullscreen loading="lazy" frameborder="0"></iframe>
-            <div class="vid-card-lbl">DW NEWS</div>
-          </div>
-          <!-- Sky News 24/7 -->
-          <div class="vid-card">
-            <iframe class="vid-frame" id="vf-sky"
-              src="about:blank"
-              data-src="https://www.youtube.com/embed/9Auq9mYxFEE?autoplay=1&mute=1&rel=0&modestbranding=1"
-              allow="autoplay; encrypted-media" allowfullscreen loading="lazy" frameborder="0"></iframe>
-            <div class="vid-card-lbl">SKY NEWS</div>
-          </div>
-        </div>
+        <!-- populated dynamically by buildVideoGrid() -->
+        <div class="vid-grid hidden" id="vid-grid"></div>
       </div>
       <div class="feed-country-bar" id="feed-country-bar">
         <span class="feed-country-lbl">FILTER</span>
@@ -1773,19 +1741,224 @@ let feedFilter = { country: 'all', lang: 'en' }; // 'en' default preserves exist
 let feedFetchController = null;
 
 // ── VIDEO COVERAGE ──
+// Country → YouTube live-stream channels. Each entry: {n: display name, v: YouTube video ID}
+// Al Jazeera English (AJE) is the universal fallback — covers all conflict zones.
+// IDs are 24/7 permanent live streams; update the v field if a channel resets its stream.
+const VID_MAP = {
+  all: [
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'}, // Al Jazeera English 24/7
+    {n:'FRANCE 24',    v:'h3MuIUNCCX0'}, // France 24 English 24/7
+    {n:'DW NEWS',      v:'ggT-KR2Xu_E'}, // Deutsche Welle English 24/7
+    {n:'SKY NEWS',     v:'9Auq9mYxFEE'}, // Sky News 24/7
+  ],
+  UA: [
+    {n:'UKRAINE 24',   v:'nDLJHE_WCKQ'}, // Ukraine 24 TV (Ukrainian)
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'},
+    {n:'DW NEWS',      v:'ggT-KR2Xu_E'},
+  ],
+  RU: [
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'},
+    {n:'DW NEWS',      v:'ggT-KR2Xu_E'},
+    {n:'FRANCE 24',    v:'h3MuIUNCCX0'},
+  ],
+  CN: [
+    {n:'CGTN',         v:'8TcKHF4u1aE'}, // China Global TV Network English
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'},
+    {n:'NHK WORLD',    v:'KI7VnWlWCx8'}, // Japan covers China closely
+  ],
+  IL: [
+    {n:'i24 NEWS',     v:'BhFKa9bMQqw'}, // Israeli English international news
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'},
+    {n:'SKY NEWS',     v:'9Auq9mYxFEE'},
+  ],
+  IR: [
+    {n:'IRAN INTL',    v:'JiGrQPEuBqM'}, // Iran International (independent)
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'},
+    {n:'DW NEWS',      v:'ggT-KR2Xu_E'},
+  ],
+  IN: [
+    {n:'NDTV 24x7',    v:'Fqb9CBtCIvo'}, // India's leading English news channel
+    {n:'INDIA TODAY',  v:'gB4R0QIRHB0'}, // India Today TV English
+    {n:'REPUBLIC TV',  v:'PTIBgVBWTM0'}, // Republic World English
+  ],
+  PK: [
+    {n:'GEO NEWS',     v:'vfhJITzI7dA'}, // Pakistan's largest news network
+    {n:'ARY NEWS',     v:'LudhA4fOR8I'}, // ARY News English
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'},
+  ],
+  KP: [
+    // No North Korean independent channel — use regional coverage
+    {n:'ARIRANG NEWS', v:'zLB3cLIMzMY'}, // South Korea — best NK coverage
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'},
+    {n:'NHK WORLD',    v:'KI7VnWlWCx8'}, // Japan — close regional monitor
+  ],
+  TW: [
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'},
+    {n:'ARIRANG NEWS', v:'zLB3cLIMzMY'}, // South Korea — covers Taiwan closely
+    {n:'NHK WORLD',    v:'KI7VnWlWCx8'},
+  ],
+  SA: [
+    {n:'AL ARABIYA',   v:'6GaE8VJJRSE'}, // Saudi-funded pan-Arab channel (English)
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'},
+    {n:'SKY NEWS',     v:'9Auq9mYxFEE'},
+  ],
+  AF: [
+    {n:'TOLO NEWS',    v:'jtStEDGH_Js'}, // Afghanistan's leading independent TV
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'},
+    {n:'DW NEWS',      v:'ggT-KR2Xu_E'},
+  ],
+  BY: [
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'},
+    {n:'DW NEWS',      v:'ggT-KR2Xu_E'},
+    {n:'FRANCE 24',    v:'h3MuIUNCCX0'},
+  ],
+  BR: [
+    {n:'CNN BRASIL',   v:'3S9HiHKBMBk'}, // CNN Brazil (Portuguese)
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'},
+    {n:'FRANCE 24',    v:'h3MuIUNCCX0'},
+  ],
+  CO: [
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'},
+    {n:'NTN24',        v:'_wln3e75XsU'}, // NTN24 Colombia/Latin America
+    {n:'FRANCE 24',    v:'h3MuIUNCCX0'},
+  ],
+  EG: [
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'}, // AJE HQ is in Qatar, covers Egypt extensively
+    {n:'AL ARABIYA',   v:'6GaE8VJJRSE'},
+    {n:'FRANCE 24',    v:'h3MuIUNCCX0'},
+  ],
+  ET: [
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'}, // Best English coverage of Ethiopia
+    {n:'DW AFRICA',    v:'ggT-KR2Xu_E'}, // DW has Africa bureau
+    {n:'FRANCE 24',    v:'h3MuIUNCCX0'},
+  ],
+  DE: [
+    {n:'DW NEWS',      v:'ggT-KR2Xu_E'}, // Germany's own international broadcaster
+    {n:'FRANCE 24',    v:'h3MuIUNCCX0'},
+    {n:'SKY NEWS',     v:'9Auq9mYxFEE'},
+  ],
+  FR: [
+    {n:'FRANCE 24',    v:'h3MuIUNCCX0'}, // France's own international broadcaster
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'},
+    {n:'SKY NEWS',     v:'9Auq9mYxFEE'},
+  ],
+  IQ: [
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'}, // Best Arabic/Iraq coverage
+    {n:'RUDAW',        v:'oD7m7NqfWss'}, // Kurdish-Iraqi independent news
+    {n:'AL ARABIYA',   v:'6GaE8VJJRSE'},
+  ],
+  JP: [
+    {n:'NHK WORLD',    v:'KI7VnWlWCx8'}, // Japan's public international broadcaster
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'},
+    {n:'ARIRANG NEWS', v:'zLB3cLIMzMY'},
+  ],
+  LB: [
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'}, // Extensive Lebanon coverage
+    {n:'FRANCE 24',    v:'h3MuIUNCCX0'},
+    {n:'AL ARABIYA',   v:'6GaE8VJJRSE'},
+  ],
+  LY: [
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'},
+    {n:'FRANCE 24',    v:'h3MuIUNCCX0'},
+    {n:'DW NEWS',      v:'ggT-KR2Xu_E'},
+  ],
+  ML: [
+    {n:'FRANCE 24',    v:'h3MuIUNCCX0'}, // France has Sahel bureau, best Mali coverage
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'},
+    {n:'DW NEWS',      v:'ggT-KR2Xu_E'},
+  ],
+  MM: [
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'},
+    {n:'DVB NEWS',     v:'WiMBVSNE3Sg'}, // Democratic Voice of Burma (independent)
+    {n:'DW NEWS',      v:'ggT-KR2Xu_E'},
+  ],
+  NG: [
+    {n:'CHANNELS TV',  v:'8jJhVhFO6Eg'}, // Nigeria's leading 24/7 news channel
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'},
+    {n:'DW NEWS',      v:'ggT-KR2Xu_E'},
+  ],
+  SO: [
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'}, // Best English coverage of Somalia
+    {n:'FRANCE 24',    v:'h3MuIUNCCX0'},
+    {n:'DW NEWS',      v:'ggT-KR2Xu_E'},
+  ],
+  KR: [
+    {n:'ARIRANG NEWS', v:'zLB3cLIMzMY'}, // South Korea's English international broadcaster
+    {n:'YTN NEWS',     v:'t6-4_LcOL00'}, // YTN — South Korea's 24/7 news channel
+    {n:'NHK WORLD',    v:'KI7VnWlWCx8'},
+  ],
+  SD: [
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'},
+    {n:'FRANCE 24',    v:'h3MuIUNCCX0'},
+    {n:'DW NEWS',      v:'ggT-KR2Xu_E'},
+  ],
+  SY: [
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'},
+    {n:'AL ARABIYA',   v:'6GaE8VJJRSE'},
+    {n:'FRANCE 24',    v:'h3MuIUNCCX0'},
+  ],
+  TR: [
+    {n:'TRT WORLD',    v:'hXXnt4SWXFU'}, // Turkey's English international broadcaster
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'},
+    {n:'DW NEWS',      v:'ggT-KR2Xu_E'},
+  ],
+  US: [
+    {n:'ABC NEWS',     v:'vOTiJkg1vjQ'}, // ABC News Live 24/7
+    {n:'PBS NEWSHOUR', v:'tLMErace2OE'}, // PBS NewsHour Live
+    {n:'SKY NEWS',     v:'9Auq9mYxFEE'},
+    {n:'DW NEWS',      v:'ggT-KR2Xu_E'},
+  ],
+  VE: [
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'},
+    {n:'NTN24',        v:'_wln3e75XsU'}, // NTN24 — covers Venezuela extensively
+    {n:'FRANCE 24',    v:'h3MuIUNCCX0'},
+  ],
+  YE: [
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'}, // Deepest Yemen coverage of any English channel
+    {n:'AL ARABIYA',   v:'6GaE8VJJRSE'},
+    {n:'FRANCE 24',    v:'h3MuIUNCCX0'},
+  ],
+  ZW: [
+    {n:'AL JAZEERA',   v:'F-POzRZVFqE'},
+    {n:'DW NEWS',      v:'ggT-KR2Xu_E'}, // DW Africa bureau covers Zimbabwe
+    {n:'FRANCE 24',    v:'h3MuIUNCCX0'},
+  ],
+};
+
+let _vidOpen = false;
+
+function buildVideoGrid(cc) {
+  const grid  = document.getElementById('vid-grid');
+  const badge = document.getElementById('vid-ch-count');
+  if (!grid) return;
+  const key      = (!cc || cc.toLowerCase() === 'all') ? 'all' : cc.toUpperCase();
+  const channels = (VID_MAP[key] || VID_MAP['all']).slice(0, 4);
+  const cols     = channels.length <= 2 ? channels.length : 2;
+  grid.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
+  if (badge) badge.textContent = '· ' + channels.length + ' live channel' + (channels.length !== 1 ? 's' : '');
+  if (!_vidOpen) return; // don't load iframes until panel is open
+  grid.innerHTML = channels.map(ch =>
+    '<div class="vid-card">' +
+      '<iframe class="vid-frame"' +
+        ' src="https://www.youtube.com/embed/' + ch.v + '?autoplay=1&mute=1&rel=0&modestbranding=1"' +
+        ' allow="autoplay; encrypted-media" allowfullscreen frameborder="0"></iframe>' +
+      '<div class="vid-card-lbl">' + ch.n + '</div>' +
+    '</div>'
+  ).join('');
+}
+
 function toggleVideoCoverage() {
   const grid    = document.getElementById('vid-grid');
   const chevron = document.getElementById('vid-chevron');
   if (!grid) return;
-  const opening = grid.classList.contains('hidden');
-  grid.classList.toggle('hidden');
-  chevron.classList.toggle('closed');
-  // Lazy-load iframes only on first open — avoids loading YouTube until user wants it
-  if (opening) {
-    grid.querySelectorAll('iframe[data-src]').forEach(iframe => {
-      iframe.src = iframe.dataset.src;
-      delete iframe.dataset.src;
-    });
+  _vidOpen = !_vidOpen;
+  chevron.classList.toggle('closed', !_vidOpen);
+  if (_vidOpen) {
+    grid.classList.remove('hidden');
+    buildVideoGrid(feedFilter.country); // load iframes for current country
+  } else {
+    grid.classList.add('hidden');
+    grid.innerHTML = ''; // stop all playback by removing iframes
   }
 }
 
@@ -1801,6 +1974,8 @@ function applyFeedFilter() {
   feedFetchController = new AbortController();
   const sel = document.getElementById('filter-country');
   if (sel) feedFilter.country = sel.value;
+  // Update video coverage panel to match selected country
+  buildVideoGrid(feedFilter.country);
   // Clear feed and re-fetch with new params
   feedEvents = feedEvents.filter(e => e.isDemo);
   const body = document.getElementById('intel-feed-body');
@@ -2122,6 +2297,7 @@ function updateLiveBtnBehavior() {
 function startPlatform() {
   buildInitialEvents();
   renderIntelFeed();
+  buildVideoGrid('all'); // initialise video panel badge (collapsed by default)
   buildTicker();
   renderMap();
   renderStocks();
