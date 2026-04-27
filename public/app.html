@@ -169,6 +169,20 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
 .c-hlt{background:rgba(140,20,80,.15);color:#d060a0}
 .c-biz{background:rgba(20,80,50,.15);color:#40b878}
 .c-fin{background:rgba(20,100,160,.15);color:#30a8e0}
+/* ── VIDEO COVERAGE ── */
+.vid-coverage{border-bottom:1px solid var(--brd);flex-shrink:0}
+.vid-hd{display:flex;align-items:center;justify-content:space-between;padding:6px 13px;cursor:pointer;background:var(--bg2);user-select:none;transition:background .12s}
+.vid-hd:hover{background:var(--bg3)}
+.vid-hd-left{display:flex;align-items:center;gap:6px}
+.vid-hd-title{font:700 7px/1 var(--mono);letter-spacing:.12em;color:var(--txt3)}
+.vid-red-dot{width:5px;height:5px;border-radius:50%;background:#e03836;animation:blink 1.4s infinite;flex-shrink:0}
+.vid-chevron{font-size:9px;color:var(--txt4);transition:transform .2s;display:inline-block}
+.vid-chevron.closed{transform:rotate(-90deg)}
+.vid-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;padding:8px 12px 10px;background:var(--bg1)}
+.vid-grid.hidden{display:none}
+.vid-card{display:flex;flex-direction:column;gap:3px}
+.vid-frame{width:100%;aspect-ratio:16/9;border:1px solid var(--brd);border-radius:4px;background:#000;display:block}
+.vid-card-lbl{font:700 7px/1 var(--mono);letter-spacing:.1em;color:var(--txt4);text-align:center;padding:1px 0}
 .feed-country-bar{display:flex;align-items:center;gap:8px;padding:6px 12px;border-bottom:1px solid var(--brd);background:var(--bg2);flex-shrink:0}
 .feed-country-lbl{font:700 7px/1 var(--mono);letter-spacing:.1em;color:var(--txt4);flex-shrink:0}
 #filter-country{background:var(--bg3);border:1px solid var(--brd2);border-radius:var(--radius-sm);color:var(--txt2);font:500 11px/1 var(--sans);padding:3px 7px;cursor:pointer;flex:1;min-width:0;max-width:180px}
@@ -736,6 +750,51 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
         <div style="display:flex;align-items:center;gap:5px">
           <div style="width:6px;height:6px;border-radius:50%;background:var(--grn);animation:blink 1.4s infinite"></div>
           <span style="font:500 8px/1 var(--mono);color:var(--txt4)">Global coverage · all categories</span>
+        </div>
+      </div>
+      <!-- VIDEO COVERAGE — collapsible live stream panel -->
+      <div class="vid-coverage" id="vid-coverage">
+        <div class="vid-hd" onclick="toggleVideoCoverage()">
+          <div class="vid-hd-left">
+            <span class="vid-red-dot"></span>
+            <span class="vid-hd-title">VIDEO COVERAGE</span>
+            <span style="font:500 8px/1 var(--mono);color:var(--txt4);margin-left:2px">· 4 live channels</span>
+          </div>
+          <span class="vid-chevron closed" id="vid-chevron">▾</span>
+        </div>
+        <div class="vid-grid hidden" id="vid-grid">
+          <!-- Al Jazeera English 24/7 -->
+          <div class="vid-card">
+            <iframe class="vid-frame" id="vf-aje"
+              src="about:blank"
+              data-src="https://www.youtube.com/embed/F-POzRZVFqE?autoplay=1&mute=1&rel=0&modestbranding=1"
+              allow="autoplay; encrypted-media" allowfullscreen loading="lazy" frameborder="0"></iframe>
+            <div class="vid-card-lbl">AL JAZEERA ENGLISH</div>
+          </div>
+          <!-- France 24 English 24/7 -->
+          <div class="vid-card">
+            <iframe class="vid-frame" id="vf-f24"
+              src="about:blank"
+              data-src="https://www.youtube.com/embed/h3MuIUNCCX0?autoplay=1&mute=1&rel=0&modestbranding=1"
+              allow="autoplay; encrypted-media" allowfullscreen loading="lazy" frameborder="0"></iframe>
+            <div class="vid-card-lbl">FRANCE 24 ENGLISH</div>
+          </div>
+          <!-- DW News English 24/7 -->
+          <div class="vid-card">
+            <iframe class="vid-frame" id="vf-dw"
+              src="about:blank"
+              data-src="https://www.youtube.com/embed/ggT-KR2Xu_E?autoplay=1&mute=1&rel=0&modestbranding=1"
+              allow="autoplay; encrypted-media" allowfullscreen loading="lazy" frameborder="0"></iframe>
+            <div class="vid-card-lbl">DW NEWS</div>
+          </div>
+          <!-- Sky News 24/7 -->
+          <div class="vid-card">
+            <iframe class="vid-frame" id="vf-sky"
+              src="about:blank"
+              data-src="https://www.youtube.com/embed/9Auq9mYxFEE?autoplay=1&mute=1&rel=0&modestbranding=1"
+              allow="autoplay; encrypted-media" allowfullscreen loading="lazy" frameborder="0"></iframe>
+            <div class="vid-card-lbl">SKY NEWS</div>
+          </div>
         </div>
       </div>
       <div class="feed-country-bar" id="feed-country-bar">
@@ -1712,6 +1771,23 @@ let activeFilter = 'all';
 // ── COUNTRY + LANGUAGE FILTER STATE ──
 let feedFilter = { country: 'all', lang: 'en' }; // 'en' default preserves existing behavior
 let feedFetchController = null;
+
+// ── VIDEO COVERAGE ──
+function toggleVideoCoverage() {
+  const grid    = document.getElementById('vid-grid');
+  const chevron = document.getElementById('vid-chevron');
+  if (!grid) return;
+  const opening = grid.classList.contains('hidden');
+  grid.classList.toggle('hidden');
+  chevron.classList.toggle('closed');
+  // Lazy-load iframes only on first open — avoids loading YouTube until user wants it
+  if (opening) {
+    grid.querySelectorAll('iframe[data-src]').forEach(iframe => {
+      iframe.src = iframe.dataset.src;
+      delete iframe.dataset.src;
+    });
+  }
+}
 
 function setLang(btn, lang) {
   document.querySelectorAll('#lang-pills .lang-pill').forEach(p => p.classList.remove('active'));
