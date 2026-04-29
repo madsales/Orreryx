@@ -59,8 +59,49 @@ function dateStr(daysAgo = 0) {
   return d.toISOString().split('T')[0];
 }
 
+// ── TRACK HANDLER (merged from track.js) ─────────────────────────────────────
+async function handleTrack(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).end();
+  try {
+    const url   = process.env.UPSTASH_REDIS_REST_URL;
+    const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+    if (!url || !token) return res.status(200).json({ ok: false, reason: 'no_redis' });
+    const body = req.body || {};
+    if (body.action === 'push_subscribe' && body.subscription?.endpoint) {
+      const ep   = body.subscription.endpoint;
+      const hash = ep.split('/').pop().slice(-28).replace(/[^a-zA-Z0-9]/g, '') || Math.random().toString(36).slice(2);
+      await fetch(`${url}/pipeline`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify([['SET', `push:${hash}`, JSON.stringify(body.subscription)]]) });
+      return res.status(200).json({ ok: true });
+    }
+    const event  = body.event  || 'pv';
+    const page   = body.page   || '/';
+    const ref    = body.ref    || '';
+    const plan   = body.plan   || '';
+    const device = body.device || 'desktop';
+    const date   = new Date().toISOString().split('T')[0];
+    const cmds = [];
+    if (event === 'pv') {
+      cmds.push(['INCR', `analytics:pv:${date}`], ['INCR', 'analytics:pv:total'], ['INCR', `analytics:page:${page}:${date}`], ['INCR', `analytics:device:${device}`], ['EXPIRE', `analytics:pv:${date}`, 3024000]);
+    }
+    if (ref) { try { const domain = new URL(ref).hostname.replace('www.', ''); cmds.push(['ZINCRBY', 'analytics:refs', '1', domain]); } catch (_) {} }
+    if (event === 'signup') { cmds.push(['INCR', `analytics:signup:${date}`], ['INCR', 'analytics:signup:total']); if (plan) cmds.push(['HINCRBY', 'analytics:plans', plan, '1']); cmds.push(['EXPIRE', `analytics:signup:${date}`, 3024000]); }
+    if (event === 'payment') { cmds.push(['INCR', `analytics:payment:${date}`], ['INCR', 'analytics:payment:total']); if (plan) cmds.push(['HINCRBY', 'analytics:revenue_count', plan, '1']); }
+    if (event === 'click') { const target = body.target || 'unknown'; cmds.push(['ZINCRBY', 'analytics:clicks', '1', target]); }
+    if (cmds.length === 0) return res.status(200).json({ ok: true });
+    await fetch(`${url}/pipeline`, { method: 'POST', headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' }, body: JSON.stringify(cmds) });
+    return res.status(200).json({ ok: true });
+  } catch (_) { return res.status(200).json({ ok: false }); }
+}
+
 // ── Handler ──────────────────────────────────────────────────────────────────
 export default async function handler(req, res) {
+  // Route analytics tracking requests
+  if ((req.url || '').includes('/track')) return handleTrack(req, res);
+
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');

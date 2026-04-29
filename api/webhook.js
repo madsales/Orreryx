@@ -1,5 +1,38 @@
-// api/webhook.js — PayPal webhook handler
+// api/webhook.js — PayPal + Meta webhook handler
 // Validates PayPal signature, updates Redis, sends emails via Resend
+// Also handles Meta (Facebook/Instagram) webhook verification & events
+
+// ── META WEBHOOK HANDLER ─────────────────────────────────────────────────────
+async function handleMetaWebhook(req, res) {
+  if (req.method === 'GET') {
+    const mode      = req.query['hub.mode'];
+    const challenge = req.query['hub.challenge'];
+    const token     = req.query['hub.verify_token'];
+    const verifyToken = process.env.META_WEBHOOK_VERIFY_TOKEN;
+    if (!verifyToken) return res.status(500).send('META_WEBHOOK_VERIFY_TOKEN not set');
+    if (mode === 'subscribe' && token === verifyToken) {
+      console.log('[MetaWebhook] Verification successful');
+      res.setHeader('Content-Type', 'text/plain');
+      return res.status(200).send(challenge);
+    }
+    console.error('[MetaWebhook] Verification failed', { mode, token });
+    return res.status(403).send('Verification failed');
+  }
+  if (req.method === 'POST') {
+    const body = req.body;
+    console.log('[MetaWebhook] Event:', JSON.stringify(body)?.substring(0, 200));
+    if (body?.object === 'instagram') {
+      for (const entry of (body.entry || [])) {
+        for (const change of (entry.changes || [])) {
+          if (change.field === 'mentions') console.log('[MetaWebhook] Mention:', JSON.stringify(change.value));
+          if (change.field === 'comments') console.log('[MetaWebhook] Comment:', JSON.stringify(change.value));
+        }
+      }
+    }
+    return res.status(200).json({ received: true });
+  }
+  return res.status(405).end();
+}
 
 const IS_LIVE    = String(process.env.PAYPAL_ENV || '').toLowerCase() === 'live';
 const BASE       = IS_LIVE ? 'https://api-m.paypal.com' : 'https://api-m.sandbox.paypal.com';
@@ -88,6 +121,9 @@ async function sendEmail(to, subject, html) {
 }
 
 export default async function handler(req, res) {
+  // Route Meta webhook requests
+  if ((req.url || '').includes('/meta-webhook')) return handleMetaWebhook(req, res);
+
   if (req.method !== 'POST') return res.status(405).end();
 
   const valid = await verifySig(req);

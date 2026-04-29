@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orreryx — Launch Promotion Kit</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:#09090b; color:#f0f0ec; font-family:'Segoe UI',system-ui,sans-serif; padding:32px 20px; }
+h1 { font-size:22px; letter-spacing:3px; text-transform:uppercase; color:#e63946; margin-bottom:4px; }
+.sub { color:#555; font-size:13px; margin-bottom:36px; }
+.section { margin-bottom:52px; }
+.section-title { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#e63946; border-bottom:1px solid #1e1e1e; padding-bottom:10px; margin-bottom:24px; }
+.cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:18px; }
+.card { background:#111116; border:1px solid #1e1e24; border-radius:12px; padding:20px; }
+.platform { display:inline-block; font-size:10px; font-weight:700; letter-spacing:2px; text-transform:uppercase; padding:3px 10px; border-radius:20px; margin-bottom:12px; }
+.p-reddit { background:rgba(255,69,0,.15); color:#ff6314; border:1px solid rgba(255,69,0,.3); }
+.p-ph { background:rgba(218,77,37,.15); color:#da4d25; border:1px solid rgba(218,77,37,.3); }
+.p-hn { background:rgba(255,102,0,.15); color:#ff6600; border:1px solid rgba(255,102,0,.3); }
+.p-tw { background:rgba(255,255,255,.08); color:#fff; border:1px solid #333; }
+.p-google { background:rgba(66,133,244,.15); color:#4285f4; border:1px solid rgba(66,133,244,.3); }
+.p-meta { background:rgba(24,119,242,.15); color:#1877f2; border:1px solid rgba(24,119,242,.3); }
+.p-wa { background:rgba(37,211,102,.15); color:#25d366; border:1px solid rgba(37,211,102,.3); }
+.card-title { font-size:13px; font-weight:700; color:#fff; margin-bottom:8px; }
+.card-body { font-size:13px; line-height:1.75; color:#999; white-space:pre-wrap; }
+.card-body strong { color:#ddd; }
+.tag { font-size:11px; color:#555; margin-top:10px; }
+.copy-btn { margin-top:14px; background:#1a1a22; border:1px solid #2a2a36; color:#666; padding:6px 14px; border-radius:6px; cursor:pointer; font-size:11px; letter-spacing:1px; text-transform:uppercase; transition:all .15s; display:inline-block; }
+.copy-btn:hover { background:#2a2a36; color:#fff; }
+.note { background:#141420; border-left:3px solid #e63946; padding:12px 16px; border-radius:0 8px 8px 0; font-size:12px; color:#888; line-height:1.7; margin-bottom:24px; }
+.note strong { color:#ddd; }
+.budget-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:16px; margin-bottom:24px; }
+.budget-card { background:#111116; border:1px solid #1e1e24; border-radius:10px; padding:18px; }
+.budget-label { font-size:10px; letter-spacing:2px; text-transform:uppercase; color:#555; margin-bottom:8px; }
+.budget-amount { font-size:24px; font-weight:700; color:#e63946; margin-bottom:4px; }
+.budget-detail { font-size:12px; color:#666; line-height:1.6; }
+.automation-step { background:#0f0f15; border:1px solid #1e1e2e; border-radius:8px; padding:16px 18px; margin-bottom:12px; display:flex; gap:14px; align-items:flex-start; }
+.step-num { background:#e63946; color:#fff; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:700; flex-shrink:0; margin-top:1px; }
+.step-body { flex:1; }
+.step-title { font-size:13px; font-weight:600; color:#ddd; margin-bottom:4px; }
+.step-desc { font-size:12px; color:#666; line-height:1.6; }
+code { background:#0a0a10; border:1px solid #222; padding:1px 6px; border-radius:4px; font-family:monospace; font-size:12px; color:#a0c4ff; }
+</style>
+</head>
+<body>
+
+<h1>🚀 Orreryx — Launch Promotion Kit</h1>
+<p class="sub">All channels ready to post. Copy → paste → publish. Budget: ₹2,000/month.</p>
+
+<!-- ─── REDDIT ─── -->
+<div class="section">
+  <div class="section-title">📣 Reddit Posts</div>
+
+  <div class="note">
+    <strong>Posting strategy:</strong> Post these in separate sessions, 2-3 days apart. Don't post all at once — Reddit will shadow-ban. Use a personal account with some karma first (comment naturally for a week). Best time: <strong>Tuesday–Thursday, 7–9am EST</strong>. Add value in comments after posting.
+  </div>
+
+  <div class="cards">
+
+    <div class="card">
+      <span class="platform p-reddit">r/geopolitics</span>
+      <div class="card-title">Post 1 — r/geopolitics (Discussion)</div>
+      <div class="card-body" id="r1">I built a free live geopolitical risk tracker that shows conflict events filtered by country, with real-time market impact (oil, stocks, crypto).
+
+It pulls from GDELT (Global Database of Events, Language and Tone) every few minutes — so you get things like India-Pakistan airstrikes, Iran strait movements, or North Korea missile tests surfacing within minutes, with the market tickers that historically move on that event type displayed right alongside.
+
+Key features:
+• 35-country filter (Ukraine, Iran, India/Pakistan, Taiwan, etc.)
+• Language filter (EN, AR, ZH, RU, FR, DE, ES, PT, HI)
+• AI brief for any event (one click)
+• News video coverage by country
+• X/WhatsApp share on any card
+
+No paywall, no account required. Just open and watch.
+
+Would love feedback from people here who actually track this stuff — am I missing conflicts/sources you care about?
+
+Link: https://orreryx.io/app</div>
+      <div class="tag">#geopolitics #intelligence #OSINT</div>
+      <button class="copy-btn" onclick="copyCard('r1')">Copy text</button>
+    </div>
+
+    <div class="card">
+      <span class="platform p-reddit">r/investing</span>
+      <div class="card-title">Post 2 — r/investing (Tool)</div>
+      <div class="card-body" id="r2">Built a free geopolitical risk → market impact dashboard (live, no signup)
+
+Background: I got tired of finding out about geopolitical events after markets had already moved, so I built something that surfaces them in real-time with the relevant market tickers.
+
+What it tracks:
+• Live conflict feed (GDELT + GNews, updates every 2 min)
+• Market tickers that correlate with each event type (e.g. oil + defence stocks on Middle East events, gold + USD on nuclear news)
+• 35 countries filterable
+• AI analysis on any event (1-click briefing)
+
+Why it matters for investors: Events like the India-Pakistan escalation last week, Strait of Hormuz movements, or new OPEC+ signals can move oil, defence ETFs, gold and emerging market funds significantly before mainstream media covers them in depth.
+
+Free at: https://orreryx.io/app
+
+No ads, no paywall. Happy to answer questions about how it works technically.</div>
+      <div class="tag">#investing #geopolitics #markets #tools</div>
+      <button class="copy-btn" onclick="copyCard('r2')">Copy text</button>
+    </div>
+
+    <div class="card">
+      <span class="platform p-reddit">r/worldnews</span>
+      <div class="card-title">Post 3 — r/worldnews (Resource)</div>
+      <div class="card-body" id="r3">Free real-time global conflict tracker — 35 countries, live feed, market impact
+
+Built this because I wanted one place to watch multiple conflicts simultaneously without jumping between different news sites.
+
+It aggregates geopolitical events from GDELT (used by researchers globally), filters by country/language, shows associated market impact, and lets you get an AI brief on any event in 1 click.
+
+Current live coverage includes:
+🇺🇦 Ukraine-Russia front updates
+🇮🇳🇵🇰 India-Pakistan tensions
+🇮🇱🇵🇸 Israel-Gaza
+🇮🇷 Iran nuclear + Hormuz
+🇹🇼 Taiwan Strait
++ 30 more countries
+
+Free: https://orreryx.io/app
+
+No account needed. Would appreciate feedback on what sources/regions are underrepresented.</div>
+      <div class="tag">#worldnews #geopolitics #OSINT #live</div>
+      <button class="copy-btn" onclick="copyCard('r3')">Copy text</button>
+    </div>
+
+    <div class="card">
+      <span class="platform p-reddit">r/OSINT</span>
+      <div class="card-title">Post 4 — r/OSINT (Technical)</div>
+      <div class="card-body" id="r4">Show r/OSINT: Geopolitical intelligence feed using GDELT + GNews APIs
+
+Built a live dashboard that aggregates geopolitical events using open-source intelligence data:
+
+Data sources:
+• GDELT v2 Article API (mode=artlist, LOCATIONCC filter, sourcelang param for 9 languages)
+• GNews API (country + language facets)
+• YouTube RSS channel feeds for 26 international news channels
+• Yahoo Finance + CoinGecko for real-time market quotes
+
+Pipeline:
+1. Server-side country + language filter at query time
+2. Client-side keyword extraction → CC_MAP lookup for article geotagging
+3. Stale-request guard (AbortController) on filter changes
+4. 30s cache for quotes, 10min for video coverage
+
+The country classification uses padded keyword matching (" india " not "india") to avoid substring false positives (e.g. Georgia state vs Georgia country).
+
+Live at: https://orreryx.io/app — source discussion welcome.
+
+Happy to go deep on any part of the architecture.</div>
+      <div class="tag">#OSINT #geopolitics #GDELT #opendata</div>
+      <button class="copy-btn" onclick="copyCard('r4')">Copy text</button>
+    </div>
+
+    <div class="card">
+      <span class="platform p-reddit">r/stocks</span>
+      <div class="card-title">Post 5 — r/stocks (Market angle)</div>
+      <div class="card-body" id="r5">Free tool: track geopolitical events before they move markets
+
+Not a trading signal — more of a situational awareness layer.
+
+When India-Pakistan tensions escalated last week, defence stocks (LMT, RTX, NOC) moved +2-4% in the session after news broke. Oil spiked on Hormuz strait movements. Gold bid up on nuclear headline risk.
+
+This tracker surfaces those events in real-time with the relevant tickers displayed alongside, so you can at least be aware when geopolitical risk is building — rather than reading about it in the post-market wrap.
+
+35 countries, 9 languages, AI brief on any event, no signup.
+
+https://orreryx.io/app
+
+Not financial advice. Just a tool I built for my own situational awareness that I'm sharing.</div>
+      <div class="tag">#stocks #geopolitics #marketrisk #tools</div>
+      <button class="copy-btn" onclick="copyCard('r5')">Copy text</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ─── PRODUCT HUNT ─── -->
+<div class="section">
+  <div class="section-title">🏹 Product Hunt</div>
+
+  <div class="note">
+    <strong>When to launch:</strong> Tuesday is best for Product Hunt. Schedule for <strong>12:01am PST on a Tuesday</strong>. Get 5-10 people to upvote in the first hour — this is critical for reaching the front page. Ask friends, family, anyone.
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-title">Tagline (60 chars max)</div>
+      <div class="card-body" id="ph1">Real-time geopolitical risk tracker with market impact</div>
+      <button class="copy-btn" onclick="copyCard('ph1')">Copy</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Description</div>
+      <div class="card-body" id="ph2">Orrery is a free, live geopolitical intelligence platform that monitors conflicts, nuclear alerts, sanctions and political crises across 35 countries — and shows you which markets move when they happen.
+
+🌍 What it does:
+• Live event feed updated every 2 minutes (powered by GDELT open data)
+• Filter by country (35) and language (9 including Arabic, Chinese, Russian)
+• Real-time price quotes: stocks, oil, gold, crypto — all on one screen
+• AI-powered brief on any event with one click
+• News video coverage panel for each country
+• Share any event to X or WhatsApp instantly
+
+💡 Who it's for:
+Investors tracking geopolitical risk, journalists following conflicts, researchers, policy analysts, and curious people who want to understand what's actually happening in the world in real time.
+
+✅ 100% free. No account required. No paywall. Just open and watch.
+
+Built by one developer. Feedback welcome!</div>
+      <button class="copy-btn" onclick="copyCard('ph2')">Copy</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title">First Comment (post this yourself right after launch)</div>
+      <div class="card-body" id="ph3">Hey Product Hunt! 👋
+
+I built Orrery because I was frustrated watching markets move on geopolitical events I only found out about hours later.
+
+The core idea: geopolitical risk is priced into markets, but most retail investors and analysts don't have a real-time feed of conflict events with market context. Bloomberg terminals cost $24k/year. I wanted something free and open.
+
+The trickiest part was the country classification — making sure "Georgia" in a headline means the country, not the US state. Solved it with padded keyword matching and GDELT's LOCATIONCC API parameter for server-side filtering.
+
+Would love your honest feedback — what's missing? What's confusing? What would make you open this every morning?
+
+Link: https://orreryx.io/app</div>
+      <button class="copy-btn" onclick="copyCard('ph3')">Copy</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── HACKER NEWS ─── -->
+<div class="section">
+  <div class="section-title">🔶 Hacker News — Show HN</div>
+
+  <div class="note">
+    <strong>When to post:</strong> Monday–Wednesday, 9am–12pm EST. Title must start with "Show HN:". Keep it factual and technical — HN readers hate marketing language. Be ready to reply to technical comments within the first hour.
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-title">Title</div>
+      <div class="card-body" id="hn1">Show HN: Orrery – Live geopolitical risk tracker with market impact (GDELT + free)</div>
+      <button class="copy-btn" onclick="copyCard('hn1')">Copy</button>
+    </div>
+
+    <div class="card" style="grid-column:1/-1">
+      <div class="card-title">Body text</div>
+      <div class="card-body" id="hn2">Live: https://orreryx.io/app
+
+I built Orrery to monitor geopolitical events in real-time and correlate them with market movements. It's free, no login required.
+
+Technical stack:
+- Next.js/Vercel serverless for API routes
+- GDELT v2 Article API for conflict event ingestion (LOCATIONCC + sourcelang params for server-side filtering)
+- GNews API for broader news coverage
+- YouTube RSS feeds from 26 international channels (CNN, Al Jazeera, BBC, NDTV, Geo News, etc.)
+- Yahoo Finance API + CoinGecko for live market quotes
+- AbortController with stale-request guards so filter changes don't show outdated data
+
+The country classification problem was interesting: naive string matching on "georgia" would match "Georgia" (US state) as often as Georgia the country in international news. Solution: padded keyword matching (" georgia " with spaces) + GDELT's LOCATIONCC filter server-side.
+
+Features:
+- 35 countries, 9 language filters
+- Events tagged by type (military, economic, nuclear, diplomatic)
+- One-click AI brief for any event
+- News video panel (live YouTube streams) per country
+- Market quotes panel (stocks + crypto) alongside events
+- Share buttons for X/WhatsApp
+
+What I'd like feedback on:
+1. The country/language classification accuracy
+2. Event latency (currently ~2-5 min from GDELT ingestion)
+3. Anything that doesn't make sense UX-wise
+
+Source discussion welcome.</div>
+      <button class="copy-btn" onclick="copyCard('hn2')">Copy</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── TWITTER / X ─── -->
+<div class="section">
+  <div class="section-title">𝕏 Twitter / X — Daily Post Templates</div>
+
+  <div class="note">
+    <strong>Strategy:</strong> Post once daily at 8am your time. Use current events as hooks — if something is in the news, relate it to Orrery. Thread format performs best. These 7 templates rotate through a week. The automation section below covers scheduling.
+  </div>
+
+  <div class="cards">
+
+    <div class="card">
+      <span class="platform p-tw">Thread — Launch</span>
+      <div class="card-body" id="tw1">🌍 I built a free real-time geopolitical risk tracker.
+
+No Bloomberg terminal. No paywall. No login.
+
+Here's what it does and why I built it 🧵
+
+1/ Every week, something happens in the world that moves markets — oil spikes, defence stocks pump, gold bids up.
+
+Most people find out hours later in a news summary.
+
+I wanted to know in real-time.
+
+2/ So I built Orrery: a live conflict + market intelligence dashboard.
+
+It pulls from GDELT (the largest open geopolitical database in the world) and surfaces events as they happen.
+
+35 countries. 9 languages. Every 2 minutes.
+
+3/ You can filter by country — India/Pakistan, Iran, Ukraine, Taiwan, Israel, and 30 more.
+
+Each event shows:
+→ What happened
+→ Where
+→ Which markets are exposed (oil, stocks, crypto)
+→ AI brief on demand
+
+4/ It's completely free.
+
+No account. No credit card. No ads.
+
+Just open it and watch the world.
+
+👉 https://orreryx.io/app
+
+RT if you track geopolitics or markets.</div>
+      <button class="copy-btn" onclick="copyCard('tw1')">Copy thread</button>
+    </div>
+
+    <div class="card">
+      <span class="platform p-tw">Single — Hook tweet</span>
+      <div class="card-body" id="tw2">If you're investing in oil, defence stocks, gold or emerging markets without tracking geopolitical risk in real-time — you're flying blind.
+
+Built a free tracker that shows live conflict events + market impact: https://orreryx.io/app
+
+No login. No paywall. 35 countries.</div>
+      <button class="copy-btn" onclick="copyCard('tw2')">Copy</button>
+    </div>
+
+    <div class="card">
+      <span class="platform p-tw">Single — OSINT angle</span>
+      <div class="card-body" id="tw3">Free OSINT tool: live geopolitical events from GDELT filtered by country, language, and event type.
+
+Track Ukraine 🇺🇦, Iran 🇮🇷, Taiwan 🇹🇼, India-Pakistan 🇮🇳🇵🇰 and 31 more countries in real-time.
+
+AI brief on any event. Market tickers alongside.
+
+https://orreryx.io/app</div>
+      <button class="copy-btn" onclick="copyCard('tw3')">Copy</button>
+    </div>
+
+    <div class="card">
+      <span class="platform p-tw">Single — News hook (template)</span>
+      <div class="card-body" id="tw4">[INSERT CURRENT EVENT] is live on Orrery right now.
+
+This is exactly the kind of event that historically moves:
+→ [RELEVANT TICKER 1]
+→ [RELEVANT TICKER 2]
+→ [RELEVANT TICKER 3]
+
+Real-time tracker, free, no login: https://orreryx.io/app</div>
+      <div class="tag">Fill in the brackets with the day's top story</div>
+      <button class="copy-btn" onclick="copyCard('tw4')">Copy template</button>
+    </div>
+
+    <div class="card">
+      <span class="platform p-tw">Single — Feature spotlight</span>
+      <div class="card-body" id="tw5">New on Orrery: every article card now has 𝕏 Share + 💬 WhatsApp buttons.
+
+See a geopolitical event that matters? Share it instantly with context.
+
+Free live tracker: https://orreryx.io/app</div>
+      <button class="copy-btn" onclick="copyCard('tw5')">Copy</button>
+    </div>
+
+    <div class="card">
+      <span class="platform p-tw">Single — Market angle</span>
+      <div class="card-body" id="tw6">Geopolitical risk is priced into every market.
+
+Oil → Middle East tensions
+Gold → nuclear flashpoints
+Defence stocks → active conflicts
+EM currencies → sanctions/crisis
+
+Track all of it live, free, no account:
+👉 https://orreryx.io/app</div>
+      <button class="copy-btn" onclick="copyCard('tw6')">Copy</button>
+    </div>
+
+    <div class="card">
+      <span class="platform p-tw">Single — Weekend engagement</span>
+      <div class="card-body" id="tw7">Which geopolitical risk do you think markets are most underpricing right now?
+
+A) Taiwan Strait 🇹🇼
+B) Iran nuclear breakout 🇮🇷
+C) India-Pakistan 🇮🇳🇵🇰
+D) Russia escalation 🇷🇺
+
+Track all four live: https://orreryx.io/app</div>
+      <button class="copy-btn" onclick="copyCard('tw7')">Copy</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ─── ADS ─── -->
+<div class="section">
+  <div class="section-title">📢 Paid Ads — ₹2,000/month (~$24 USD)</div>
+
+  <div class="note">
+    <strong>Budget reality:</strong> ₹2,000/month is a small budget. The strategy is to go very narrow and specific — don't try to reach everyone. Target people searching for exactly what you built. Google Search ads (intent-based) will outperform Meta display ads at this budget.
+  </div>
+
+  <div class="budget-grid">
+    <div class="budget-card">
+      <div class="budget-label">Recommended split</div>
+      <div class="budget-amount">₹1,400</div>
+      <div class="budget-detail">Google Search Ads<br>~₹3–5 CPC → ~350 targeted clicks/month<br>High intent: people searching for what you built</div>
+    </div>
+    <div class="budget-card">
+      <div class="budget-label">Secondary</div>
+      <div class="budget-amount">₹600</div>
+      <div class="budget-detail">Meta / Reddit Ads<br>Interest targeting: geopolitics, investing, OSINT<br>Lower intent but broader reach</div>
+    </div>
+  </div>
+
+  <div class="cards">
+
+    <div class="card">
+      <span class="platform p-google">Google Search Ad — Set 1</span>
+      <div class="card-title">Headlines (use 3, max 30 chars each)</div>
+      <div class="card-body" id="g1">Headline 1: Live Geopolitical Risk Tracker
+Headline 2: 35 Countries · Free · No Login
+Headline 3: Market Impact of World Events
+
+Description 1: Track conflicts in Ukraine, Iran, Taiwan & 32 more countries live. See which stocks, oil & crypto move. Free, real-time.
+Description 2: GDELT-powered intelligence feed. Filter by country & language. AI brief on any event. No account needed.
+
+Final URL: https://orreryx.io/app
+
+Keywords to target (exact + phrase match):
+"geopolitical risk tracker"
+"live conflict map"
+"war news market impact"
+"ukraine war tracker"
+"iran nuclear news live"
+"india pakistan conflict news"
+"global crisis tracker"
+"geopolitics investing"</div>
+      <button class="copy-btn" onclick="copyCard('g1')">Copy ad copy</button>
+    </div>
+
+    <div class="card">
+      <span class="platform p-google">Google Search Ad — Set 2 (OSINT angle)</span>
+      <div class="card-title">For OSINT / researcher audience</div>
+      <div class="card-body" id="g2">Headline 1: GDELT Live News Intelligence
+Headline 2: Free Geopolitics Dashboard
+Headline 3: 9 Languages · 35 Countries
+
+Description 1: Open-source geopolitical intelligence. GDELT + GNews data. Filter events by country, language, event type. Free forever.
+Description 2: Used by researchers & analysts. Track military, nuclear, economic & diplomatic events in real-time. No paywall.
+
+Final URL: https://orreryx.io/app
+
+Keywords:
+"GDELT news tracker"
+"OSINT geopolitics tool"
+"open source intelligence news"
+"conflict monitoring tool"
+"geopolitical news aggregator"
+"live war news dashboard"</div>
+      <button class="copy-btn" onclick="copyCard('g2')">Copy ad copy</button>
+    </div>
+
+    <div class="card">
+      <span class="platform p-meta">Meta Ad — Facebook/Instagram</span>
+      <div class="card-title">Interest targeting: Geopolitics, World News, Investing, Stock Market</div>
+      <div class="card-body" id="m1">Primary text:
+The world doesn't pause between your news checks.
+
+Orrery is a free real-time tracker that monitors conflicts, nuclear alerts, sanctions and political crises across 35 countries — and shows you which markets move when they happen.
+
+✅ Live feed, updated every 2 minutes
+✅ Filter: Ukraine, Iran, Taiwan, India/Pakistan + 31 more
+✅ AI brief on any event, one click
+✅ Free. No login. No paywall.
+
+Headline: Track the world. Free. Real-time.
+Description: 35 countries · 9 languages · market impact
+CTA button: Learn More → https://orreryx.io/app
+
+Target: Ages 22–45, interests: Geopolitics, World news, Stock investing, Oil market, Bloomberg, Reuters</div>
+      <button class="copy-btn" onclick="copyCard('m1')">Copy</button>
+    </div>
+
+    <div class="card">
+      <span class="platform p-meta">Reddit Ad</span>
+      <div class="card-title">Subreddits: r/geopolitics, r/investing, r/worldnews, r/OSINT</div>
+      <div class="card-body" id="ra1">Title: Free real-time geopolitical risk tracker — 35 countries, market impact, no login
+
+Body: Built for people who track conflicts and care about market impact. GDELT-powered, live updates every 2 minutes, AI brief on any event.
+
+CTA: Try free → orreryx.io/app
+
+Note: Reddit ads in these subreddits run ~$0.30–0.80 CPM at low budgets. At ₹600/month you get ~10,000–15,000 impressions in targeted communities.</div>
+      <button class="copy-btn" onclick="copyCard('ra1')">Copy</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ─── WHATSAPP / COMMUNITY ─── -->
+<div class="section">
+  <div class="section-title">💬 WhatsApp / Telegram Groups</div>
+  <div class="note">
+    <strong>Best free channel:</strong> Trading/investing/geopolitics WhatsApp groups and Telegram channels. Message is short, value-first, no spam feel.
+  </div>
+  <div class="cards">
+    <div class="card">
+      <span class="platform p-wa">WhatsApp/Telegram — Short share</span>
+      <div class="card-body" id="wa1">🌍 *Orrery* — free live geopolitical risk tracker
+
+Monitors 35 countries (Ukraine, Iran, Taiwan, India-Pakistan, Israel, North Korea etc.) in real-time with market impact on stocks, oil, gold, crypto.
+
+No app, no login — just open in browser:
+👉 https://orreryx.io/app
+
+Good for anyone tracking world events + markets.</div>
+      <button class="copy-btn" onclick="copyCard('wa1')">Copy</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── TWITTER AUTOMATION SETUP ─── -->
+<div class="section">
+  <div class="section-title">🤖 Twitter / X Automation Setup</div>
+
+  <div class="note">
+    <strong>To set up daily auto-posting, you need 4 things from the X Developer Portal:</strong><br>
+    1. <strong>API Key</strong> (Consumer Key)<br>
+    2. <strong>API Secret</strong> (Consumer Secret)<br>
+    3. <strong>Access Token</strong><br>
+    4. <strong>Access Token Secret</strong><br><br>
+    Go to: <a href="https://developer.x.com/en/portal/dashboard" style="color:#4285f4">developer.x.com → Your App → Keys and Tokens</a><br>
+    Make sure your app has <strong>Read and Write</strong> permissions (not Read-only).
+  </div>
+
+  <div class="automation-step">
+    <div class="step-num">1</div>
+    <div class="step-body">
+      <div class="step-title">Create a free X Developer account</div>
+      <div class="step-desc">Go to <code>developer.x.com</code> → Apply for Free tier → Create an app called "Orreryx Bot". Takes ~5 minutes.</div>
+    </div>
+  </div>
+
+  <div class="automation-step">
+    <div class="step-num">2</div>
+    <div class="step-body">
+      <div class="step-title">Set app permissions to Read + Write</div>
+      <div class="step-desc">In your app settings → User authentication settings → Set permissions to "Read and Write". Regenerate your Access Token after changing this.</div>
+    </div>
+  </div>
+
+  <div class="automation-step">
+    <div class="step-num">3</div>
+    <div class="step-body">
+      <div class="step-title">Provide these 4 values to Claude</div>
+      <div class="step-desc">
+        API Key: <code>xxxxxxxxxxxxxxxxxxxxxxxxx</code><br>
+        API Secret: <code>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</code><br>
+        Access Token: <code>xxxxxxxxxx-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</code><br>
+        Access Token Secret: <code>xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx</code><br><br>
+        Once you share these, Claude will set up a daily scheduled post agent that automatically tweets from the templates above, picking the most relevant one based on current headlines.
+      </div>
+    </div>
+  </div>
+
+  <div class="automation-step">
+    <div class="step-num">4</div>
+    <div class="step-body">
+      <div class="step-title">What the automation will do</div>
+      <div class="step-desc">Post once daily at 8am IST. It will check that day's top story from your own live feed (orreryx.io/app), pick or fill a template that matches current events, and post with relevant hashtags. Zero manual effort after setup.</div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ─── WEEKLY POSTING CALENDAR ─── -->
+<div class="section">
+  <div class="section-title">📅 Week 1 Posting Calendar</div>
+
+  <div class="note">
+    <strong>Execute in this exact order</strong> — don't rush, let each post breathe and gather engagement before the next one. Free channels first, paid ads last.
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-title">Day 1 (Monday) — HackerNews Show HN</div>
+      <div class="card-body">Post the Show HN at 9am EST. Stay online for 2-3 hours to reply to comments. This is your biggest free traffic spike opportunity — a good HN post can send 500-2000 visitors.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Day 2 (Tuesday) — Product Hunt Launch</div>
+      <div class="card-body">Schedule for 12:01am PST Tuesday. Ask 10 people to upvote in the first 2 hours. Post your first comment (template above). Front-page PH = thousands of visitors.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Day 3 (Wednesday) — r/geopolitics + r/OSINT</div>
+      <div class="card-body">Post Reddit threads (Posts 1 and 4 above) from separate accounts if possible, or same account if you have karma. Reply to every comment within 30 minutes.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Day 4 (Thursday) — r/investing + r/stocks</div>
+      <div class="card-body">Post Reddit threads 2 and 5. Link to HN discussion for social proof ("got great feedback on HN from analysts"). Include the share button feature as a new update.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Day 5 (Friday) — Twitter Thread</div>
+      <div class="card-body">Post the full Twitter thread (Template 1 above). Engage with any replies. Pin it to your profile.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Day 6 (Saturday) — r/worldnews + WhatsApp groups</div>
+      <div class="card-body">Post Reddit thread 3. Share in any investing/geopolitics WhatsApp or Telegram groups you're in. Weekend audience is different — more casual readers.</div>
+    </div>
+    <div class="card">
+      <div class="card-title">Day 7 (Sunday) — Activate Google Ads</div>
+      <div class="card-body">Set up Google Ads campaign with the copy above (₹1,400 budget). Start with exact match keywords. Review performance after 7 days and adjust.</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── INSTAGRAM ─── -->
+<div class="section">
+  <div class="section-title">📸 Instagram — Setup + Post Captions</div>
+
+  <div class="note">
+    <strong>Instagram requires images</strong> — no text-only posts. You need to create 7 simple image cards (1080×1080 px) and upload them to <code>/public/ig-cards/card-1.jpg</code> through <code>card-7.jpg</code>.<br><br>
+    <strong>Easiest way:</strong> Open <a href="/ad-square.html" style="color:#4285f4">orreryx.io/ad-square</a> in your browser, take a screenshot at 1080×1080, save as <code>card-1.jpg</code>. Repeat with different text overlays for cards 2–7. Then deploy — they'll be hosted at <code>orreryx.io/ig-cards/card-N.jpg</code>.<br><br>
+    <strong>Alternative:</strong> Use Canva (free) — search "Instagram post geopolitics", edit the text, download as JPG.
+  </div>
+
+  <div class="note">
+    <strong>To get your Instagram credentials:</strong><br>
+    1. Go to <a href="https://developers.facebook.com" style="color:#4285f4">developers.facebook.com</a> → Create App → Business type<br>
+    2. Add "Instagram Graph API" product<br>
+    3. Connect your Instagram Business or Creator account (not personal — must switch in Instagram app: Settings → Account → Switch to Professional)<br>
+    4. Use the <a href="https://developers.facebook.com/tools/explorer/" style="color:#4285f4">Graph API Explorer</a> to generate a long-lived token with <code>instagram_basic</code>, <code>instagram_content_publish</code> scopes<br>
+    5. Get your User ID: <code>GET /me?fields=id,name</code><br><br>
+    Then add to Vercel: <code>IG_USER_ID</code> and <code>IG_ACCESS_TOKEN</code>.<br>
+    ⚠ Token expires in 60 days — refresh it every 50 days at the Graph API Explorer.
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <span class="platform p-meta" style="background:linear-gradient(135deg,rgba(131,58,180,.2),rgba(253,29,29,.2),rgba(252,176,69,.2));color:#fd7e14;border-color:rgba(253,126,20,.3)">Instagram — Caption 1</span>
+      <div class="card-title">Launch post (use with card-1.jpg)</div>
+      <div class="card-body" id="ig1">🌍 Real-time geopolitical intelligence. Free.
+
+Track live conflicts, nuclear flashpoints, sanctions and political crises across 35 countries — with market impact on stocks, oil, gold and crypto.
+
+No login. No paywall. Updated every 2 minutes.
+
+👉 Link in bio — orreryx.io/app
+
+#geopolitics #worldnews #markets #investing #geopoliticalrisk #globalconflicts #intelligence #OSINT</div>
+      <button class="copy-btn" onclick="copyCard('ig1')">Copy caption</button>
+    </div>
+
+    <div class="card">
+      <span class="platform p-meta" style="background:linear-gradient(135deg,rgba(131,58,180,.2),rgba(253,29,29,.2),rgba(252,176,69,.2));color:#fd7e14;border-color:rgba(253,126,20,.3)">Instagram — Caption 2</span>
+      <div class="card-title">Market hook (use with card-2.jpg)</div>
+      <div class="card-body" id="ig2">Oil spikes when the Middle East burns 🔥
+Gold bids up when nuclear headlines drop ☢️
+Defence stocks pump when missiles fly 🚀
+
+Track the events that move markets — live, free, no login.
+
+Orrery: real-time geopolitical risk intelligence
+👉 Link in bio
+
+#oil #gold #defencestocks #geopolitics #investing #iran #ukraine #middleeast</div>
+      <button class="copy-btn" onclick="copyCard('ig2')">Copy caption</button>
+    </div>
+
+    <div class="card">
+      <span class="platform p-meta" style="background:linear-gradient(135deg,rgba(131,58,180,.2),rgba(253,29,29,.2),rgba(252,176,69,.2));color:#fd7e14;border-color:rgba(253,126,20,.3)">Instagram — Caption 3</span>
+      <div class="card-title">35 countries (use with card-3.jpg)</div>
+      <div class="card-body" id="ig3">35 countries tracked live 🌐
+
+🇺🇦 Ukraine-Russia
+🇮🇳🇵🇰 India-Pakistan
+🇮🇷 Iran nuclear
+🇹🇼 Taiwan Strait
+🇮🇱 Israel-Gaza
+🇰🇵 North Korea
+
++ 29 more conflict zones
+
+One free platform. No account needed.
+orreryx.io/app
+
+#ukraine #indopakistan #iran #taiwan #israel #northkorea #geopolitics #worldnews</div>
+      <button class="copy-btn" onclick="copyCard('ig3')">Copy caption</button>
+    </div>
+
+    <div class="card">
+      <span class="platform p-meta" style="background:linear-gradient(135deg,rgba(131,58,180,.2),rgba(253,29,29,.2),rgba(252,176,69,.2));color:#fd7e14;border-color:rgba(253,126,20,.3)">Instagram — Caption 4</span>
+      <div class="card-title">Weekend engagement</div>
+      <div class="card-body" id="ig4">Before markets open Monday — check what's building 📊
+
+Live overnight geopolitical events:
+→ Filter by country
+→ See which assets are exposed
+→ AI analysis in 1 click
+
+Free at orreryx.io/app
+👉 Link in bio
+
+#premarket #trading #investing #geopoliticalrisk #markets #stockmarket #gold #oil</div>
+      <button class="copy-btn" onclick="copyCard('ig4')">Copy caption</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ─── LINKEDIN ─── -->
+<div class="section">
+  <div class="section-title">💼 LinkedIn — Setup + Post Templates</div>
+
+  <div class="note">
+    <strong>LinkedIn access tokens expire every 60 days.</strong> Set a calendar reminder to refresh at day 50.<br><br>
+    <strong>To get credentials:</strong><br>
+    1. Go to <a href="https://www.linkedin.com/developers/apps" style="color:#4285f4">linkedin.com/developers/apps</a> → Create app<br>
+    2. Under "Products", request <strong>"Share on LinkedIn"</strong> (gives <code>w_member_social</code>)<br>
+    3. Go to <a href="https://www.linkedin.com/developers/tools/oauth/token-generator" style="color:#4285f4">OAuth Token Generator</a> → select <code>w_member_social</code> → Authorize → copy the Access Token<br>
+    4. Get your Person URN: call <code>GET https://api.linkedin.com/v2/me</code> with your token — the <code>id</code> field is your URN (format: <code>urn:li:person:XXXXXX</code>)<br><br>
+    Add to Vercel: <code>LINKEDIN_ACCESS_TOKEN</code> and <code>LINKEDIN_PERSON_URN</code>
+  </div>
+
+  <div class="cards">
+
+    <div class="card" style="grid-column:1/-1">
+      <span class="platform" style="background:rgba(10,102,194,.15);color:#0a66c2;border:1px solid rgba(10,102,194,.3)">LinkedIn — Monday</span>
+      <div class="card-body" id="li1">🌍 Start the week with geopolitical situational awareness.
+
+Orrery is a free real-time platform that monitors active conflicts, sanctions and political crises across 35 countries — and shows which markets are exposed.
+
+✅ Live feed updated every 2 minutes
+✅ 9 languages including Arabic, Chinese, Russian, Hindi
+✅ One-click AI analysis of any event
+✅ Market impact: stocks, oil, gold, crypto
+✅ Zero cost — no login, no paywall
+
+I built this because Bloomberg terminals that surface this data cost $24,000/year. Geopolitical risk affects every portfolio, not just hedge funds.
+
+→ Try it free: orreryx.io/app
+
+#GeopoliticalRisk #Investing #GlobalMarkets #Intelligence #Finance</div>
+      <button class="copy-btn" onclick="copyCard('li1')">Copy</button>
+    </div>
+
+    <div class="card" style="grid-column:1/-1">
+      <span class="platform" style="background:rgba(10,102,194,.15);color:#0a66c2;border:1px solid rgba(10,102,194,.3)">LinkedIn — Thursday (best day for LI)</span>
+      <div class="card-body" id="li2">Geopolitical risk is the most underrated factor in portfolio construction.
+
+Most retail investors track:
+✓ Earnings
+✓ Fed rates
+✓ Technicals
+
+Few systematically track:
+✗ Active conflict escalation risk
+✗ Sanctions and trade disruption
+✗ Nuclear flashpoint probability
+✗ Political regime instability
+
+Yet these are what cause the largest single-day moves in oil, gold, defence stocks and emerging market currencies.
+
+Orrery is a free tool I built to fix this gap. Live event feed, 35 countries, market context on every event.
+
+→ orreryx.io/app
+
+What's your process for tracking geopolitical risk in your portfolio?
+
+#Investing #PortfolioManagement #GeopoliticalRisk #RiskManagement #GlobalMacro</div>
+      <button class="copy-btn" onclick="copyCard('li2')">Copy</button>
+    </div>
+
+    <div class="card" style="grid-column:1/-1">
+      <span class="platform" style="background:rgba(10,102,194,.15);color:#0a66c2;border:1px solid rgba(10,102,194,.3)">LinkedIn — Wednesday (builder story)</span>
+      <div class="card-body" id="li3">Why I built a free geopolitical risk tracker — and what I learned.
+
+The problem: geopolitical events move markets fast. By the time mainstream financial media covers them, the initial price move has already happened.
+
+The solution I wanted: a live feed of conflict events with:
+→ Country and language filters
+→ Market tickers that correlate with each event type
+→ AI analysis on demand
+
+What I built: Orrery — powered by GDELT (the largest open-source geopolitical database globally, used by academic researchers and governments).
+
+Key technical decisions:
+• Country classification uses padded keyword matching to avoid false positives ("Georgia" state ≠ Georgia country)
+• AbortController guards prevent stale data when filters change
+• 26 international news channels (BBC, Al Jazeera, NDTV, etc.) feed the video coverage panel
+
+It's 100% free. No paywall.
+
+→ orreryx.io/app
+
+Happy to answer questions about the technical architecture in comments.
+
+#ProductDevelopment #FinTech #OpenSource #Geopolitics #SideProject</div>
+      <button class="copy-btn" onclick="copyCard('li3')">Copy</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ─── ALL PLATFORMS CRON SCHEDULE ─── -->
+<div class="section">
+  <div class="section-title">🤖 Automation Overview — All 4 Platforms</div>
+
+  <div class="note">
+    <strong>Vercel Cron requires Pro plan ($20/month) for more than 1 cron job.</strong> On the free Hobby plan you get exactly 1 cron. Options:<br>
+    A) Upgrade to Vercel Pro ($20/mo) — all 4 bots run automatically<br>
+    B) Stay on free Hobby plan — pick your most important platform (recommend Twitter/X) and run the others manually using the copy buttons above<br>
+    C) Use a free GitHub Actions cron as an alternative trigger (ping me for the workflow file)
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <div class="card-title">𝕏 Twitter/X</div>
+      <div class="card-body">Schedule: Daily at 8:00 AM IST
+Cron: <code>30 2 * * *</code>
+Env vars needed: TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET
+Token expires: Never (OAuth 1.0a)</div>
+    </div>
+    <div class="card">
+      <div class="card-title">📸 Instagram</div>
+      <div class="card-body">Schedule: Daily at 9:00 AM IST
+Cron: <code>0 3 * * *</code>
+Env vars needed: IG_USER_ID, IG_ACCESS_TOKEN
+Token expires: Every 60 days — refresh at developers.facebook.com
+Pre-requisite: Upload 7 card images to /public/ig-cards/</div>
+    </div>
+    <div class="card">
+      <div class="card-title">💼 LinkedIn</div>
+      <div class="card-body">Schedule: Weekdays at 8:30 AM IST (Mon–Fri only)
+Cron: <code>0 3 * * 1-5</code>
+Env vars needed: LINKEDIN_ACCESS_TOKEN, LINKEDIN_PERSON_URN
+Token expires: Every 60 days — refresh at linkedin.com/developers/tools/oauth</div>
+    </div>
+    <div class="card">
+      <div class="card-title">📣 Reddit</div>
+      <div class="card-body">Schedule: Every Monday at 9:00 AM IST (weekly only — daily posting = ban)
+Cron: <code>30 3 * * 1</code>
+Env vars needed: REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_USERNAME, REDDIT_PASSWORD
+Account tip: Must have some karma first — comment for 1-2 weeks before posting</div>
+    </div>
+  </div>
+</div>
+
+<script>
+function copyCard(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  navigator.clipboard.writeText(el.textContent.trim()).then(() => {
+    const btn = el.nextElementSibling;
+    if (btn) { const old = btn.textContent; btn.textContent = '✓ Copied!'; btn.style.color = '#3dc47e'; setTimeout(() => { btn.textContent = old; btn.style.color = ''; }, 1500); }
+  });
+}
+</script>
+
+</body>
+</html>

@@ -2,6 +2,290 @@
 // GET /api/feed?type=quotes&symbols=BTC,ETH,LMT  → market quotes
 // GET /api/feed?type=videos&q=ukraine war          → news videos
 // GET /api/feed?type=news&q=ukraine&lang=en        → proxies gnews
+// GET /api/og-image?title=...&source=...           → news card PNG (merged from og-image.js)
+
+import sharp from 'sharp';
+
+// ── OG IMAGE GENERATOR — dramatic photo-backed news cards ────────────────────
+const OG_THEMES = {
+  military:   { accent:'#f5a623', accent2:'#ffe066', badgeBg:'#b91c1c', badge:'BREAKING',      label:'MILITARY',    dot:'f5a623' },
+  nuclear:    { accent:'#f97316', accent2:'#fdba74', badgeBg:'#7c2d00', badge:'NUCLEAR ALERT', label:'NUCLEAR',     dot:'f97316' },
+  economic:   { accent:'#10b981', accent2:'#6ee7b7', badgeBg:'#064e3b', badge:'MARKET IMPACT', label:'ECONOMIC',    dot:'10b981' },
+  diplomatic: { accent:'#60a5fa', accent2:'#93c5fd', badgeBg:'#1e3a8a', badge:'DIPLOMATIC',    label:'DIPLOMATIC',  dot:'60a5fa' },
+  sanctions:  { accent:'#c084fc', accent2:'#e9d5ff', badgeBg:'#4c1d95', badge:'SANCTIONS',     label:'SANCTIONS',   dot:'c084fc' },
+  default:    { accent:'#e63946', accent2:'#ff8fa3', badgeBg:'#7f1d1d', badge:'LIVE UPDATE',   label:'INTELLIGENCE',dot:'e63946' },
+};
+
+// ── DALL-E 3 prompts per category (safe for content policy — no gore/faces) ──
+const DALLE_PROMPTS = {
+  military:   (loc) => `Cinematic dramatic aerial war zone photograph, military helicopter flying low over destroyed buildings and rubble, thick smoke plumes rising, dark storm clouds, dust and debris, desolate conflict landscape${loc ? ', ' + loc + ' terrain' : ''}, golden hour light, photorealistic, ultra detailed, no people visible, no text`,
+  nuclear:    (loc) => `Dramatic night photograph of massive nuclear power plant cooling towers, orange and red glowing sky, atmospheric fog drifting across the scene, warning lights and flares reflecting in water below, ominous atmosphere, photorealistic, cinematic, no text`,
+  economic:   (_)   => `Dramatic close-up photograph of stock market trading screens showing crashing red graphs and numbers, blurred traders in background, blue and red dramatic lighting, financial crisis atmosphere, photorealistic, bokeh background, no text`,
+  diplomatic: (loc) => `Dramatic photograph of an empty high-stakes government summit room at night, leather chairs around a long conference table, national flags lining the walls, a single dramatic spotlight, dark wood panelling, tension in the air, photorealistic, no text`,
+  sanctions:  (_)   => `Dramatic abstract digital art of global financial sanctions, world map made of glowing red circuits being cut off, dark deep blue background, chains of light breaking, gold and red tones, photorealistic render quality, no text`,
+  default:    (loc) => `Dramatic breaking news scene, dark dramatic sky with storm clouds at sunset, destroyed infrastructure, smoke rising on the horizon${loc ? ', ' + loc : ''}, cinematic wide angle, photorealistic, high contrast lighting, no people, no text`,
+};
+
+// Pexels fallback queries (used if DALL-E is not set up)
+const PEXELS_QUERIES = {
+  military:   'military war helicopter explosion soldiers combat',
+  nuclear:    'nuclear power plant radiation warning explosion',
+  economic:   'stock market trading finance graph wall street',
+  diplomatic: 'government politics summit meeting diplomacy',
+  sanctions:  'economy politics financial crisis pressure',
+  default:    'world crisis conflict breaking news',
+};
+
+function ogDetectCategory(title, catParam) {
+  if (catParam && OG_THEMES[catParam]) return catParam;
+  const t = title.toLowerCase();
+  if (/nuclear|uranium|warhead|iaea|atomic/.test(t))               return 'nuclear';
+  if (/sanction|embargo|tariff|freeze|export ban/.test(t))         return 'sanctions';
+  if (/ceasefire|treaty|diplomat|summit|talks|agreement/.test(t))  return 'diplomatic';
+  if (/oil|market|economy|gdp|inflation|stock|currency/.test(t))   return 'economic';
+  return 'military';
+}
+
+function ogEsc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
+}
+
+function ogWrapTitle(title, maxChars = 19) {
+  const words = title.split(' '); const lines = []; let cur = '';
+  for (const w of words) {
+    if (!cur) { cur = w; continue; }
+    if ((cur + ' ' + w).length <= maxChars) { cur += ' ' + w; }
+    else { lines.push(cur); cur = w; }
+  }
+  if (cur) lines.push(cur);
+  return lines.slice(0, 4);
+}
+
+// Helper: text with drop shadow using two stacked elements (librsvg-safe, no paint-order)
+function ogText(x, y, text, { size, weight='bold', fill='white', anchor='start', shadow=true, spacing='-1', family='sans-serif' } = {}) {
+  const sh = shadow ? `<text x="${x+3}" y="${y+3}" font-family="${family}" font-size="${size}" font-weight="${weight}" fill="rgba(0,0,0,0.65)" text-anchor="${anchor}" letter-spacing="${spacing}">${text}</text>` : '';
+  return `${sh}<text x="${x}" y="${y}" font-family="${family}" font-size="${size}" font-weight="${weight}" fill="${fill}" text-anchor="${anchor}" letter-spacing="${spacing}">${text}</text>`;
+}
+
+// Builds the SVG overlay — composited over a photo (hasPhoto=true) or standalone dark card
+function ogBuildOverlay({ title, source, cat, loc, date, hasPhoto }) {
+  const theme = OG_THEMES[cat] || OG_THEMES.default;
+  const W = 1080, H = 1080;
+  const lines = ogWrapTitle(title);
+  const fontSize  = lines.length <= 2 ? 96 : lines.length === 3 ? 82 : 70;
+  const lineH     = fontSize * 1.24;
+  const topPad    = 160;
+  const barH      = 210;
+  const available = H - topPad - barH;
+  const locH      = loc ? 110 : 0;
+  const textBlockH = lines.length * lineH;
+  const textStartY = topPad + Math.max(20, (available - textBlockH - locH) / 2);
+
+  // Headline — shadow + white text (no paint-order, works on all librsvg versions)
+  const headlineRows = lines.map((line, i) => {
+    const y = textStartY + i * lineH + fontSize;
+    return ogText(54, y, ogEsc(line), { size: fontSize, fill: 'white', shadow: true, spacing: '-1' });
+  }).join('\n  ');
+
+  const textBottomY = textStartY + lines.length * lineH + fontSize;
+
+  // Location banner — full-width gold strip, no emoji (librsvg can't render emoji)
+  const locClean = loc ? loc.toUpperCase().replace(/[^\x00-\x7F]/g, '').trim() : '';
+  const locBanner = locClean ? `
+  <rect x="0" y="${textBottomY + 22}" width="${W}" height="68" fill="${theme.accent}"/>
+  <rect x="0" y="${textBottomY + 22}" width="8" height="68" fill="rgba(0,0,0,0.25)"/>
+  <text x="54" y="${textBottomY + 68}" font-family="sans-serif" font-size="30" font-weight="bold" fill="#000000" letter-spacing="3">${ogEsc(locClean)}</text>
+  <text x="${W-54}" y="${textBottomY + 68}" font-family="sans-serif" font-size="18" font-weight="bold" fill="rgba(0,0,0,0.5)" text-anchor="end" letter-spacing="2">LIVE COVERAGE</text>` : '';
+
+  // Background — photo overlay OR standalone dark card
+  const bgLayer = hasPhoto
+    ? `<rect width="${W}" height="${H}" fill="rgba(0,0,0,0.18)"/>
+  <rect width="${W}" height="540" fill="url(#tf)"/>
+  <rect y="${H-580}" width="${W}" height="580" fill="url(#bf)"/>`
+    : `<rect width="${W}" height="${H}" fill="url(#bg)"/>
+  ${Array.from({length:18},(_,r)=>Array.from({length:18},(_,c)=>`<circle cx="${c*62+31}" cy="${r*62+31}" r="1.3" fill="#${theme.dot}" fill-opacity="0.13"/>`).join('')).join('')}
+  <rect width="${W}" height="${H}" fill="url(#gl)"/>`;
+
+  return `<?xml version="1.0" encoding="UTF-8"?>
+<svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="tf" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%"   stop-color="#000000" stop-opacity="0.88"/>
+    <stop offset="35%"  stop-color="#000000" stop-opacity="0.45"/>
+    <stop offset="60%"  stop-color="#000000" stop-opacity="0.08"/>
+    <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+  </linearGradient>
+  <linearGradient id="bf" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%"   stop-color="#000000" stop-opacity="0"/>
+    <stop offset="42%"  stop-color="#000000" stop-opacity="0.55"/>
+    <stop offset="100%" stop-color="#000000" stop-opacity="0.97"/>
+  </linearGradient>
+  <linearGradient id="bg" x1="0" y1="0" x2="0.4" y2="1">
+    <stop offset="0%"   stop-color="#04060d"/>
+    <stop offset="100%" stop-color="#081422"/>
+  </linearGradient>
+  <radialGradient id="gl" cx="80%" cy="78%" r="55%">
+    <stop offset="0%"   stop-color="#${theme.dot}" stop-opacity="0.20"/>
+    <stop offset="100%" stop-color="#${theme.dot}" stop-opacity="0"/>
+  </radialGradient>
+</defs>
+
+  ${bgLayer}
+
+  <!-- Top accent bar -->
+  <rect width="${W}" height="8" fill="${theme.accent}"/>
+  <rect y="8" width="${W}" height="2" fill="rgba(255,255,255,0.15)"/>
+
+  <!-- BREAKING badge -->
+  <rect x="40" y="24" width="320" height="58" rx="6" fill="${theme.badgeBg}"/>
+  <circle cx="66" cy="53" r="9" fill="${theme.accent}"/>
+  <circle cx="66" cy="53" r="4" fill="white"/>
+  ${ogText(84, 62, ogEsc(theme.badge), { size: 22, fill: 'white', shadow: false, spacing: '2.5' })}
+
+  <!-- Date -->
+  ${ogText(W-44, 62, ogEsc(date), { size: 19, fill: 'rgba(255,255,255,0.45)', anchor: 'end', shadow: false, spacing: '0.5' })}
+
+  <!-- Accent underline -->
+  <rect x="40" y="100" width="240" height="5" rx="2" fill="${theme.accent}"/>
+
+  <!-- HEADLINE -->
+  ${headlineRows}
+
+  <!-- LOCATION BANNER -->
+  ${locBanner}
+
+  <!-- BOTTOM BAR -->
+  <rect x="0" y="${H-barH}" width="${W}" height="${barH}" fill="rgba(0,0,0,0.92)"/>
+  <rect x="0" y="${H-barH}" width="${W}" height="4"       fill="${theme.accent}"/>
+  <rect x="360" y="${H-barH+18}" width="1" height="${barH-36}" fill="rgba(255,255,255,0.09)"/>
+  <rect x="720" y="${H-barH+18}" width="1" height="${barH-36}" fill="rgba(255,255,255,0.09)"/>
+
+  <!-- SOURCE -->
+  ${ogText(54, H-148, 'SOURCE',  { size:13, fill:theme.accent, shadow:false, spacing:'3', weight:'bold' })}
+  ${ogText(54, H-104, ogEsc(source.substring(0,16)), { size:30, fill:'white', shadow:false, spacing:'0' })}
+  ${ogText(54, H-68,  'VERIFIED REPORT', { size:13, fill:'rgba(255,255,255,0.35)', shadow:false, spacing:'1', weight:'normal' })}
+
+  <!-- CATEGORY -->
+  ${ogText(380, H-148, 'CATEGORY',  { size:13, fill:theme.accent, shadow:false, spacing:'3', weight:'bold' })}
+  ${ogText(380, H-104, ogEsc(theme.label), { size:30, fill:'white', shadow:false, spacing:'0' })}
+  ${ogText(380, H-68,  'LIVE ALERT', { size:13, fill:'rgba(255,255,255,0.35)', shadow:false, spacing:'1', weight:'normal' })}
+
+  <!-- ORRERYX -->
+  ${ogText(W-44, H-148, 'PLATFORM',    { size:13, fill:theme.accent, anchor:'end', shadow:false, spacing:'3', weight:'bold' })}
+  ${ogText(W-44, H-100, 'ORRERYX',     { size:36, fill:'white', anchor:'end', shadow:false, spacing:'5' })}
+  ${ogText(W-44, H-62,  'orreryx.io',  { size:14, fill:theme.accent, anchor:'end', shadow:false, spacing:'1.5', weight:'normal' })}
+
+</svg>`;
+}
+
+// ── DALL-E 3: generate a photorealistic background for this news story ────────
+async function generateDalleBackground(cat, loc) {
+  const openaiKey = process.env.OPENAI_API_KEY;
+  if (!openaiKey) return null;
+  try {
+    const promptFn = DALLE_PROMPTS[cat] || DALLE_PROMPTS.default;
+    const prompt   = promptFn(loc || '');
+    console.log('[OgImage] DALL-E prompt:', prompt.substring(0, 80));
+
+    const r = await fetch('https://api.openai.com/v1/images/generations', {
+      method:  'POST',
+      headers: { Authorization: `Bearer ${openaiKey}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model:           'dall-e-3',
+        prompt,
+        n:               1,
+        size:            '1024x1024',
+        quality:         'standard',
+        response_format: 'url',
+      }),
+      signal: AbortSignal.timeout(28000), // DALL-E can take up to 20s
+    });
+
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      console.error('[OgImage] DALL-E API error:', err?.error?.message || r.status);
+      return null;
+    }
+
+    const j      = await r.json();
+    const imgUrl = j.data?.[0]?.url;
+    if (!imgUrl) return null;
+
+    // Download the generated image
+    const ir = await fetch(imgUrl, { signal: AbortSignal.timeout(15000) });
+    if (!ir.ok) return null;
+    console.log('[OgImage] DALL-E image downloaded');
+    return Buffer.from(await ir.arrayBuffer());
+  } catch (e) {
+    console.error('[OgImage] DALL-E failed:', e.message);
+    return null;
+  }
+}
+
+// ── Pexels fallback: curated photo by category ────────────────────────────────
+async function fetchPexelsBackground(cat) {
+  const pexelsKey = process.env.PEXELS_API_KEY;
+  if (!pexelsKey) return null;
+  try {
+    const query = PEXELS_QUERIES[cat] || PEXELS_QUERIES.default;
+    const pr    = await fetch(
+      `https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=15&orientation=square`,
+      { headers: { Authorization: pexelsKey }, signal: AbortSignal.timeout(6000) }
+    );
+    if (!pr.ok) return null;
+    const pj     = await pr.json();
+    const photos = pj.photos || [];
+    if (!photos.length) return null;
+    const photo  = photos[Math.floor(Math.random() * Math.min(photos.length, 10))];
+    const imgUrl = photo.src?.large2x || photo.src?.large || photo.src?.original;
+    if (!imgUrl) return null;
+    const ir = await fetch(imgUrl, { signal: AbortSignal.timeout(8000) });
+    if (!ir.ok) return null;
+    console.log('[OgImage] Pexels image downloaded');
+    return Buffer.from(await ir.arrayBuffer());
+  } catch (e) {
+    console.error('[OgImage] Pexels failed:', e.message);
+    return null;
+  }
+}
+
+async function handleOgImage(req, res) {
+  try {
+    const q      = req.query || {};
+    const title  = (q.title  || 'Breaking News').substring(0, 200).toUpperCase();
+    const source = (q.source || 'Reuters').substring(0, 60);
+    const cat    = ogDetectCategory(title, (q.cat || '').toLowerCase());
+    const loc    = (q.loc   || '').substring(0, 50);
+    const date   = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }).toUpperCase();
+
+    // ── Priority 1: DALL-E 3 AI-generated photo (set OPENAI_API_KEY in Vercel) ─
+    // ── Priority 2: Pexels curated photo       (set PEXELS_API_KEY in Vercel)  ─
+    // ── Priority 3: Standalone dark SVG card   (always works, no API needed)   ─
+    let bgBuffer = await generateDalleBackground(cat, loc);
+    if (!bgBuffer) bgBuffer = await fetchPexelsBackground(cat);
+
+    // Build SVG overlay (emoji-free — librsvg cannot render emoji glyphs)
+    const svgStr = ogBuildOverlay({ title, source, cat, loc, date, hasPhoto: !!bgBuffer });
+    const svgBuf = Buffer.from(svgStr);
+
+    let pipeline;
+    if (bgBuffer) {
+      pipeline = sharp(bgBuffer)
+        .resize(1080, 1080, { fit: 'cover', position: 'centre' })
+        .composite([{ input: svgBuf }]);
+    } else {
+      pipeline = sharp(svgBuf).resize(1080, 1080);
+    }
+
+    const buffer = await pipeline.png({ compressionLevel: 8 }).toBuffer();
+    res.setHeader('Content-Type', 'image/png');
+    res.setHeader('Cache-Control', 'public, max-age=3600');
+    return res.end(buffer);
+  } catch (err) {
+    console.error('[OgImage] Error:', err.message);
+    return res.status(500).json({ error: err.message });
+  }
+}
 
 // ─────────── QUOTES (Yahoo Finance + CoinGecko) ───────────────────────────────
 const CACHE_TTL = 30 * 1000;
@@ -153,6 +437,8 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method==='OPTIONS') return res.status(200).end();
   if (req.method!=='GET') return res.status(405).json({error:'GET only'});
+  // Route og-image requests (merged from og-image.js)
+  if ((req.url||'').split('?')[0].includes('og-image')) return handleOgImage(req, res);
   // Detect videos path — /api/videos routes here without type param
   const isVideosPath = (req.url||'').split('?')[0].endsWith('/videos');
   const type = isVideosPath ? 'videos' : (req.query.type||'quotes').toLowerCase();

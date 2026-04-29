@@ -126,8 +126,54 @@ async function handleVerify(req, res) {
   }
 }
 
+// ── SESSION CHECK (merged from session-check.js) ──────────────────────────────
+async function handleSessionCheck(req, res) {
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Cache-Control', 'no-store');
+  if (req.method === 'OPTIONS') return res.status(200).end();
+  if (req.method !== 'POST') return res.status(405).end();
+
+  const { email, plan: localPlan } = req.body || {};
+  if (!email) return res.status(400).json({ ok: false, reason: 'missing_email' });
+  if (localPlan === 'f') return res.status(200).json({ ok: true, plan: 'f', status: 'trial' });
+
+  try {
+    const R = REDIS_URL, T = REDIS_TOKEN;
+    if (!R || !T) return res.status(200).json({ ok: true, plan: localPlan, status: 'no_redis' });
+    const r = await fetch(`${R}/pipeline`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${T}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify([
+        ['GET', `user:${email}:sub_status`],
+        ['GET', `user:${email}:sub_expires`],
+        ['GET', `user:${email}:grace_until`],
+        ['GET', `user:${email}:plan`],
+      ]),
+    });
+    const [s0, s1, s2, s3] = (await r.json()).map(x => x.result);
+    const [status, expires, graceUntil, plan] = [s0, s1, s2, s3];
+    if (!status) return res.status(200).json({ ok: true, plan: localPlan, status: 'legacy' });
+    if (status === 'active') return res.status(200).json({ ok: true, plan: plan || localPlan, status: 'active', expires: expires ? parseInt(expires) : null });
+    if (status === 'suspended') {
+      const grace = graceUntil ? parseInt(graceUntil) : 0;
+      if (Date.now() < grace) return res.status(200).json({ ok: true, plan: plan || localPlan, status: 'grace', grace_until: grace });
+      return res.status(200).json({ ok: false, reason: 'payment_failed', plan: plan || localPlan });
+    }
+    if (status === 'cancelled') return res.status(200).json({ ok: false, reason: 'cancelled', plan: plan || localPlan });
+    return res.status(200).json({ ok: true, plan: localPlan, status: 'unknown' });
+  } catch (err) {
+    console.error('[SessionCheck]', err.message);
+    return res.status(200).json({ ok: true, plan: localPlan, status: 'error' });
+  }
+}
+
 // ── ROUTER ────────────────────────────────────────────────────────────────────
 export default async function handler(req, res) {
+  // Route session-check requests
+  if ((req.url || '').includes('/session-check')) return handleSessionCheck(req, res);
+
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
