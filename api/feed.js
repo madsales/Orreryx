@@ -61,10 +61,11 @@ function ogWrapTitle(title, maxChars = 19) {
   return lines.slice(0, 4);
 }
 
-// Helper: text with drop shadow using two stacked elements (librsvg-safe, no paint-order)
-function ogText(x, y, text, { size, weight='bold', fill='white', anchor='start', shadow=true, spacing='-1', family='sans-serif' } = {}) {
-  const sh = shadow ? `<text x="${x+3}" y="${y+3}" font-family="${family}" font-size="${size}" font-weight="${weight}" fill="rgba(0,0,0,0.65)" text-anchor="${anchor}" letter-spacing="${spacing}">${text}</text>` : '';
-  return `${sh}<text x="${x}" y="${y}" font-family="${family}" font-size="${size}" font-weight="${weight}" fill="${fill}" text-anchor="${anchor}" letter-spacing="${spacing}">${text}</text>`;
+// Helper: text with drop shadow using two stacked elements
+// Uses fill + fill-opacity (NOT rgba()) for librsvg compatibility
+function ogText(x, y, text, { size, weight='bold', fill='white', fillOpacity='1', anchor='start', shadow=true, spacing='-1', family='sans-serif' } = {}) {
+  const sh = shadow ? `<text x="${x+3}" y="${y+3}" font-family="${family}" font-size="${size}" font-weight="${weight}" fill="#000000" fill-opacity="0.65" text-anchor="${anchor}" letter-spacing="${spacing}">${text}</text>` : '';
+  return `${sh}<text x="${x}" y="${y}" font-family="${family}" font-size="${size}" font-weight="${weight}" fill="${fill}" fill-opacity="${fillOpacity}" text-anchor="${anchor}" letter-spacing="${spacing}">${text}</text>`;
 }
 
 // Builds the SVG overlay — composited over a photo (hasPhoto=true) or standalone dark card
@@ -93,13 +94,13 @@ function ogBuildOverlay({ title, source, cat, loc, date, hasPhoto }) {
   const locClean = loc ? loc.toUpperCase().replace(/[^\x00-\x7F]/g, '').trim() : '';
   const locBanner = locClean ? `
   <rect x="0" y="${textBottomY + 22}" width="${W}" height="68" fill="${theme.accent}"/>
-  <rect x="0" y="${textBottomY + 22}" width="8" height="68" fill="rgba(0,0,0,0.25)"/>
+  <rect x="0" y="${textBottomY + 22}" width="8" height="68" fill="#000000" fill-opacity="0.25"/>
   <text x="54" y="${textBottomY + 68}" font-family="sans-serif" font-size="30" font-weight="bold" fill="#000000" letter-spacing="3">${ogEsc(locClean)}</text>
   <text x="${W-54}" y="${textBottomY + 68}" font-family="sans-serif" font-size="18" font-weight="bold" fill="rgba(0,0,0,0.5)" text-anchor="end" letter-spacing="2">LIVE COVERAGE</text>` : '';
 
   // Background — photo overlay OR standalone dark card
   const bgLayer = hasPhoto
-    ? `<rect width="${W}" height="${H}" fill="rgba(0,0,0,0.18)"/>
+    ? `<rect width="${W}" height="${H}" fill="#000000" fill-opacity="0.18"/>
   <rect width="${W}" height="540" fill="url(#tf)"/>
   <rect y="${H-580}" width="${W}" height="580" fill="url(#bf)"/>`
     : `<rect width="${W}" height="${H}" fill="url(#bg)"/>
@@ -134,7 +135,7 @@ function ogBuildOverlay({ title, source, cat, loc, date, hasPhoto }) {
 
   <!-- Top accent bar -->
   <rect width="${W}" height="8" fill="${theme.accent}"/>
-  <rect y="8" width="${W}" height="2" fill="rgba(255,255,255,0.15)"/>
+  <rect y="8" width="${W}" height="2" fill="#ffffff" fill-opacity="0.15"/>
 
   <!-- BREAKING badge -->
   <rect x="40" y="24" width="320" height="58" rx="6" fill="${theme.badgeBg}"/>
@@ -143,7 +144,7 @@ function ogBuildOverlay({ title, source, cat, loc, date, hasPhoto }) {
   ${ogText(84, 62, ogEsc(theme.badge), { size: 22, fill: 'white', shadow: false, spacing: '2.5' })}
 
   <!-- Date -->
-  ${ogText(W-44, 62, ogEsc(date), { size: 19, fill: 'rgba(255,255,255,0.45)', anchor: 'end', shadow: false, spacing: '0.5' })}
+  ${ogText(W-44, 62, ogEsc(date), { size: 19, fill: '#ffffff', fillOpacity: '0.45', anchor: 'end', shadow: false, spacing: '0.5' })}
 
   <!-- Accent underline -->
   <rect x="40" y="100" width="240" height="5" rx="2" fill="${theme.accent}"/>
@@ -155,20 +156,20 @@ function ogBuildOverlay({ title, source, cat, loc, date, hasPhoto }) {
   ${locBanner}
 
   <!-- BOTTOM BAR -->
-  <rect x="0" y="${H-barH}" width="${W}" height="${barH}" fill="rgba(0,0,0,0.92)"/>
+  <rect x="0" y="${H-barH}" width="${W}" height="${barH}" fill="#000000" fill-opacity="0.92"/>
   <rect x="0" y="${H-barH}" width="${W}" height="4"       fill="${theme.accent}"/>
-  <rect x="360" y="${H-barH+18}" width="1" height="${barH-36}" fill="rgba(255,255,255,0.09)"/>
-  <rect x="720" y="${H-barH+18}" width="1" height="${barH-36}" fill="rgba(255,255,255,0.09)"/>
+  <rect x="360" y="${H-barH+18}" width="1" height="${barH-36}" fill="#ffffff" fill-opacity="0.09"/>
+  <rect x="720" y="${H-barH+18}" width="1" height="${barH-36}" fill="#ffffff" fill-opacity="0.09"/>
 
   <!-- SOURCE -->
   ${ogText(54, H-148, 'SOURCE',  { size:13, fill:theme.accent, shadow:false, spacing:'3', weight:'bold' })}
   ${ogText(54, H-104, ogEsc(source.substring(0,16)), { size:30, fill:'white', shadow:false, spacing:'0' })}
-  ${ogText(54, H-68,  'VERIFIED REPORT', { size:13, fill:'rgba(255,255,255,0.35)', shadow:false, spacing:'1', weight:'normal' })}
+  ${ogText(54, H-68,  'VERIFIED REPORT', { size:13, fill:'#ffffff', fillOpacity:'0.35', shadow:false, spacing:'1', weight:'normal' })}
 
   <!-- CATEGORY -->
   ${ogText(380, H-148, 'CATEGORY',  { size:13, fill:theme.accent, shadow:false, spacing:'3', weight:'bold' })}
   ${ogText(380, H-104, ogEsc(theme.label), { size:30, fill:'white', shadow:false, spacing:'0' })}
-  ${ogText(380, H-68,  'LIVE ALERT', { size:13, fill:'rgba(255,255,255,0.35)', shadow:false, spacing:'1', weight:'normal' })}
+  ${ogText(380, H-68,  'LIVE ALERT', { size:13, fill:'#ffffff', fillOpacity:'0.35', shadow:false, spacing:'1', weight:'normal' })}
 
   <!-- ORRERYX -->
   ${ogText(W-44, H-148, 'PLATFORM',    { size:13, fill:theme.accent, anchor:'end', shadow:false, spacing:'3', weight:'bold' })}
