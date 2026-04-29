@@ -92,13 +92,13 @@ const GDELT_LANG = {
 };
 
 // GDELT Article API - fresh articles, updates every 15 min
-function gdeltUrl(query, max, sourcelang, locationcc) {
+function gdeltUrl(query, max, sourcelang, locationcc, timespan = '24h') {
   const langParam = sourcelang ? '&sourcelang=' + sourcelang : '';
   const ccParam   = locationcc ? '&LOCATIONCC=' + locationcc : '';
   return (
     'https://api.gdeltproject.org/api/v2/doc/doc' +
     '?query=' + encodeURIComponent(query) +
-    '&mode=artlist&format=json&timespan=12h&maxrecords=' + max + '&sort=DateDesc' + langParam + ccParam
+    '&mode=artlist&format=json&timespan=' + timespan + '&maxrecords=' + max + '&sort=DateDesc' + langParam + ccParam
   );
 }
 
@@ -668,21 +668,30 @@ export default async function handler(req, res) {
   // Map UI lang code → GDELT sourcelang param value. 'all' = omit (multilingual).
   const sourcelang = lang === 'all' ? null : (GDELT_LANG[lang] || 'english');
 
-  try {
-    const results = await Promise.allSettled(
-      STREAMS.map(s =>
-        fetch(gdeltUrl(s.query, s.max, sourcelang, country !== 'ALL' ? country : null), {
-          headers: { 'User-Agent': 'OrreryIntelligence/1.0 (https://www.orreryx.io)' },
-          signal:  AbortSignal.timeout(9000),
-        })
-          .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
-          .then(j => parseArticles(j.articles).map(e => ({ ...e, lang: lang === 'all' ? 'en' : lang })))
-          .catch(() => [])
-      )
-    );
+  const gdeltFetch = (timespan) => Promise.allSettled(
+    STREAMS.map(s =>
+      fetch(gdeltUrl(s.query, s.max, sourcelang, country !== 'ALL' ? country : null, timespan), {
+        headers: { 'User-Agent': 'OrreryIntelligence/1.0 (https://www.orreryx.io)' },
+        signal:  AbortSignal.timeout(9000),
+      })
+        .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
+        .then(j => parseArticles(j.articles).map(e => ({ ...e, lang: lang === 'all' ? 'en' : lang })))
+        .catch(() => [])
+    )
+  );
 
+  try {
+    // Try 24h first; if GDELT returns nothing (outage or too narrow), retry with 48h
+    let results = await gdeltFetch('24h');
     let all = [];
     results.forEach(r => { if (r.status === 'fulfilled') all = all.concat(r.value); });
+
+    if (all.length === 0) {
+      console.log('[Events] GDELT 24h returned empty — retrying with 48h');
+      results = await gdeltFetch('48h');
+      all = [];
+      results.forEach(r => { if (r.status === 'fulfilled') all = all.concat(r.value); });
+    }
 
     // Filter by country code if requested
     if (country !== 'ALL') {

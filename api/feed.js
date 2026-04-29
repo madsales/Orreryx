@@ -345,6 +345,7 @@ async function handleOgImage(req, res) {
 const CACHE_TTL = 30 * 1000;
 const qCache = new Map();
 
+// Symbol sets — used to route each symbol to the right data source
 const CRYPTO_IDS = {
   BTC:'bitcoin',ETH:'ethereum',XMR:'monero',TON:'the-open-network',
   SOL:'solana',USDT:'tether',USDC:'usd-coin',BNB:'binancecoin',
@@ -352,35 +353,89 @@ const CRYPTO_IDS = {
   XRP:'ripple',ADA:'cardano',NEAR:'near',ATOM:'cosmos',DOGE:'dogecoin',
 };
 const CRYPTO_SET = new Set(Object.keys(CRYPTO_IDS));
-const YF_HDR = {
-  'User-Agent':'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-  'Accept':'application/json,*/*','Accept-Language':'en-US,en;q=0.9',
+
+// Binance USDT trading pairs — real-time, no API key, 1200 req/min
+const BINANCE_MAP = {
+  BTC:'BTCUSDT', ETH:'ETHUSDT', XMR:'XMRUSDT', TON:'TONUSDT',
+  SOL:'SOLUSDT', BNB:'BNBUSDT', AVAX:'AVAXUSDT', DOT:'DOTUSDT',
+  LINK:'LINKUSDT', UNI:'UNIUSDT', XRP:'XRPUSDT', ADA:'ADAUSDT',
+  NEAR:'NEARUSDT', ATOM:'ATOMUSDT', DOGE:'DOGEUSDT',
 };
 
-async function fetchOneStock(sym) {
+// Full browser headers — Yahoo Finance blocks bare Node.js requests
+const YF_HDR = {
+  'User-Agent':      'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36',
+  'Accept':          'application/json, text/plain, */*',
+  'Accept-Language': 'en-US,en;q=0.9',
+  'Accept-Encoding': 'gzip, deflate, br',
+  'Origin':          'https://finance.yahoo.com',
+  'Referer':         'https://finance.yahoo.com/',
+};
+
+// Metals.live: free gold/silver/platinum spot prices, no API key
+let _metalsCache = null, _metalsCacheTime = 0;
+async function fetchMetalsLive() {
+  const now = Date.now();
+  if (_metalsCache && now - _metalsCacheTime < 300_000) return _metalsCache;
   try {
-    const r = await fetch(`https://query2.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1d`,
-      { headers: YF_HDR, signal: AbortSignal.timeout(5000) });
-    if (!r.ok) return null;
+    const r = await fetch('https://metals.live/api/v1/latest', { signal: AbortSignal.timeout(6000) });
+    if (!r.ok) return _metalsCache;
     const j = await r.json();
-    const m = j?.chart?.result?.[0]?.meta;
-    if (!m?.regularMarketPrice) return null;
-    const p = m.regularMarketPrice, prev = m.chartPreviousClose || p;
-    return { symbol:sym, price:p, change:prev?((p-prev)/prev)*100:0 };
-  } catch { return null; }
+    _metalsCache = Array.isArray(j) ? j[0] : j;
+    _metalsCacheTime = now;
+    return _metalsCache;
+  } catch { return _metalsCache; }
 }
 
+async function fetchOneStock(sym) {
+  // query1 is more reliable than query2 from server-side; try both
+  for (const host of ['query1', 'query2']) {
+    try {
+      const r = await fetch(
+        `https://${host}.finance.yahoo.com/v8/finance/chart/${sym}?interval=1d&range=1d`,
+        { headers: YF_HDR, signal: AbortSignal.timeout(5000) }
+      );
+      if (!r.ok) continue;
+      const j = await r.json();
+      const m = j?.chart?.result?.[0]?.meta;
+      if (!m?.regularMarketPrice) continue;
+      const p = m.regularMarketPrice, prev = m.chartPreviousClose || p;
+      return { symbol: sym, price: p, change: prev ? ((p - prev) / prev) * 100 : 0 };
+    } catch { continue; }
+  }
+  // Fallback to metals.live for gold/silver futures and spot symbols
+  const s = sym.toUpperCase();
+  if (s === 'GC=F' || s === 'XAU' || s === 'GLD' || s === 'XAUUSD') {
+    const m = await fetchMetalsLive();
+    if (m?.gold) return { symbol: sym, price: parseFloat(m.gold), change: 0 };
+  }
+  if (s === 'SI=F' || s === 'XAG' || s === 'SLV' || s === 'XAGUSD') {
+    const m = await fetchMetalsLive();
+    if (m?.silver) return { symbol: sym, price: parseFloat(m.silver), change: 0 };
+  }
+  return null;
+}
+
+// Binance 24hr ticker — no auth, accurate real-time prices, high rate limit
 async function fetchCrypto(syms) {
   if (!syms.length) return [];
-  const ids = syms.map(s=>CRYPTO_IDS[s]).filter(Boolean);
-  if (!ids.length) return [];
-  const r = await fetch(
-    `https://api.coingecko.com/api/v3/simple/price?ids=${ids.join(',')}&vs_currencies=usd&include_24hr_change=true`,
-    { signal: AbortSignal.timeout(8000) });
-  if (!r.ok) return [];
-  const data = await r.json();
-  const idToSym = Object.fromEntries(Object.entries(CRYPTO_IDS).map(([s,id])=>[id,s]));
-  return ids.map(id=>{ const d=data[id]; return d?{symbol:idToSym[id],price:d.usd,change:d.usd_24h_change||0}:null; }).filter(Boolean);
+  const pairs = syms.map(s => BINANCE_MAP[s]).filter(Boolean);
+  if (!pairs.length) return [];
+  try {
+    const symbolsJson = JSON.stringify(pairs);
+    const r = await fetch(
+      `https://api.binance.com/api/v3/ticker/24hr?symbols=${encodeURIComponent(symbolsJson)}`,
+      { signal: AbortSignal.timeout(6000) }
+    );
+    if (!r.ok) return [];
+    const data = await r.json();
+    const pairToSym = Object.fromEntries(
+      Object.entries(BINANCE_MAP).map(([s, p]) => [p, s])
+    );
+    return data
+      .map(d => ({ symbol: pairToSym[d.symbol], price: parseFloat(d.lastPrice), change: parseFloat(d.priceChangePercent) }))
+      .filter(d => d.symbol && !isNaN(d.price));
+  } catch { return []; }
 }
 
 async function handleQuotes(req, res) {
