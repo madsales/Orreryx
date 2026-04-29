@@ -29,7 +29,7 @@
     "api/paypal.js":     { "maxDuration": 30 },
     "api/events.js":     { "maxDuration": 30 },
     "api/gnews.js":      { "maxDuration": 30 },
-    "api/feed.js":       { "maxDuration": 60 },
+    "api/feed.js":       { "maxDuration": 60, "includeFiles": "api/fonts/**" },
     "api/magic.js":      { "maxDuration": 30 },
     "api/admin.js":      { "maxDuration": 30 },
     "api/webhook.js":    { "maxDuration": 30 },

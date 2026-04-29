@@ -17,20 +17,22 @@ let _fontLoaded = false;
 function loadOgFont() {
   if (_fontLoaded) return _fontB64;
   _fontLoaded = true;
-  // Try WOFF (widest librsvg compatibility), then WOFF2 as fallback
+  // og-font.woff is shipped inside api/fonts/ and included via vercel.json includeFiles
+  // This guarantees the font is physically present in the Lambda bundle
   const candidates = [
-    'node_modules/@fontsource/noto-sans/files/noto-sans-latin-700-normal.woff',
-    'node_modules/@fontsource/noto-sans/files/noto-sans-latin-700-normal.woff2',
+    resolve(process.cwd(), 'api/fonts/og-font.woff'),   // Vercel Lambda path
+    resolve(process.cwd(), 'fonts/og-font.woff'),        // fallback
+    new URL('./fonts/og-font.woff', import.meta.url).pathname, // ESM relative
   ];
-  for (const rel of candidates) {
+  for (const p of candidates) {
     try {
-      const buf = readFileSync(resolve(process.cwd(), rel));
+      const buf = readFileSync(p);
       _fontB64 = buf.toString('base64');
-      console.log('[OgFont] Loaded from', rel, buf.length, 'bytes');
+      console.log('[OgFont] Loaded from', p, buf.length, 'bytes');
       break;
     } catch (_) { /* try next */ }
   }
-  if (!_fontB64) console.warn('[OgFont] No font found — text may render as boxes');
+  if (!_fontB64) console.warn('[OgFont] Font not found in any candidate path');
   return _fontB64;
 }
 
