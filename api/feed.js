@@ -5,28 +5,32 @@
 // GET /api/og-image?title=...&source=...           → news card PNG (merged from og-image.js)
 
 import sharp from 'sharp';
+import { readFileSync } from 'fs';
+import { resolve } from 'path';
 
-// ── FONT LOADER — cached at module level, avoids per-request fetching ──────────
-// Embeds a real font as base64 data URI in SVG so librsvg doesn't need system fonts
+// ── FONT LOADER — reads Noto Sans Bold from bundled node_modules ───────────────
+// @fontsource/noto-sans is in package.json dependencies, so it ships with the Lambda.
+// Reading from disk is instant and never fails due to network issues.
 let _fontB64   = null;
 let _fontLoaded = false;
 
-async function loadOgFont() {
+function loadOgFont() {
   if (_fontLoaded) return _fontB64;
   _fontLoaded = true;
-  try {
-    // Noto Sans Bold Latin — ~18 KB woff2, served from jsDelivr CDN
-    const r = await fetch(
-      'https://cdn.jsdelivr.net/npm/@fontsource/noto-sans@5.0.19/files/noto-sans-latin-700-normal.woff2',
-      { signal: AbortSignal.timeout(6000) }
-    );
-    if (r.ok) {
-      _fontB64 = Buffer.from(await r.arrayBuffer()).toString('base64');
-      console.log('[OgFont] Loaded', _fontB64.length, 'b64 chars');
-    }
-  } catch (e) {
-    console.warn('[OgFont] Fetch failed, using system font:', e.message);
+  // Try WOFF (widest librsvg compatibility), then WOFF2 as fallback
+  const candidates = [
+    'node_modules/@fontsource/noto-sans/files/noto-sans-latin-700-normal.woff',
+    'node_modules/@fontsource/noto-sans/files/noto-sans-latin-700-normal.woff2',
+  ];
+  for (const rel of candidates) {
+    try {
+      const buf = readFileSync(resolve(process.cwd(), rel));
+      _fontB64 = buf.toString('base64');
+      console.log('[OgFont] Loaded from', rel, buf.length, 'bytes');
+      break;
+    } catch (_) { /* try next */ }
   }
+  if (!_fontB64) console.warn('[OgFont] No font found — text may render as boxes');
   return _fontB64;
 }
 
@@ -99,7 +103,7 @@ function ogBuildOverlay({ title, source, cat, loc, date, hasPhoto, fontB64 }) {
   // Use embedded font if available, otherwise fall back to named system fonts
   const FF  = fontB64 ? 'OgFont' : 'DejaVu Sans,Liberation Sans,Arial,Helvetica,sans-serif';
   const fontDef = fontB64
-    ? `<style>@font-face{font-family:'OgFont';src:url('data:font/woff2;base64,${fontB64}') format('woff2');}</style>`
+    ? `<style>@font-face{font-family:'OgFont';src:url('data:font/woff;base64,${fontB64}') format('woff'),url('data:font/woff2;base64,${fontB64}') format('woff2');}</style>`
     : '';
   const lines = ogWrapTitle(title);
   const fontSize  = lines.length <= 2 ? 96 : lines.length === 3 ? 82 : 70;
@@ -279,7 +283,20 @@ async function fetchPexelsBackground(cat) {
   }
 }
 
+const _ogRl = new Map();
+function ogRateLimitHit(ip) {
+  const now = Date.now(); const key = ip || 'x';
+  const r   = _ogRl.get(key) || { n: 0, t: now + 60_000 };
+  if (now > r.t) { r.n = 0; r.t = now + 60_000; }
+  r.n++; _ogRl.set(key, r);
+  return r.n > 30; // max 30 og-images/min per IP
+}
+
 async function handleOgImage(req, res) {
+  // Rate limit to protect DALL-E credits and server resources
+  const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim();
+  if (ogRateLimitHit(ip))
+    return res.status(429).json({ error: 'Rate limit: max 30 images/minute' });
   try {
     const q      = req.query || {};
     const title  = (q.title  || 'Breaking News').substring(0, 200).toUpperCase();
@@ -296,8 +313,8 @@ async function handleOgImage(req, res) {
     let bgBuffer = await generateDalleBackground(cat, loc);
     if (!bgBuffer) bgBuffer = await fetchPexelsBackground(cat);
 
-    // Load font (cached in module scope — fetched once per Lambda warm period)
-    const fontB64 = await loadOgFont();
+    // Load font (synchronous read from bundled node_modules, cached in module scope)
+    const fontB64 = loadOgFont();
 
     // Build SVG overlay (emoji-free — librsvg cannot render emoji glyphs)
     const svgStr = ogBuildOverlay({ title, source, cat, loc, date, hasPhoto: !!bgBuffer, fontB64 });

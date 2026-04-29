@@ -4,6 +4,18 @@
 
 import { createHmac, timingSafeEqual, randomBytes } from 'crypto';
 
+// ── In-memory rate limiter (per Lambda instance) — brute-force protection ──────
+const _rl = new Map(); // ip → { count, resetAt }
+function rateLimitHit(ip, maxPerMin = 10) {
+  const now = Date.now();
+  const key  = ip || 'unknown';
+  const rec  = _rl.get(key) || { count: 0, resetAt: now + 60_000 };
+  if (now > rec.resetAt) { rec.count = 0; rec.resetAt = now + 60_000; }
+  rec.count++;
+  _rl.set(key, rec);
+  return rec.count > maxPerMin;
+}
+
 // ── Upstash REST helpers (no npm package) ────────────────────────────────────
 function upstash(cmd) {
   const url   = process.env.UPSTASH_REDIS_REST_URL;
@@ -113,6 +125,10 @@ export default async function handler(req, res) {
   // ── AUTH ─────────────────────────────────────────────────────────────────
   if (action === 'auth') {
     if (req.method !== 'POST') return res.status(405).end();
+    // Rate-limit auth attempts: 10 per minute per IP
+    const ip = req.headers['x-forwarded-for']?.split(',')[0].trim() || req.socket?.remoteAddress || '';
+    if (rateLimitHit(ip, 10))
+      return res.status(429).json({ error: 'Too many login attempts. Try again in a minute.' });
     if (!adminPwd)
       return res.status(503).json({ error: 'ADMIN_PASSWORD not set in Vercel environment variables.' });
     const { password } = req.body || {};
