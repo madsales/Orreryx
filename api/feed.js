@@ -6,6 +6,30 @@
 
 import sharp from 'sharp';
 
+// ── FONT LOADER — cached at module level, avoids per-request fetching ──────────
+// Embeds a real font as base64 data URI in SVG so librsvg doesn't need system fonts
+let _fontB64   = null;
+let _fontLoaded = false;
+
+async function loadOgFont() {
+  if (_fontLoaded) return _fontB64;
+  _fontLoaded = true;
+  try {
+    // Noto Sans Bold Latin — ~18 KB woff2, served from jsDelivr CDN
+    const r = await fetch(
+      'https://cdn.jsdelivr.net/npm/@fontsource/noto-sans@5.0.19/files/noto-sans-latin-700-normal.woff2',
+      { signal: AbortSignal.timeout(6000) }
+    );
+    if (r.ok) {
+      _fontB64 = Buffer.from(await r.arrayBuffer()).toString('base64');
+      console.log('[OgFont] Loaded', _fontB64.length, 'b64 chars');
+    }
+  } catch (e) {
+    console.warn('[OgFont] Fetch failed, using system font:', e.message);
+  }
+  return _fontB64;
+}
+
 // ── OG IMAGE GENERATOR — dramatic photo-backed news cards ────────────────────
 const OG_THEMES = {
   military:   { accent:'#f5a623', accent2:'#ffe066', badgeBg:'#b91c1c', badge:'BREAKING',      label:'MILITARY',    dot:'f5a623' },
@@ -62,16 +86,21 @@ function ogWrapTitle(title, maxChars = 19) {
 }
 
 // Helper: text with drop shadow using two stacked elements
-// Uses fill + fill-opacity (NOT rgba()) for librsvg compatibility
-function ogText(x, y, text, { size, weight='bold', fill='white', fillOpacity='1', anchor='start', shadow=true, spacing='-1', family='sans-serif' } = {}) {
-  const sh = shadow ? `<text x="${x+3}" y="${y+3}" font-family="${family}" font-size="${size}" font-weight="${weight}" fill="#000000" fill-opacity="0.65" text-anchor="${anchor}" letter-spacing="${spacing}">${text}</text>` : '';
-  return `${sh}<text x="${x}" y="${y}" font-family="${family}" font-size="${size}" font-weight="${weight}" fill="${fill}" fill-opacity="${fillOpacity}" text-anchor="${anchor}" letter-spacing="${spacing}">${text}</text>`;
+// Uses fill + fill-opacity (NOT rgba()) for librsvg compatibility on all versions
+function ogText(x, y, text, { size, weight='bold', fill='white', fillOpacity='1', anchor='start', shadow=true, spacing='0', family='sans-serif' } = {}) {
+  const sh = shadow ? `<text x="${x+2}" y="${y+2}" font-family="${family}" font-size="${size}px" font-weight="${weight}" fill="#000000" fill-opacity="0.6" text-anchor="${anchor}">${text}</text>` : '';
+  return `${sh}<text x="${x}" y="${y}" font-family="${family}" font-size="${size}px" font-weight="${weight}" fill="${fill}" fill-opacity="${fillOpacity}" text-anchor="${anchor}">${text}</text>`;
 }
 
 // Builds the SVG overlay — composited over a photo (hasPhoto=true) or standalone dark card
-function ogBuildOverlay({ title, source, cat, loc, date, hasPhoto }) {
+function ogBuildOverlay({ title, source, cat, loc, date, hasPhoto, fontB64 }) {
   const theme = OG_THEMES[cat] || OG_THEMES.default;
   const W = 1080, H = 1080;
+  // Use embedded font if available, otherwise fall back to named system fonts
+  const FF  = fontB64 ? 'OgFont' : 'DejaVu Sans,Liberation Sans,Arial,Helvetica,sans-serif';
+  const fontDef = fontB64
+    ? `<style>@font-face{font-family:'OgFont';src:url('data:font/woff2;base64,${fontB64}') format('woff2');}</style>`
+    : '';
   const lines = ogWrapTitle(title);
   const fontSize  = lines.length <= 2 ? 96 : lines.length === 3 ? 82 : 70;
   const lineH     = fontSize * 1.24;
@@ -82,21 +111,21 @@ function ogBuildOverlay({ title, source, cat, loc, date, hasPhoto }) {
   const textBlockH = lines.length * lineH;
   const textStartY = topPad + Math.max(20, (available - textBlockH - locH) / 2);
 
-  // Headline — shadow + white text (no paint-order, works on all librsvg versions)
+  // Headline rows — pass family explicitly
   const headlineRows = lines.map((line, i) => {
     const y = textStartY + i * lineH + fontSize;
-    return ogText(54, y, ogEsc(line), { size: fontSize, fill: 'white', shadow: true, spacing: '-1' });
+    return ogText(54, y, ogEsc(line), { size: fontSize, fill: 'white', shadow: true, family: FF });
   }).join('\n  ');
 
   const textBottomY = textStartY + lines.length * lineH + fontSize;
 
-  // Location banner — full-width gold strip, no emoji (librsvg can't render emoji)
+  // Location banner — no emoji (librsvg cannot render emoji glyphs)
   const locClean = loc ? loc.toUpperCase().replace(/[^\x00-\x7F]/g, '').trim() : '';
   const locBanner = locClean ? `
   <rect x="0" y="${textBottomY + 22}" width="${W}" height="68" fill="${theme.accent}"/>
   <rect x="0" y="${textBottomY + 22}" width="8" height="68" fill="#000000" fill-opacity="0.25"/>
-  <text x="54" y="${textBottomY + 68}" font-family="sans-serif" font-size="30" font-weight="bold" fill="#000000" letter-spacing="3">${ogEsc(locClean)}</text>
-  <text x="${W-54}" y="${textBottomY + 68}" font-family="sans-serif" font-size="18" font-weight="bold" fill="rgba(0,0,0,0.5)" text-anchor="end" letter-spacing="2">LIVE COVERAGE</text>` : '';
+  <text x="54" y="${textBottomY + 68}" font-family="${FF}" font-size="30px" font-weight="bold" fill="#000000">${ogEsc(locClean)}</text>
+  <text x="${W-54}" y="${textBottomY + 68}" font-family="${FF}" font-size="18px" font-weight="bold" fill="#000000" fill-opacity="0.5" text-anchor="end">LIVE COVERAGE</text>` : '';
 
   // Background — photo overlay OR standalone dark card
   const bgLayer = hasPhoto
@@ -104,12 +133,12 @@ function ogBuildOverlay({ title, source, cat, loc, date, hasPhoto }) {
   <rect width="${W}" height="540" fill="url(#tf)"/>
   <rect y="${H-580}" width="${W}" height="580" fill="url(#bf)"/>`
     : `<rect width="${W}" height="${H}" fill="url(#bg)"/>
-  ${Array.from({length:18},(_,r)=>Array.from({length:18},(_,c)=>`<circle cx="${c*62+31}" cy="${r*62+31}" r="1.3" fill="#${theme.dot}" fill-opacity="0.13"/>`).join('')).join('')}
   <rect width="${W}" height="${H}" fill="url(#gl)"/>`;
 
   return `<?xml version="1.0" encoding="UTF-8"?>
 <svg width="${W}" height="${H}" xmlns="http://www.w3.org/2000/svg">
 <defs>
+  ${fontDef}
   <linearGradient id="tf" x1="0" y1="0" x2="0" y2="1">
     <stop offset="0%"   stop-color="#000000" stop-opacity="0.88"/>
     <stop offset="35%"  stop-color="#000000" stop-opacity="0.45"/>
@@ -141,10 +170,10 @@ function ogBuildOverlay({ title, source, cat, loc, date, hasPhoto }) {
   <rect x="40" y="24" width="320" height="58" rx="6" fill="${theme.badgeBg}"/>
   <circle cx="66" cy="53" r="9" fill="${theme.accent}"/>
   <circle cx="66" cy="53" r="4" fill="white"/>
-  ${ogText(84, 62, ogEsc(theme.badge), { size: 22, fill: 'white', shadow: false, spacing: '2.5' })}
+  ${ogText(84, 62, ogEsc(theme.badge), { size: 22, fill: 'white', shadow: false, family: FF })}
 
   <!-- Date -->
-  ${ogText(W-44, 62, ogEsc(date), { size: 19, fill: '#ffffff', fillOpacity: '0.45', anchor: 'end', shadow: false, spacing: '0.5' })}
+  ${ogText(W-44, 62, ogEsc(date), { size: 19, fill: '#ffffff', fillOpacity: '0.45', anchor: 'end', shadow: false, family: FF })}
 
   <!-- Accent underline -->
   <rect x="40" y="100" width="240" height="5" rx="2" fill="${theme.accent}"/>
@@ -162,19 +191,19 @@ function ogBuildOverlay({ title, source, cat, loc, date, hasPhoto }) {
   <rect x="720" y="${H-barH+18}" width="1" height="${barH-36}" fill="#ffffff" fill-opacity="0.09"/>
 
   <!-- SOURCE -->
-  ${ogText(54, H-148, 'SOURCE',  { size:13, fill:theme.accent, shadow:false, spacing:'3', weight:'bold' })}
-  ${ogText(54, H-104, ogEsc(source.substring(0,16)), { size:30, fill:'white', shadow:false, spacing:'0' })}
-  ${ogText(54, H-68,  'VERIFIED REPORT', { size:13, fill:'#ffffff', fillOpacity:'0.35', shadow:false, spacing:'1', weight:'normal' })}
+  ${ogText(54, H-148, 'SOURCE',        { size:13, fill:theme.accent,  shadow:false, weight:'bold',   family:FF })}
+  ${ogText(54, H-104, ogEsc(source.substring(0,16).toUpperCase()), { size:28, fill:'white', shadow:false, family:FF })}
+  ${ogText(54, H-68,  'VERIFIED',      { size:12, fill:'#ffffff', fillOpacity:'0.4', shadow:false, weight:'normal', family:FF })}
 
   <!-- CATEGORY -->
-  ${ogText(380, H-148, 'CATEGORY',  { size:13, fill:theme.accent, shadow:false, spacing:'3', weight:'bold' })}
-  ${ogText(380, H-104, ogEsc(theme.label), { size:30, fill:'white', shadow:false, spacing:'0' })}
-  ${ogText(380, H-68,  'LIVE ALERT', { size:13, fill:'#ffffff', fillOpacity:'0.35', shadow:false, spacing:'1', weight:'normal' })}
+  ${ogText(380, H-148, 'CATEGORY',     { size:13, fill:theme.accent,  shadow:false, weight:'bold',   family:FF })}
+  ${ogText(380, H-104, ogEsc(theme.label), { size:28, fill:'white',   shadow:false, family:FF })}
+  ${ogText(380, H-68,  'LIVE ALERT',   { size:12, fill:'#ffffff', fillOpacity:'0.4', shadow:false, weight:'normal', family:FF })}
 
   <!-- ORRERYX -->
-  ${ogText(W-44, H-148, 'PLATFORM',    { size:13, fill:theme.accent, anchor:'end', shadow:false, spacing:'3', weight:'bold' })}
-  ${ogText(W-44, H-100, 'ORRERYX',     { size:36, fill:'white', anchor:'end', shadow:false, spacing:'5' })}
-  ${ogText(W-44, H-62,  'orreryx.io',  { size:14, fill:theme.accent, anchor:'end', shadow:false, spacing:'1.5', weight:'normal' })}
+  ${ogText(W-44, H-148, 'PLATFORM',    { size:13, fill:theme.accent, anchor:'end', shadow:false, weight:'bold', family:FF })}
+  ${ogText(W-44, H-100, 'ORRERYX',     { size:34, fill:'white',      anchor:'end', shadow:false, family:FF })}
+  ${ogText(W-44, H-64,  'ORRERYX.IO',  { size:13, fill:theme.accent, anchor:'end', shadow:false, weight:'normal', family:FF })}
 
 </svg>`;
 }
@@ -257,7 +286,9 @@ async function handleOgImage(req, res) {
     const source = (q.source || 'Reuters').substring(0, 60);
     const cat    = ogDetectCategory(title, (q.cat || '').toLowerCase());
     const loc    = (q.loc   || '').substring(0, 50);
-    const date   = new Date().toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }).toUpperCase();
+    const now    = new Date();
+    const MONTHS = ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+    const date   = `${now.getDate()} ${MONTHS[now.getMonth()]} ${now.getFullYear()}`;
 
     // ── Priority 1: DALL-E 3 AI-generated photo (set OPENAI_API_KEY in Vercel) ─
     // ── Priority 2: Pexels curated photo       (set PEXELS_API_KEY in Vercel)  ─
@@ -265,8 +296,11 @@ async function handleOgImage(req, res) {
     let bgBuffer = await generateDalleBackground(cat, loc);
     if (!bgBuffer) bgBuffer = await fetchPexelsBackground(cat);
 
+    // Load font (cached in module scope — fetched once per Lambda warm period)
+    const fontB64 = await loadOgFont();
+
     // Build SVG overlay (emoji-free — librsvg cannot render emoji glyphs)
-    const svgStr = ogBuildOverlay({ title, source, cat, loc, date, hasPhoto: !!bgBuffer });
+    const svgStr = ogBuildOverlay({ title, source, cat, loc, date, hasPhoto: !!bgBuffer, fontB64 });
     const svgBuf = Buffer.from(svgStr);
 
     let pipeline;
