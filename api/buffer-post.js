@@ -258,7 +258,15 @@ export default async function handler(req, res) {
   const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
 
   // Fetch all connected Buffer profiles
-  const profiles = await getProfiles(token);
+  let profiles;
+  try {
+    profiles = await getProfiles(token);
+  } catch (e) {
+    return res.status(500).json({ error: 'Buffer API error: ' + e.message });
+  }
+  if (!profiles || !profiles.length) {
+    return res.status(200).json({ ok: false, error: 'No Buffer profiles found. Make sure profiles are connected at buffer.com.' });
+  }
   const results  = [];
 
   for (const profile of profiles) {
