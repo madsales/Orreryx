@@ -1,11 +1,12 @@
-// api/social-post.js — Daily Twitter + LinkedIn + Monday Reddit poster
-// Fires daily at 9:00 AM IST (3:30 AM UTC)
-// One cron, three platforms — keeps us within Vercel free plan (2 crons max)
+// api/social-post.js — Daily social media poster (Twitter, LinkedIn, Instagram, Google Business, Reddit)
+// Fires daily at 3:30 AM UTC (9:00 AM IST)
 //
 // Required env vars:
 //   TWITTER_API_KEY, TWITTER_API_SECRET
 //   TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET
 //   LINKEDIN_ACCESS_TOKEN, LINKEDIN_PERSON_URN  (refresh every 60 days)
+//   INSTAGRAM_ACCESS_TOKEN, INSTAGRAM_USER_ID
+//   GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, GOOGLE_LOCATION_NAME
 //   REDDIT_CLIENT_ID, REDDIT_CLIENT_SECRET, REDDIT_USERNAME, REDDIT_PASSWORD
 //   CRON_SECRET
 
@@ -233,6 +234,112 @@ Not financial advice. Situational awareness layer.`,
   },
 ];
 
+// ─── Instagram captions (rotated daily) ─────────────────────────────────────
+const INSTAGRAM = [
+  `🌍 Real-time geopolitical intelligence. Free.\n\nTrack live conflicts, nuclear flashpoints & political crises across 35 countries — with market impact on stocks, oil, gold and crypto.\n\nNo login. No paywall. Updated every 2 minutes.\n👉 Link in bio — orreryx.io/app\n\n#geopolitics #worldnews #markets #investing #geopoliticalrisk #globalconflicts #intelligence #OSINT`,
+  `Oil spikes when the Middle East burns 🔥\nGold bids up when nuclear headlines drop ☢️\nDefence stocks pump when missiles fly 🚀\n\nTrack the events that move markets — live, free.\n👉 Link in bio\n\n#oil #gold #defencestocks #geopolitics #investing #iran #ukraine #middleeast`,
+  `35 countries tracked live 🌐\n\n🇺🇦 Ukraine-Russia · 🇮🇳🇵🇰 India-Pakistan\n🇮🇷 Iran nuclear · 🇹🇼 Taiwan Strait\n🇮🇱 Israel-Gaza · 🇰🇵 North Korea\n+ 29 more conflict zones\n\nOne free platform. No account needed.\norreryx.io/app\n\n#ukraine #indopakistan #iran #taiwan #israel #northkorea #geopolitics`,
+  `Before markets open — check what's happening 📊\n\nLive geopolitical events:\n→ Filter by country\n→ See which assets are exposed\n→ AI analysis in 1 click\n\nFree at orreryx.io/app\n👉 Link in bio\n\n#premarket #trading #investing #geopoliticalrisk #markets #gold #oil`,
+  `Free OSINT tool: live conflict events filtered by country + language 📡\n\n9 languages · 35 countries · real-time market impact\n\nTrack the world before markets open.\norreryx.io/app\n\n#OSINT #geopolitics #opendata #conflicttracking #intelligence`,
+  `9 languages. 35 countries. One screen.\n\nArabic 🇸🇦 · Chinese 🇨🇳 · Russian 🇷🇺\nFrench 🇫🇷 · German 🇩🇪 · Spanish 🇪🇸\nPortuguese 🇧🇷 · Hindi 🇮🇳 · English 🇬🇧\n\nFree intelligence platform: orreryx.io/app\n👉 Link in bio\n\n#multilingual #geopolitics #worldnews #global`,
+  `The world doesn't pause between your news checks 🌐\n\nOrrery monitors conflicts, sanctions and political crises 24/7.\n\nAI brief on any event. Video coverage per country. Market impact in real time.\n\n100% free. No login. No paywall.\norreryx.io/app\n\n#geopolitics #worldnews #AI #intelligence #freetools`,
+];
+
+// ─── Google Business posts (short, local-SEO friendly) ───────────────────────
+const GOOGLE_POSTS = [
+  `🌍 Track live geopolitical conflicts and their market impact — free, no login.\n\nOrrery monitors 35 countries in real-time: Ukraine, Iran, Taiwan, India-Pakistan and more.\n\nhttps://orreryx.io/app`,
+  `Real-time intelligence on wars, sanctions and nuclear flashpoints — with live stock, oil and gold prices.\n\nFree at orreryx.io/app`,
+  `Filter live conflict news by country and language. 35 countries, 9 languages, AI analysis on demand.\n\nhttps://orreryx.io/app`,
+  `Which markets move when geopolitical events happen?\n→ Oil on Middle East tensions\n→ Gold on nuclear news\n→ Defence stocks on active conflicts\n\nTrack it live free: orreryx.io/app`,
+  `Orrery: free geopolitical risk tracker used by investors, analysts and researchers.\n\nLive conflict feed · Market impact · AI briefs · Video coverage\n\norreryx.io/app`,
+  `India-Pakistan, Iran, Ukraine, Taiwan — all tracked live with real-time market impact.\n\nFree intelligence platform: orreryx.io/app`,
+  `Stay ahead of geopolitical risk. Free real-time tracker: orreryx.io/app\n\n35 countries · 9 languages · stocks, oil, gold, crypto · no signup needed`,
+];
+
+// ══════════════════════════════════════════════════════════════════════════════
+// INSTAGRAM — Meta Graph API (image post)
+// Requires: INSTAGRAM_ACCESS_TOKEN, INSTAGRAM_USER_ID
+// Get token: developers.facebook.com → Your App → Instagram → Generate Token
+// ══════════════════════════════════════════════════════════════════════════════
+
+async function postToInstagram(accessToken, igUserId, caption, imageUrl) {
+  // Step 1: create media container
+  const createRes = await fetch(
+    `https://graph.facebook.com/v19.0/${igUserId}/media`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ image_url: imageUrl, caption, access_token: accessToken }),
+      signal: AbortSignal.timeout(20000),
+    }
+  );
+  const createData = await createRes.json();
+  if (!createRes.ok || createData.error)
+    throw new Error('Instagram container failed: ' + JSON.stringify(createData.error || createData));
+
+  // Step 2: publish the container
+  const publishRes = await fetch(
+    `https://graph.facebook.com/v19.0/${igUserId}/media_publish`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ creation_id: createData.id, access_token: accessToken }),
+      signal: AbortSignal.timeout(20000),
+    }
+  );
+  const publishData = await publishRes.json();
+  if (!publishRes.ok || publishData.error)
+    throw new Error('Instagram publish failed: ' + JSON.stringify(publishData.error || publishData));
+
+  return publishData.id;
+}
+
+// ══════════════════════════════════════════════════════════════════════════════
+// GOOGLE BUSINESS PROFILE — My Business API v4
+// Requires: GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET, GOOGLE_REFRESH_TOKEN, GOOGLE_LOCATION_NAME
+// GOOGLE_LOCATION_NAME format: accounts/XXXXXXX/locations/XXXXXXX
+// ══════════════════════════════════════════════════════════════════════════════
+
+async function getGoogleAccessToken(clientId, clientSecret, refreshToken) {
+  const r = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      client_id:     clientId,
+      client_secret: clientSecret,
+      refresh_token: refreshToken,
+      grant_type:    'refresh_token',
+    }),
+    signal: AbortSignal.timeout(8000),
+  });
+  const j = await r.json();
+  if (!j.access_token) throw new Error('Google token refresh failed: ' + JSON.stringify(j));
+  return j.access_token;
+}
+
+async function postToGoogleBusiness(accessToken, locationName, text) {
+  const r = await fetch(
+    `https://mybusiness.googleapis.com/v4/${locationName}/localPosts`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: 'Bearer ' + accessToken,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        languageCode: 'en-US',
+        summary: text,
+        callToAction: { actionType: 'LEARN_MORE', url: 'https://orreryx.io/app' },
+        topicType: 'STANDARD',
+      }),
+      signal: AbortSignal.timeout(10000),
+    }
+  );
+  if (!r.ok) throw new Error('Google Business failed: ' + r.status + ' ' + await r.text());
+  const j = await r.json();
+  return j.name || 'posted';
+}
+
 // ══════════════════════════════════════════════════════════════════════════════
 // TWITTER — OAuth 1.0a (no external package)
 // ══════════════════════════════════════════════════════════════════════════════
@@ -350,10 +457,11 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
 
-  const now       = new Date();
-  const dayOfWeek = now.getDay(); // 0=Sun…6=Sat
-  const weekNum   = Math.floor((now - new Date(now.getFullYear(), 0, 1)) / (7 * 24 * 60 * 60 * 1000));
-  const results   = {};
+  const now        = new Date();
+  const dayOfWeek  = now.getDay(); // 0=Sun…6=Sat
+  const dayOfYear  = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
+  const weekNum    = Math.floor((now - new Date(now.getFullYear(), 0, 1)) / (7 * 24 * 60 * 60 * 1000));
+  const results    = {};
 
   // ── Twitter ───────────────────────────────────────────────────────────────
   const twKey    = process.env.TWITTER_API_KEY;
@@ -392,6 +500,42 @@ export default async function handler(req, res) {
     }
   } else {
     results.linkedin = { ok: false, error: 'LinkedIn credentials not set' };
+  }
+
+  // ── Instagram (every day) ────────────────────────────────────────────────
+  const igToken  = process.env.INSTAGRAM_ACCESS_TOKEN;
+  const igUserId = process.env.INSTAGRAM_USER_ID;
+
+  if (igToken && igUserId) {
+    try {
+      const caption  = INSTAGRAM[dayOfYear % INSTAGRAM.length];
+      // Use our own og-image as the post image — publicly accessible PNG
+      const imageUrl = 'https://orreryx.io/api/og-image?title=LIVE+GEOPOLITICAL+INTELLIGENCE&source=ORRERYX&cat=default';
+      const id = await postToInstagram(igToken, igUserId, caption, imageUrl);
+      results.instagram = { ok: true, id };
+    } catch (e) {
+      results.instagram = { ok: false, error: e.message };
+    }
+  } else {
+    results.instagram = { ok: false, error: 'Instagram credentials not set' };
+  }
+
+  // ── Google Business Profile (every day) ──────────────────────────────────
+  const gClientId     = process.env.GOOGLE_CLIENT_ID;
+  const gClientSecret = process.env.GOOGLE_CLIENT_SECRET;
+  const gRefreshToken = process.env.GOOGLE_REFRESH_TOKEN;
+  const gLocationName = process.env.GOOGLE_LOCATION_NAME;
+
+  if (gClientId && gClientSecret && gRefreshToken && gLocationName) {
+    try {
+      const gAccessToken = await getGoogleAccessToken(gClientId, gClientSecret, gRefreshToken);
+      const id = await postToGoogleBusiness(gAccessToken, gLocationName, GOOGLE_POSTS[dayOfYear % GOOGLE_POSTS.length]);
+      results.google = { ok: true, id };
+    } catch (e) {
+      results.google = { ok: false, error: e.message };
+    }
+  } else {
+    results.google = { ok: false, error: 'Google Business credentials not set' };
   }
 
   // ── Reddit (Mondays only — weekly to avoid bans) ──────────────────────────
