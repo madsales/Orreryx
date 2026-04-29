@@ -1,14 +1,82 @@
 // api/buffer-post.js — Daily Buffer auto-poster (Vercel Cron)
-// Posts to all connected Buffer profiles: Instagram, Twitter/X, LinkedIn
+// Posts to all connected Buffer profiles: Twitter/X, Instagram, LinkedIn, Google Business
 // Fires daily at 8:00 AM IST (2:30 AM UTC)
 //
 // Required env vars (set in Vercel dashboard):
-//   BUFFER_ACCESS_TOKEN  — your Buffer access token
+//   BUFFER_ACCESS_TOKEN  — your Buffer access token (buffer.com → Settings → Apps & API)
 //   CRON_SECRET          — shared secret to protect endpoint
 
 const BUFFER_API = 'https://api.bufferapp.com/1';
 
 // ─── Per-platform daily content (keyed by day 0=Sun…6=Sat) ──────────────────
+
+// ─── Twitter/X posts (short, punchy, 280 chars max) ─────────────────────────
+const TWITTER_POSTS = [
+  `Which geopolitical risk do you think markets are most underpricing right now?
+
+A) Taiwan Strait 🇹🇼
+B) Iran nuclear breakout 🇮🇷
+C) India-Pakistan 🇮🇳🇵🇰
+D) Russia escalation 🇷🇺
+
+Track all four live — free, no login:
+👉 https://orreryx.io/app`,
+
+  `Start the week with situational awareness.
+
+Orrery tracks live conflicts, nuclear alerts & political crises across 35 countries — with real-time market impact on stocks, oil, gold and crypto.
+
+Free. No login. Updated every 2 minutes.
+https://orreryx.io/app`,
+
+  `Geopolitical risk is priced into every market:
+
+→ Oil responds to Middle East tensions
+→ Gold bids up on nuclear flashpoints
+→ Defence stocks move on active conflicts
+→ EM currencies react to sanctions
+
+Track it all live, free:
+https://orreryx.io/app
+
+#geopolitics #investing #markets`,
+
+  `🌍 Live conflict coverage on Orrery right now:
+
+🇺🇦 Ukraine-Russia
+🇮🇳🇵🇰 India-Pakistan
+🇮🇷 Iran nuclear + Hormuz
+🇮🇱 Israel-Gaza
+🇹🇼 Taiwan Strait
+
+Filter by country. AI brief on any event.
+Free: https://orreryx.io/app`,
+
+  `Free OSINT tool for tracking global conflicts in real-time.
+
+Powered by GDELT — the largest open-source geopolitical database in the world.
+
+35 countries · 9 languages · live market impact · no login
+
+https://orreryx.io/app
+
+#OSINT #geopolitics #opendata`,
+
+  `Before you close out the week — check what geopolitical risks are building that markets haven't priced in yet.
+
+Orrery live tracker (free): https://orreryx.io/app
+
+35 countries · AI briefs · video coverage`,
+
+  `Weekend read: conflicts tracked on Orrery + market exposure each carries.
+
+🇺🇦 Ukraine → European gas, defence stocks
+🇮🇷 Iran → Oil, shipping rates
+🇹🇼 Taiwan → Semiconductors, tech supply chains
+🇮🇳🇵🇰 India-Pakistan → Cotton, textile stocks
+
+Live tracker: https://orreryx.io/app`,
+];
 
 // ─── Google Business Profile posts (short, local-SEO friendly) ──────────────
 const GOOGLE_POSTS = [
@@ -265,17 +333,24 @@ export default async function handler(req, res) {
     let text = null;
     let mediaUrl = null;
 
+    // Twitter/X — post every day
+    if (service === 'twitter' || service === 'twitter2' || service === 'x') {
+      text = TWITTER_POSTS[dayOfWeek]; // 0=Sun…6=Sat, 7 posts, one per day
+    }
+
+    // Instagram — post every day with image
     if (service === 'instagram') {
       text = INSTAGRAM_CAPTIONS[dayOfYear % INSTAGRAM_CAPTIONS.length];
       mediaUrl = 'https://www.orreryx.io/og-image.svg';
     }
 
+    // LinkedIn — weekdays only (engagement drops on weekends)
     if (service === 'linkedin') {
-      // Skip weekends — LinkedIn engagement drops significantly on Sat/Sun
       if (dayOfWeek === 0 || dayOfWeek === 6) continue;
       text = LINKEDIN_CAPTIONS[dayOfYear % LINKEDIN_CAPTIONS.length];
     }
 
+    // Google Business Profile
     if (service === 'google' || service === 'googlebusiness' || service === 'google_business') {
       text = GOOGLE_POSTS[dayOfYear % GOOGLE_POSTS.length];
     }
