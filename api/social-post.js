@@ -11,6 +11,7 @@
 //   CRON_SECRET
 
 import crypto from 'crypto';
+import { TwitterApi } from 'twitter-api-v2';
 
 // ══════════════════════════════════════════════════════════════════════════════
 // CONTENT
@@ -344,54 +345,15 @@ async function postToGoogleBusiness(accessToken, locationName, text) {
 // TWITTER — OAuth 1.0a (no external package)
 // ══════════════════════════════════════════════════════════════════════════════
 
-// RFC 3986 percent encoding — stricter than encodeURIComponent (also encodes ! ' ( ) *)
-function rfc3986(str) {
-  return encodeURIComponent(String(str))
-    .replace(/!/g, '%21').replace(/'/g, '%27')
-    .replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\*/g, '%2A');
-}
-
 async function postTweet(text, env) {
-  const url = 'https://api.twitter.com/2/tweets';
-
-  const oauthParams = {
-    oauth_consumer_key:     env.apiKey,
-    oauth_nonce:            crypto.randomBytes(16).toString('hex'),
-    oauth_signature_method: 'HMAC-SHA1',
-    oauth_timestamp:        String(Math.floor(Date.now() / 1000)),
-    oauth_token:            env.accessToken,
-    oauth_version:          '1.0',
-  };
-
-  // Build parameter string — sort by encoded key per OAuth 1.0a spec
-  const paramStr = Object.entries(oauthParams)
-    .sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)
-    .map(([k, v]) => `${rfc3986(k)}=${rfc3986(v)}`)
-    .join('&');
-
-  // Signature base string
-  const baseStr = `POST&${rfc3986(url)}&${rfc3986(paramStr)}`;
-
-  // Signing key — both secrets must be RFC 3986 encoded
-  const signingKey = `${rfc3986(env.apiSecret)}&${rfc3986(env.accessTokenSecret)}`;
-
-  const signature = crypto.createHmac('sha1', signingKey).update(baseStr).digest('base64');
-
-  // Authorization header
-  const authHeader = 'OAuth ' + Object.entries({ ...oauthParams, oauth_signature: signature })
-    .sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)
-    .map(([k, v]) => `${rfc3986(k)}="${rfc3986(v)}"`)
-    .join(', ');
-
-  const r = await fetch(url, {
-    method: 'POST',
-    headers: { Authorization: authHeader, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ text }),
-    signal: AbortSignal.timeout(10000),
+  const client = new TwitterApi({
+    appKey:       env.apiKey,
+    appSecret:    env.apiSecret,
+    accessToken:  env.accessToken,
+    accessSecret: env.accessTokenSecret,
   });
-  const j = await r.json();
-  if (!r.ok) throw new Error(JSON.stringify(j));
-  return j.data?.id;
+  const result = await client.v2.tweet(text);
+  return result.data.id;
 }
 
 // ══════════════════════════════════════════════════════════════════════════════
