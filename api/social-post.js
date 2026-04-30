@@ -469,6 +469,19 @@ export default async function handler(req, res) {
   const twToken  = process.env.TWITTER_ACCESS_TOKEN;
   const twTSec   = process.env.TWITTER_ACCESS_TOKEN_SECRET;
 
+  // Debug: show first 6 chars of each credential to verify they're loaded correctly
+  if (req.query.debug === '1') {
+    return res.status(200).json({
+      debug: true,
+      twitter: {
+        api_key:              twKey    ? twKey.substring(0,6)    + '...' : 'MISSING',
+        api_secret:           twSecret ? twSecret.substring(0,6) + '...' : 'MISSING',
+        access_token:         twToken  ? twToken.substring(0,6)  + '...' : 'MISSING',
+        access_token_secret:  twTSec   ? twTSec.substring(0,6)   + '...' : 'MISSING',
+      },
+    });
+  }
+
   if (twKey && twSecret && twToken && twTSec) {
     try {
       const id = await postTweet(TWITTER[dayOfWeek], {
