@@ -344,17 +344,16 @@ async function postToGoogleBusiness(accessToken, locationName, text) {
 // TWITTER — OAuth 1.0a (no external package)
 // ══════════════════════════════════════════════════════════════════════════════
 
-function oauthSign(method, url, params, consumerSecret, tokenSecret) {
-  const sorted = Object.keys(params).sort().map(k =>
-    encodeURIComponent(k) + '=' + encodeURIComponent(params[k])
-  ).join('&');
-  const base = method.toUpperCase() + '&' + encodeURIComponent(url) + '&' + encodeURIComponent(sorted);
-  const key  = encodeURIComponent(consumerSecret) + '&' + encodeURIComponent(tokenSecret);
-  return crypto.createHmac('sha1', key).update(base).digest('base64');
+// RFC 3986 percent encoding — stricter than encodeURIComponent (also encodes ! ' ( ) *)
+function rfc3986(str) {
+  return encodeURIComponent(String(str))
+    .replace(/!/g, '%21').replace(/'/g, '%27')
+    .replace(/\(/g, '%28').replace(/\)/g, '%29').replace(/\*/g, '%2A');
 }
 
 async function postTweet(text, env) {
   const url = 'https://api.twitter.com/2/tweets';
+
   const oauthParams = {
     oauth_consumer_key:     env.apiKey,
     oauth_nonce:            crypto.randomBytes(16).toString('hex'),
@@ -363,10 +362,26 @@ async function postTweet(text, env) {
     oauth_token:            env.accessToken,
     oauth_version:          '1.0',
   };
-  oauthParams.oauth_signature = oauthSign('POST', url, oauthParams, env.apiSecret, env.accessTokenSecret);
-  const authHeader = 'OAuth ' + Object.keys(oauthParams).sort().map(k =>
-    encodeURIComponent(k) + '="' + encodeURIComponent(oauthParams[k]) + '"'
-  ).join(', ');
+
+  // Build parameter string — sort by encoded key per OAuth 1.0a spec
+  const paramStr = Object.entries(oauthParams)
+    .sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)
+    .map(([k, v]) => `${rfc3986(k)}=${rfc3986(v)}`)
+    .join('&');
+
+  // Signature base string
+  const baseStr = `POST&${rfc3986(url)}&${rfc3986(paramStr)}`;
+
+  // Signing key — both secrets must be RFC 3986 encoded
+  const signingKey = `${rfc3986(env.apiSecret)}&${rfc3986(env.accessTokenSecret)}`;
+
+  const signature = crypto.createHmac('sha1', signingKey).update(baseStr).digest('base64');
+
+  // Authorization header
+  const authHeader = 'OAuth ' + Object.entries({ ...oauthParams, oauth_signature: signature })
+    .sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)
+    .map(([k, v]) => `${rfc3986(k)}="${rfc3986(v)}"`)
+    .join(', ');
 
   const r = await fetch(url, {
     method: 'POST',
