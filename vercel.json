@@ -33,7 +33,6 @@
     }
   ],
   "crons": [
-    { "path": "/api/buffer-post",  "schedule": "30 2 * * *" },
     { "path": "/api/social-post",  "schedule": "0 */3 * * *" }
   ],
   "functions": {
