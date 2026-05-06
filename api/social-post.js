@@ -122,13 +122,13 @@ For stories scoring >= 6, return a detailed content brief. Return a JSON array (
     "imageBrief": "Detailed description of the ideal image for this post — scene, mood, colors, composition. Be specific so a designer knows exactly what to create.",
     "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"],
     "hashtags": ["#Hashtag1", "#Hashtag2", "#Hashtag3", "#Hashtag4", "#Hashtag5", "#Hashtag6"],
-    "twitter": "Ready-to-post tweet. Max 240 chars. Sharp geopolitical angle. Link: orreryx.io/app. 2-3 hashtags inline.",
-    "linkedin": "Full LinkedIn post. 200-300 words. Professional analysis tone. What it means for investors/markets. orreryx.io/app link. Hashtags at end.",
-    "instagram": "Instagram caption. Punchy opener. Emojis. Geopolitical context. CTA: Link in bio → orreryx.io/app. 6-7 hashtags at end.",
+    "twitter": "Ready-to-post tweet. Max 240 chars. Sharp geopolitical angle. Include source name e.g. 'via Reuters'. Link: orreryx.io/app. 2-3 hashtags inline.",
+    "linkedin": "Full LinkedIn post. 200-300 words. Professional analysis tone. What it means for investors/markets. Cite the source naturally in the text e.g. 'According to [Source],...'. orreryx.io/app link. Hashtags at end.",
+    "instagram": "Instagram caption. Punchy opener. Emojis. Geopolitical context. Include 'Source: [name]' one line above hashtags. CTA: Link in bio → orreryx.io/app. 6-7 hashtags at end.",
     "redditTitle": "Reddit post title. Compelling, factual, no clickbait. Max 15 words. Suits r/geopolitics or r/worldnews style.",
-    "redditBody": "Reddit post body. 150-250 words. Informative, analytical tone. No promotional language — Reddit hates ads. Present as genuine analysis. Mention orreryx.io/app naturally at the end as a free resource, not a plug. Include suggested subreddits at the end.",
+    "redditBody": "Reddit post body. 150-250 words. Informative, analytical tone. Cite the source with full URL at the top e.g. 'Source: [name] — [url]'. No promotional language — Reddit hates ads. Present as genuine analysis. Mention orreryx.io/app naturally at the end as a free resource, not a plug. Include suggested subreddits at the end.",
     "redditSubreddits": ["r/geopolitics", "r/worldnews", "r/investing"],
-    "discord": "Discord server message. 3-5 lines max. Start with a bold headline using **text**. Use Discord markdown. Include market impact. End with the link orreryx.io/app. Conversational but sharp tone — this is a geopolitics/investing community. 2-3 relevant emojis. No hashtags."
+    "discord": "Discord server message. 3-5 lines max. Start with a bold headline using **text**. Use Discord markdown. Include market impact. Cite source as 'via [Source Name]'. End with the link orreryx.io/app. Conversational but sharp tone — this is a geopolitics/investing community. 2-3 relevant emojis. No hashtags."
   }
 ]
 
