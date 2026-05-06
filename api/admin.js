@@ -293,6 +293,98 @@ export default async function handler(req, res) {
     return res.status(200).json({ checks, ts: new Date().toISOString() });
   }
 
+  // ── APPROVE TODAY (admin panel button) ───────────────────────────────────────
+  if (action === 'approve-today') {
+    if (!hasRedis()) return res.status(503).json({ error: 'Redis not configured' });
+    const today = new Date().toISOString().split('T')[0];
+    await upstash(['SET', `ceo:approved:${today}`, JSON.stringify({ approvedAt: Date.now(), date: today, source: 'admin-panel' }), 'EX', 172800]);
+    return res.status(200).json({ ok: true, date: today, message: 'Team approved for ' + today });
+  }
+
+  // ── TRIGGER DAILY BRIEF (admin panel button) ──────────────────────────────────
+  if (action === 'daily-brief') {
+    const host  = req.headers.host || 'www.orreryx.io';
+    const proto = host.includes('localhost') ? 'http' : 'https';
+    try {
+      const r = await fetch(`${proto}://${host}/api/ceo-agent?action=daily-brief`, {
+        headers: { Authorization: `Bearer ${process.env.CRON_SECRET || ''}` },
+        signal: AbortSignal.timeout(55000),
+      });
+      const d = await r.json().catch(() => ({ raw: 'non-json response' }));
+      return res.status(200).json({ ok: r.ok, result: d });
+    } catch(e) {
+      return res.status(200).json({ ok: false, error: e.message });
+    }
+  }
+
+  // ── AGENT STATUS ─────────────────────────────────────────────────────────────
+  if (action === 'agent-status') {
+    if (!hasRedis()) return res.status(503).json({ error: 'Redis not configured' });
+    try {
+      const today = new Date().toISOString().split('T')[0];
+      const results = await upstashPipeline([
+        ['GET', 'coo:last_check'],
+        ['GET', 'cfo:last_week'],
+        ['GET', 'sales:last_scan'],
+        ['GET', 'ceo:last_report'],
+        ['GET', 'breaking:last_post_time'],
+        ['GET', `ceo:approved:${today}`],
+        ['GET', 'ideas:latest'],
+      ]);
+      const parse = (v) => { try { return v ? JSON.parse(v) : null; } catch { return v ? { ts: v } : null; } };
+      return res.status(200).json({
+        coo:      parse(results?.[0]),
+        cfo:      parse(results?.[1]),
+        sales:    parse(results?.[2]),
+        ceo:      parse(results?.[3]),
+        breaking: results?.[4] ? { last_post_time: parseInt(results[4]) || results[4], ts: parseInt(results[4]) || null } : null,
+        approved: parse(results?.[5]),
+        ideas:    parse(results?.[6]),
+        today,
+      });
+    } catch(e) {
+      return res.status(500).json({ error: e.message });
+    }
+  }
+
+  // ── RUN AGENT ─────────────────────────────────────────────────────────────────
+  if (action === 'run-agent') {
+    const VALID_AGENTS = ['health-agent', 'finance-agent', 'sales-agent', 'ceo-agent', 'breaking-news'];
+    // Accept short names (e.g. 'health') or full names (e.g. 'health-agent')
+    const rawAgent = (req.query.agent || '').trim();
+    const agentMap = { health: 'health-agent', finance: 'finance-agent', sales: 'sales-agent', ceo: 'ceo-agent', 'breaking-news': 'breaking-news' };
+    const agentPath = agentMap[rawAgent] || (VALID_AGENTS.includes(rawAgent) ? rawAgent : null);
+    if (!agentPath) return res.status(400).json({ error: 'Unknown agent: ' + rawAgent });
+
+    const force = req.query.force === '1';
+    const host  = req.headers.host || 'www.orreryx.io';
+    const proto = host.includes('localhost') ? 'http' : 'https';
+    // admin=1 bypasses CEO approval check — admin panel runs are always allowed
+    const params = new URLSearchParams({ admin: '1' });
+    if (force) params.set('force', '1');
+    const url = `${proto}://${host}/api/${agentPath}?${params.toString()}`;
+
+    try {
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), 55000);
+      const cronSecret = process.env.CRON_SECRET || '';
+      const r = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${cronSecret}`,
+          'Content-Type': 'application/json',
+        },
+        signal: controller.signal,
+      });
+      clearTimeout(timer);
+      const text = await r.text();
+      let json;
+      try { json = JSON.parse(text); } catch { json = { raw: text.slice(0, 800) }; }
+      return res.status(200).json({ ok: r.ok, status: r.status, agent: agentPath, result: json });
+    } catch(e) {
+      return res.status(200).json({ ok: false, agent: agentPath, error: e.message });
+    }
+  }
+
   return res.status(400).json({ error: 'Unknown action' });
 }
 

@@ -248,9 +248,8 @@ export default async function handler(req, res) {
 
   const token = process.env.BUFFER_ACCESS_TOKEN;
   if (!token) {
-    return res.status(500).json({
-      error: 'BUFFER_ACCESS_TOKEN not set in Vercel environment variables.',
-    });
+    // Buffer not configured — skip gracefully (user may be using Hootsuite instead)
+    return res.status(200).json({ ok: false, skipped: true, reason: 'BUFFER_ACCESS_TOKEN not set — Buffer integration disabled.' });
   }
 
   const now       = new Date();
@@ -262,7 +261,8 @@ export default async function handler(req, res) {
   try {
     profiles = await getProfiles(token);
   } catch (e) {
-    return res.status(500).json({ error: 'Buffer API error: ' + e.message });
+    // Token expired or invalid — return 200 so cron doesn't alert as a hard failure
+    return res.status(200).json({ ok: false, skipped: true, reason: 'Buffer API error: ' + e.message });
   }
   if (!profiles || !profiles.length) {
     return res.status(200).json({ ok: false, error: 'No Buffer profiles found. Make sure profiles are connected at buffer.com.' });

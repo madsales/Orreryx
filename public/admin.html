@@ -176,6 +176,69 @@ p.desc{font:400 12px/1.75 var(--sans);color:var(--txt3);margin-bottom:18px}
 /* ── SHORTCUTS ── */
 .shortcuts-wrap{display:flex;flex-wrap:wrap;gap:8px}
 .shortcuts-wrap .btn-sm{font-size:11px;padding:8px 14px}
+
+/* ── APPROVAL BANNER ── */
+.approval-banner{display:flex;align-items:center;justify-content:space-between;gap:16px;background:var(--bg2);border:1px solid var(--brd);border-radius:var(--radius);padding:16px 20px;margin-bottom:16px}
+.approval-banner.approved{border-color:rgba(58,184,96,.4);background:var(--grn2)}
+.approval-banner.pending{border-color:rgba(224,168,48,.4);background:rgba(224,168,48,.06)}
+.approval-left{display:flex;align-items:center;gap:12px}
+.approval-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.approval-dot.green{background:var(--grn)}
+.approval-dot.amber{background:var(--amb);animation:blink .9s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.approval-title{font:700 13px/1 var(--mono);color:var(--txt);letter-spacing:.02em}
+.approval-sub{font:400 11px/1.5 var(--sans);color:var(--txt3);margin-top:3px}
+.approval-actions{display:flex;gap:8px;flex-shrink:0}
+.approve-btn{background:var(--grn);border:none;border-radius:var(--radius-sm);color:#000;font:700 11px/1 var(--sans);padding:10px 20px;cursor:pointer;transition:opacity .15s;white-space:nowrap}
+.approve-btn:hover{opacity:.85}
+.brief-btn{background:transparent;border:1px solid var(--brd2);border-radius:var(--radius-sm);color:var(--txt3);font:500 11px/1 var(--sans);padding:10px 16px;cursor:pointer;transition:all .15s;white-space:nowrap}
+.brief-btn:hover{color:var(--txt);border-color:var(--brd3)}
+
+/* ── IDEAS ── */
+.ideas-section{background:var(--bg2);border:1px solid var(--brd);border-radius:var(--radius);padding:20px;margin-bottom:16px}
+.ideas-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}
+@media(max-width:700px){.ideas-grid{grid-template-columns:1fr}}
+.idea-card{background:var(--bg3);border:1px solid var(--brd);border-radius:var(--radius-sm);padding:14px 16px}
+.idea-tag{font:700 8px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;padding:3px 7px;border-radius:3px;display:inline-block;margin-bottom:8px}
+.idea-tag.linkedin{background:rgba(74,143,224,.15);color:var(--blu)}
+.idea-tag.twitter{background:rgba(255,255,255,.08);color:var(--txt3)}
+.idea-tag.product{background:rgba(224,168,48,.15);color:var(--amb)}
+.idea-tag.growth{background:rgba(58,184,96,.15);color:var(--grn)}
+.idea-hook{font:500 12px/1.5 var(--sans);color:var(--txt);margin-bottom:5px}
+.idea-angle{font:400 11px/1.5 var(--sans);color:var(--txt4)}
+.ideas-generate-btn{font:500 11px/1 var(--sans);padding:8px 16px;border-radius:var(--radius-sm);cursor:pointer;border:1px solid var(--brd2);background:transparent;color:var(--txt3);transition:all .15s;margin-top:12px}
+.ideas-generate-btn:hover{color:var(--txt);border-color:var(--brd3)}
+
+/* ── AGENTS ── */
+.agents-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:20px}
+.agent-card{background:var(--bg2);border:1px solid var(--brd);border-radius:var(--radius);padding:20px;display:flex;flex-direction:column;gap:12px;transition:border-color .15s}
+.agent-card:hover{border-color:var(--brd2)}
+.agent-card.running{border-color:rgba(212,168,67,.5);animation:pulse-border 1.5s ease-in-out infinite}
+@keyframes pulse-border{0%,100%{border-color:rgba(212,168,67,.5)}50%{border-color:rgba(212,168,67,1)}}
+.agent-head{display:flex;align-items:center;gap:10px}
+.agent-icon{font-size:22px;flex-shrink:0}
+.agent-name{font:700 13px/1 var(--mono);color:var(--txt);letter-spacing:.02em}
+.agent-role{font:500 10px/1 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--txt4);margin-top:3px}
+.agent-schedule{font:500 10px/1 var(--mono);color:var(--txt3);background:var(--bg3);border:1px solid var(--brd);border-radius:4px;padding:4px 8px;width:fit-content}
+.agent-status-row{display:flex;align-items:center;gap:8px;min-height:20px}
+.agent-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.agent-dot.ok{background:var(--grn)}
+.agent-dot.idle{background:var(--txt4)}
+.agent-dot.warn{background:var(--amb)}
+.agent-dot.err{background:var(--red)}
+.agent-status-txt{font:400 11px/1.5 var(--sans);color:var(--txt3)}
+.agent-last{font:400 10px/1 var(--mono);color:var(--txt4);margin-top:2px}
+.agent-log{background:var(--bg3);border:1px solid var(--brd);border-radius:var(--radius-sm);padding:10px 12px;font:400 11px/1.7 var(--mono);color:var(--txt3);max-height:100px;overflow-y:auto;display:none;white-space:pre-wrap;word-break:break-all}
+.agent-log.visible{display:block}
+.agent-footer{display:flex;gap:8px;align-items:center;margin-top:4px}
+.run-btn{flex:1;background:var(--txt);border:none;border-radius:var(--radius-sm);color:var(--bg);font:600 10px/1 var(--sans);letter-spacing:.04em;padding:10px;cursor:pointer;transition:opacity .15s}
+.run-btn:hover{opacity:.85}
+.run-btn:disabled{opacity:.35;cursor:not-allowed}
+.run-btn.running-state{background:var(--amb);color:#000}
+.log-toggle{font:500 10px/1 var(--sans);color:var(--txt4);cursor:pointer;padding:6px 10px;border:1px solid var(--brd);border-radius:var(--radius-sm);background:transparent;transition:all .15s}
+.log-toggle:hover{color:var(--txt3);border-color:var(--brd2)}
+.agent-result-ok{color:var(--grn)}
+.agent-result-err{color:var(--red)}
 </style>
 </head>
 <body>
@@ -226,6 +289,7 @@ p.desc{font:400 12px/1.75 var(--sans);color:var(--txt3);margin-bottom:18px}
   <div class="tabs">
     <div class="tab active" onclick="switchTab('overview')"  id="tab-overview">Overview</div>
     <div class="tab"        onclick="switchTab('analytics')" id="tab-analytics">Analytics</div>
+    <div class="tab"        onclick="switchTab('agents')"    id="tab-agents">🤖 Agents</div>
     <div class="tab"        onclick="switchTab('test')"      id="tab-test">🧪 Test Access</div>
     <div class="tab"        onclick="switchTab('platform')"  id="tab-platform">Platform</div>
     <div class="tab"        onclick="switchTab('content')"   id="tab-content">Content</div>
@@ -260,6 +324,55 @@ p.desc{font:400 12px/1.75 var(--sans);color:var(--txt3);margin-bottom:18px}
         <div class="sec-title">Top Clicked Elements</div>
         <div id="clicks-body"><div class="loading-txt"><span class="spinner"></span>Loading…</div></div>
       </div>
+    </div>
+
+    <!-- AGENTS TAB -->
+    <div id="pg-agents" style="display:none">
+
+      <!-- CEO Approval Banner -->
+      <div class="approval-banner pending" id="approval-banner">
+        <div class="approval-left">
+          <div class="approval-dot amber" id="approval-dot"></div>
+          <div>
+            <div class="approval-title" id="approval-title">Checking approval status…</div>
+            <div class="approval-sub" id="approval-sub">Loading…</div>
+          </div>
+        </div>
+        <div class="approval-actions">
+          <button class="brief-btn" id="brief-btn" onclick="sendDailyBrief()">📧 Send Daily Brief to CEO</button>
+          <button class="approve-btn" id="approve-btn" onclick="approveToday()">✅ Approve Team for Today</button>
+        </div>
+      </div>
+
+      <!-- Ideas Section -->
+      <div class="ideas-section" id="ideas-section" style="display:none">
+        <div class="sec-title">💡 Ideas Agent — Today's Suggestions</div>
+        <div class="ideas-grid" id="ideas-grid"></div>
+        <button class="ideas-generate-btn" onclick="runAgent('ideas',false)">⚡ Generate New Ideas</button>
+      </div>
+
+      <div class="section" style="margin-bottom:14px">
+        <div class="sec-title">AI Company — Agent Control Centre</div>
+        <p class="desc">Run any agent manually, see its last status, and read its response log. Agents are normally triggered by cron-job.org on schedule.</p>
+        <div class="agents-grid" id="agents-grid">
+          <div class="loading-txt"><span class="spinner"></span>Loading agent status…</div>
+        </div>
+      </div>
+
+      <div class="section">
+        <div class="sec-title">Cron Schedule Reference</div>
+        <table>
+          <thead><tr><th>Agent</th><th>Schedule (IST)</th><th>cron-job.org Expression</th><th>Endpoint</th></tr></thead>
+          <tbody>
+            <tr><td>🏥 COO — Health Agent</td><td>Daily 7:00 AM</td><td><code>30 1 * * *</code></td><td>/api/health-agent</td></tr>
+            <tr><td>💰 CFO — Finance Agent</td><td>Monday 8:00 AM</td><td><code>30 2 * * 1</code></td><td>/api/finance-agent</td></tr>
+            <tr><td>📧 Sales — Nurture Agent</td><td>Daily 9:00 AM</td><td><code>30 3 * * *</code></td><td>/api/sales-agent</td></tr>
+            <tr><td>🤖 CEO — Digest Agent</td><td>Sunday 9:00 PM</td><td><code>30 15 * * 0</code></td><td>/api/ceo-agent</td></tr>
+            <tr><td>📡 Breaking News</td><td>Every 3 hours</td><td><code>0 */3 * * *</code></td><td>/api/breaking-news</td></tr>
+          </tbody>
+        </table>
+      </div>
+
     </div>
 
     <!-- ANALYTICS TAB -->
@@ -871,7 +984,7 @@ window.addEventListener('load', () => {
 });
 
 // ── TABS ─────────────────────────────────────────────────────────────────────
-const TABS = ['overview', 'analytics', 'test', 'platform', 'content', 'health'];
+const TABS = ['overview', 'analytics', 'agents', 'test', 'platform', 'content', 'health'];
 function switchTab(name) {
   TABS.forEach(t => {
     document.getElementById('tab-' + t).classList.toggle('active', t === name);
@@ -879,6 +992,7 @@ function switchTab(name) {
   });
   if (name === 'test')   runApiChecks();
   if (name === 'health') loadFeedStats();
+  if (name === 'agents') loadAgentStatus();
 }
 
 // ── TEST ACCESS ───────────────────────────────────────────────────────────────
@@ -1222,6 +1336,324 @@ async function loadHealth() {
     document.getElementById('redis-dot').style.background = redisOk ? 'var(--grn)' : 'var(--red)';
     document.getElementById('redis-status').textContent   = redisOk ? 'All systems operational' : 'Redis error';
   } catch(e) {}
+}
+
+// ── AGENTS ────────────────────────────────────────────────────────────────────
+const AGENT_DEFS = [
+  {
+    id: 'health',
+    icon: '🏥',
+    name: 'COO — Health Agent',
+    role: 'System Watchdog',
+    schedule: 'Daily 7:00 AM IST',
+    desc: 'Checks all API keys, Redis, feed freshness & uptime. Emails alert if anything breaks.',
+    statusKey: 'coo',
+    lastKey:   'last_check',
+  },
+  {
+    id: 'finance',
+    icon: '💰',
+    name: 'CFO — Finance Agent',
+    role: 'Weekly P&L Report',
+    schedule: 'Monday 8:00 AM IST',
+    desc: 'Calculates MRR, week-over-week growth, plan breakdown. Emails formatted P&L table.',
+    statusKey: 'cfo',
+    lastKey:   'last_week',
+  },
+  {
+    id: 'sales',
+    icon: '📧',
+    name: 'Sales — Nurture Agent',
+    role: 'Email Nurture Sequences',
+    schedule: 'Daily 9:00 AM IST',
+    desc: 'Scans all subscribers. Sends Day 3 engagement email and Day 7 upgrade pitch automatically.',
+    statusKey: 'sales',
+    lastKey:   'last_scan',
+  },
+  {
+    id: 'ceo',
+    icon: '🤖',
+    name: 'CEO — Digest Agent',
+    role: 'AI Executive Summary',
+    schedule: 'Sunday 9:00 PM IST',
+    desc: 'Reads all agent data from Redis. Claude Haiku writes a 3-paragraph weekly executive digest.',
+    statusKey: 'ceo',
+    lastKey:   'last_report',
+  },
+  {
+    id: 'breaking-news',
+    icon: '📡',
+    name: 'Breaking News Agent',
+    role: 'Live Social Posting',
+    schedule: 'Every 3 Hours',
+    desc: 'Scores GDELT events, deduplicates via Redis, posts top story to Twitter + LinkedIn with market context.',
+    statusKey: 'breaking',
+    lastKey:   'last_post_time',
+    hasForce: true,
+  },
+  {
+    id: 'ideas',
+    icon: '💡',
+    name: 'Ideas Agent',
+    role: 'Daily Creative Intelligence',
+    schedule: 'Daily 5:30 AM IST',
+    desc: 'Claude Haiku generates 3 social post ideas, 1 product feature, and 1 growth experiment based on today\'s top geopolitical events.',
+    statusKey: 'ideas',
+    lastKey:   'generatedAt',
+  },
+];
+
+let agentLogs = {};
+
+async function loadAgentStatus() {
+  const grid = document.getElementById('agents-grid');
+  if (!grid) return;
+
+  // Render skeleton cards immediately
+  grid.innerHTML = AGENT_DEFS.map(a => renderAgentCard(a, null)).join('');
+
+  try {
+    const r = await fetch('/api/admin?action=agent-status', { headers: { Authorization: 'Bearer ' + token } });
+    if (!r.ok) return;
+    const d = await r.json();
+
+    // Render agent cards
+    grid.innerHTML = AGENT_DEFS.map(a => renderAgentCard(a, d[a.statusKey])).join('');
+
+    // Render approval banner
+    renderApprovalBanner(d.approved, d.today);
+
+    // Render ideas
+    if (d.ideas) renderIdeas(d.ideas);
+  } catch(e) {
+    grid.innerHTML = '<div class="empty">Could not load agent status: ' + esc(e.message) + '</div>';
+  }
+}
+
+function renderApprovalBanner(approvedData, today) {
+  const banner      = document.getElementById('approval-banner');
+  const dot         = document.getElementById('approval-dot');
+  const titleEl     = document.getElementById('approval-title');
+  const subEl       = document.getElementById('approval-sub');
+  const approveBtn  = document.getElementById('approve-btn');
+  const briefBtn    = document.getElementById('brief-btn');
+  if (!banner) return;
+
+  if (approvedData && approvedData.approvedAt) {
+    banner.className = 'approval-banner approved';
+    dot.className    = 'approval-dot green';
+    titleEl.textContent = '✅ Team Approved for Today (' + today + ')';
+    subEl.textContent   = 'Approved ' + timeAgo(approvedData.approvedAt) + ' · All agents will execute on schedule';
+    approveBtn.textContent = '✅ Approved';
+    approveBtn.style.opacity = '.5';
+    approveBtn.disabled = true;
+  } else {
+    banner.className = 'approval-banner pending';
+    dot.className    = 'approval-dot amber';
+    titleEl.textContent = '⏳ Awaiting CEO Approval — ' + today;
+    subEl.textContent   = 'Agents will not execute until you approve. Click "Approve Team" or send the daily brief email.';
+    approveBtn.disabled = false;
+    approveBtn.textContent = '✅ Approve Team for Today';
+  }
+}
+
+function renderIdeas(ideas) {
+  const section = document.getElementById('ideas-section');
+  const grid    = document.getElementById('ideas-grid');
+  if (!section || !grid || !ideas) return;
+
+  const posts = ideas.social_posts || [];
+  const prod  = ideas.product_idea;
+  const growth= ideas.growth_experiment;
+
+  let html = posts.map(p => `
+    <div class="idea-card">
+      <span class="idea-tag ${p.platform?.toLowerCase() || 'linkedin'}">${p.platform || 'Social'}</span>
+      <div class="idea-hook">${esc(p.hook || '')}</div>
+      <div class="idea-angle">${esc(p.angle || '')}</div>
+      ${p.cta ? `<div style="margin-top:6px;font:500 10px/1 var(--sans);color:var(--blu)">${esc(p.cta)}</div>` : ''}
+    </div>`).join('');
+
+  if (prod) {
+    html += `<div class="idea-card">
+      <span class="idea-tag product">💡 Product Idea · ${esc(prod.effort || '')}</span>
+      <div class="idea-hook">${esc(prod.title || '')}</div>
+      <div class="idea-angle">${esc(prod.description || '')}</div>
+      <div style="margin-top:6px;font:400 10px/1.5 var(--sans);color:var(--txt4)">${esc(prod.user_value || '')}</div>
+    </div>`;
+  }
+
+  if (growth) {
+    html += `<div class="idea-card">
+      <span class="idea-tag growth">🧪 Growth · ${esc(growth.effort || '')}</span>
+      <div class="idea-hook">${esc(growth.title || '')}</div>
+      <div class="idea-angle">${esc(growth.hypothesis || '')}</div>
+      <div style="margin-top:6px;font:400 10px/1.5 var(--sans);color:var(--txt4)">Metric: ${esc(growth.metric || '')}</div>
+    </div>`;
+  }
+
+  grid.innerHTML = html;
+  section.style.display = 'block';
+  const dateEl = document.createElement('p');
+  dateEl.style = 'font:400 10px/1 var(--sans);color:var(--txt4);margin-top:8px';
+  dateEl.textContent = 'Generated: ' + (ideas.date || 'today') + (ideas.generatedAt ? ' · ' + timeAgo(ideas.generatedAt) + ' ago' : '');
+  grid.appendChild(dateEl);
+}
+
+async function approveToday() {
+  const btn = document.getElementById('approve-btn');
+  btn.disabled = true;
+  btn.textContent = 'Approving…';
+  try {
+    const r = await fetch('/api/admin?action=approve-today', { headers: { Authorization: 'Bearer ' + token } });
+    const d = await r.json();
+    if (d.ok) {
+      renderApprovalBanner({ approvedAt: Date.now() }, d.date);
+    } else {
+      btn.disabled = false;
+      btn.textContent = '✅ Approve Team for Today';
+      alert('Error: ' + (d.error || 'Unknown'));
+    }
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = '✅ Approve Team for Today';
+    alert('Network error: ' + e.message);
+  }
+}
+
+async function sendDailyBrief() {
+  const btn = document.getElementById('brief-btn');
+  btn.disabled = true;
+  btn.textContent = '📧 Sending…';
+  try {
+    const r = await fetch('/api/admin?action=daily-brief', { headers: { Authorization: 'Bearer ' + token } });
+    const d = await r.json();
+    if (d.ok) {
+      btn.textContent = '📧 Brief Sent ✓';
+      setTimeout(() => { btn.disabled = false; btn.textContent = '📧 Send Daily Brief to CEO'; }, 3000);
+    } else {
+      btn.disabled = false;
+      btn.textContent = '📧 Send Daily Brief to CEO';
+      alert('Brief error: ' + JSON.stringify(d.result || d));
+    }
+  } catch(e) {
+    btn.disabled = false;
+    btn.textContent = '📧 Send Daily Brief to CEO';
+    alert('Network error: ' + e.message);
+  }
+}
+
+function renderAgentCard(a, statusData) {
+  const lastRaw = statusData?.ts || statusData?.last_post_time || statusData?.ran_at
+    || (statusData?.time ? new Date(statusData.time).getTime() : null) || null;
+  const lastAgo = lastRaw ? timeAgo(lastRaw) : 'Never run';
+  const hasRun  = !!lastRaw;
+  const dotClass = !hasRun ? 'idle' : (statusData?.error || statusData?.allOk === false ? 'warn' : 'ok');
+  let statusTxt = !hasRun ? 'Waiting for first run' : '✓ Last run completed OK';
+  if (hasRun && statusData?.allOk === false) statusTxt = '⚠ Health issues detected';
+  if (hasRun && statusData?.mrr !== undefined) statusTxt = `✓ MRR $${statusData.mrr?.toLocaleString() || 0}`;
+  if (hasRun && statusData?.total !== undefined && a.id === 'sales') statusTxt = `✓ Scanned ${statusData.total} subscribers`;
+  if (hasRun && statusData?.last_post_time) statusTxt = '✓ Post sent · next in ' + cooldownRemaining(statusData.last_post_time);
+
+  const logId = 'log-' + a.id;
+  const prevLog = agentLogs[a.id] || '';
+
+  return `
+    <div class="agent-card" id="card-${a.id}">
+      <div class="agent-head">
+        <div class="agent-icon">${a.icon}</div>
+        <div>
+          <div class="agent-name">${a.name}</div>
+          <div class="agent-role">${a.role}</div>
+        </div>
+      </div>
+      <div class="agent-schedule">⏱ ${a.schedule}</div>
+      <div style="font:400 11px/1.6 var(--sans);color:var(--txt4)">${a.desc}</div>
+      <div>
+        <div class="agent-status-row">
+          <div class="agent-dot ${dotClass}" id="dot-${a.id}"></div>
+          <span class="agent-status-txt" id="status-${a.id}">${statusTxt}</span>
+        </div>
+        <div class="agent-last" id="last-${a.id}">${hasRun ? 'Last run: ' + lastAgo : ''}</div>
+      </div>
+      <div class="agent-log ${prevLog ? 'visible' : ''}" id="${logId}">${esc(prevLog)}</div>
+      <div class="agent-footer">
+        <button class="run-btn" id="runbtn-${a.id}" onclick="runAgent('${a.id}',false)">▶ RUN NOW</button>
+        ${a.hasForce ? `<button class="run-btn" style="flex:0;padding:10px 14px;background:var(--amb);color:#000" id="forcebtn-${a.id}" onclick="runAgent('${a.id}',true)" title="Bypass 2.5h cooldown">⚡ FORCE</button>` : ''}
+        <button class="log-toggle" onclick="toggleLog('${a.id}')">Log</button>
+      </div>
+    </div>`;
+}
+
+function toggleLog(id) {
+  const el = document.getElementById('log-' + id);
+  if (el) el.classList.toggle('visible');
+}
+
+async function runAgent(id, force) {
+  const btn     = document.getElementById('runbtn-' + id);
+  const card    = document.getElementById('card-' + id);
+  const dotEl   = document.getElementById('dot-' + id);
+  const statusEl= document.getElementById('status-' + id);
+  const lastEl  = document.getElementById('last-' + id);
+  const logEl   = document.getElementById('log-' + id);
+
+  if (!btn) return;
+  btn.disabled = true;
+  btn.classList.add('running-state');
+  btn.textContent = '⏳ Running…';
+  card.classList.add('running');
+  dotEl.className = 'agent-dot warn';
+  statusEl.textContent = 'Running…';
+  if (logEl) { logEl.textContent = 'Calling /api/' + id + (force ? '?force=1' : '') + ' …\n'; logEl.classList.add('visible'); }
+
+  try {
+    const url = '/api/admin?action=run-agent&agent=' + id + (force ? '&force=1' : '');
+    const r   = await fetch(url, { headers: { Authorization: 'Bearer ' + token } });
+    const d   = await r.json();
+
+    const success = d.ok && (d.result?.ok !== false);
+    const logText = JSON.stringify(d.result || d, null, 2);
+    agentLogs[id] = logText;
+
+    dotEl.className   = 'agent-dot ' + (success ? 'ok' : 'err');
+    statusEl.textContent = success ? '✓ Run completed successfully' : '⚠ Run returned errors — see log';
+    lastEl.textContent   = 'Last run: just now';
+    if (logEl) { logEl.textContent = logText; logEl.classList.add('visible'); }
+  } catch(e) {
+    dotEl.className = 'agent-dot err';
+    statusEl.textContent = '❌ Network error: ' + e.message;
+    if (logEl) { logEl.textContent += '\nError: ' + e.message; }
+    agentLogs[id] = 'Error: ' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.classList.remove('running-state');
+  btn.textContent = '▶ RUN NOW';
+  card.classList.remove('running');
+}
+
+function timeAgo(tsRaw) {
+  const ts = typeof tsRaw === 'number' ? tsRaw : (typeof tsRaw === 'string' && !isNaN(tsRaw) ? parseInt(tsRaw) : new Date(tsRaw).getTime());
+  if (isNaN(ts)) return String(tsRaw);
+  const diff = Date.now() - ts;
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1)   return 'just now';
+  if (mins < 60)  return mins + 'm ago';
+  const hrs = Math.floor(mins / 60);
+  if (hrs < 24)   return hrs + 'h ago';
+  return Math.floor(hrs / 24) + 'd ago';
+}
+
+function cooldownRemaining(tsRaw) {
+  const ts = typeof tsRaw === 'number' ? tsRaw : parseInt(tsRaw);
+  if (isNaN(ts)) return '?';
+  const cooldownMs = 2.5 * 60 * 60 * 1000; // 2.5 hours
+  const remaining  = cooldownMs - (Date.now() - ts);
+  if (remaining <= 0) return 'ready now';
+  const mins = Math.ceil(remaining / 60000);
+  if (mins < 60) return mins + 'm';
+  return Math.ceil(mins / 60) + 'h ' + (mins % 60) + 'm';
 }
 
 // ── UTILS ─────────────────────────────────────────────────────────────────────

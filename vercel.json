@@ -1,6 +1,18 @@
 {
   "version": 2,
   "outputDirectory": "public",
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [{ "type": "host", "value": "orreryx.io" }],
+      "destination": "https://www.orreryx.io/$1",
+      "permanent": true
+    },
+    { "source": "/north-korea-nuclear", "destination": "/north-korea",       "permanent": true },
+    { "source": "/iran-israel",          "destination": "/iran-nuclear",       "permanent": true },
+    { "source": "/africa-conflict",      "destination": "/sudan-war",          "permanent": true },
+    { "source": "/global-conflicts-2025","destination": "/global-conflicts-2026", "permanent": true }
+  ],
   "headers": [
     {
       "source": "/(.*)",
@@ -22,26 +34,38 @@
   ],
   "crons": [
     { "path": "/api/buffer-post",  "schedule": "30 2 * * *" },
-    { "path": "/api/social-post",  "schedule": "0 3 * * *"  }
+    { "path": "/api/social-post",  "schedule": "0 */3 * * *" }
   ],
   "functions": {
-    "api/anthropic.js":  { "maxDuration": 30 },
-    "api/paypal.js":     { "maxDuration": 30 },
-    "api/events.js":     { "maxDuration": 30 },
-    "api/gnews.js":      { "maxDuration": 30 },
-    "api/feed.js":       { "maxDuration": 60, "includeFiles": "api/fonts/**" },
-    "api/magic.js":      { "maxDuration": 30 },
-    "api/admin.js":      { "maxDuration": 30 },
-    "api/webhook.js":    { "maxDuration": 30 },
-    "api/newsletter.js": { "maxDuration": 30 },
-    "api/buffer-post.js":{ "maxDuration": 30 },
-    "api/social-post.js":{ "maxDuration": 30 },
-    "api/news-post.js":  { "maxDuration": 60 }
+    "api/anthropic.js":     { "maxDuration": 30 },
+    "api/paypal.js":        { "maxDuration": 30 },
+    "api/events.js":        { "maxDuration": 30 },
+    "api/gnews.js":         { "maxDuration": 30 },
+    "api/feed.js":          { "maxDuration": 60, "includeFiles": "api/fonts/**" },
+    "api/magic.js":         { "maxDuration": 30 },
+    "api/admin.js":         { "maxDuration": 30 },
+    "api/webhook.js":       { "maxDuration": 30 },
+    "api/newsletter.js":    { "maxDuration": 30 },
+    "api/buffer-post.js":   { "maxDuration": 30 },
+    "api/social-post.js":   { "maxDuration": 120 },
+    "api/news-post.js":     { "maxDuration": 60 },
+    "api/health-agent.js":  { "maxDuration": 60 },
+    "api/finance-agent.js": { "maxDuration": 30 },
+    "api/sales-agent.js":   { "maxDuration": 60 },
+    "api/ceo-agent.js":     { "maxDuration": 60 },
+    "api/breaking-news.js": { "maxDuration": 60 },
+    "api/ideas-agent.js":   { "maxDuration": 30 }
   },
   "routes": [
     { "src": "/api/buffer-post",      "dest": "/api/buffer-post.js" },
     { "src": "/api/social-post",      "dest": "/api/social-post.js" },
     { "src": "/api/news-post",        "dest": "/api/news-post.js" },
+    { "src": "/api/health-agent",     "dest": "/api/health-agent.js" },
+    { "src": "/api/finance-agent",    "dest": "/api/finance-agent.js" },
+    { "src": "/api/sales-agent",      "dest": "/api/sales-agent.js" },
+    { "src": "/api/ceo-agent",        "dest": "/api/ceo-agent.js" },
+    { "src": "/api/breaking-news",    "dest": "/api/breaking-news.js" },
+    { "src": "/api/ideas-agent",      "dest": "/api/ideas-agent.js" },
     { "src": "/api/og-image",         "dest": "/api/feed.js" },
     { "src": "/api/meta-webhook",     "dest": "/api/webhook.js" },
     { "src": "/api/v1/risks(.*)",     "dest": "/api/gnews.js?__route=risks" },
@@ -132,7 +156,13 @@
     { "src": "/app",                 "dest": "/app.html" },
     { "src": "/login",               "dest": "/login.html" },
     { "src": "/admin",               "dest": "/admin.html" },
-    { "src": "/russia-sanctions",        "dest": "/russia-sanctions.html" },
+    { "src": "/india-pakistan-war-2026",  "dest": "/india-pakistan-war-2026.html" },
+    { "src": "/iran-us-conflict",         "dest": "/iran-us-conflict.html" },
+    { "src": "/gold-price-record-2026",   "dest": "/gold-price-record-2026.html" },
+    { "src": "/us-china-trade-war",       "dest": "/us-china-trade-war.html" },
+    { "src": "/tariff-war-2026",          "dest": "/tariff-war-2026.html" },
+    { "src": "/global-conflicts-2026",    "dest": "/global-conflicts-2026.html" },
+    { "src": "/russia-sanctions",         "dest": "/russia-sanctions.html" },
     { "src": "/oil-price-forecast-2026", "dest": "/oil-price-forecast-2026.html" },
     { "src": "/",                    "dest": "/index.html" }
   ]

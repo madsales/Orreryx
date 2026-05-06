@@ -668,17 +668,32 @@ export default async function handler(req, res) {
   // Map UI lang code → GDELT sourcelang param value. 'all' = omit (multilingual).
   const sourcelang = lang === 'all' ? null : (GDELT_LANG[lang] || 'english');
 
-  const gdeltFetch = (timespan) => Promise.allSettled(
-    STREAMS.map(s =>
-      fetch(gdeltUrl(s.query, s.max, sourcelang, country !== 'ALL' ? country : null, timespan), {
-        headers: { 'User-Agent': 'OrreryIntelligence/1.0 (https://www.orreryx.io)' },
-        signal:  AbortSignal.timeout(9000),
-      })
-        .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
-        .then(j => parseArticles(j.articles).map(e => ({ ...e, lang: lang === 'all' ? 'en' : lang })))
-        .catch(() => [])
-    )
-  );
+  // Batch fetches in groups of 2 with 1.2 s delays to avoid GDELT rate limiting
+  // (GDELT enforces ~1 req/s per IP; firing 11 at once triggers throttling → 0 events)
+  const gdeltFetch = async (timespan) => {
+    const BATCH  = 2;
+    const DELAY  = 1200; // ms between batches
+    const out    = [];
+    for (let i = 0; i < STREAMS.length; i += BATCH) {
+      const slice = STREAMS.slice(i, i + BATCH);
+      const batch = await Promise.allSettled(
+        slice.map(s =>
+          fetch(gdeltUrl(s.query, s.max, sourcelang, country !== 'ALL' ? country : null, timespan), {
+            headers: { 'User-Agent': 'OrreryIntelligence/1.0 (https://www.orreryx.io)' },
+            signal:  AbortSignal.timeout(9000),
+          })
+            .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
+            .then(j => parseArticles(j.articles).map(e => ({ ...e, lang: lang === 'all' ? 'en' : lang })))
+            .catch(() => [])
+        )
+      );
+      out.push(...batch);
+      if (i + BATCH < STREAMS.length) {
+        await new Promise(r => setTimeout(r, DELAY));
+      }
+    }
+    return out;
+  };
 
   try {
     // Try 24h first; if GDELT returns nothing (outage or too narrow), retry with 48h
