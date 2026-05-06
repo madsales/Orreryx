@@ -88,27 +88,27 @@ async function setLastPostTime() {
 // ── Fetch breaking events from Orrery's own feed ──────────────────────────────
 
 async function fetchBreakingEvents() {
-  // Try GDELT via our own events API first
-  const r = await fetch('https://orreryx.io/api/events?timespan=3h&maxrecords=20', {
+  // Primary: GNews feed (fast, reliable, always returns articles)
+  const r = await fetch('https://orreryx.io/api/gnews', {
     signal: AbortSignal.timeout(12000),
     headers: { 'User-Agent': 'Orrery-BreakingNewsAgent/1.0' },
   }).catch(() => null);
 
   if (r?.ok) {
     const j = await r.json().catch(() => null);
-    if (j?.events?.length) return j.events;   // events API returns { events: [...] }
-    if (j?.articles?.length) return j.articles; // gnews fallback shape
+    if (j?.articles?.length) return j.articles;
     if (Array.isArray(j) && j.length) return j;
   }
 
-  // Fallback: GNews feed
-  const r2 = await fetch('https://orreryx.io/api/gnews', {
-    signal: AbortSignal.timeout(12000),
+  // Fallback: GDELT events API (slower due to batching)
+  const r2 = await fetch('https://orreryx.io/api/events', {
+    signal: AbortSignal.timeout(25000),
+    headers: { 'User-Agent': 'Orrery-BreakingNewsAgent/1.0' },
   }).catch(() => null);
 
   if (r2?.ok) {
     const j2 = await r2.json().catch(() => null);
-    return j2?.articles || [];
+    if (j2?.events?.length) return j2.events;
   }
 
   return [];

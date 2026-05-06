@@ -7,6 +7,7 @@ const CHECKS = [
   {
     name: 'News Coverage (GDELT)',
     url: 'https://orreryx.io/api/events',
+    timeout: 28000, // GDELT batches requests with delays — needs more time
     validate: j => j && j.count > 0,
     detail: j => `${j?.count || 0} events`,
   },
@@ -80,7 +81,7 @@ export default async function handler(req, res) {
   for (const check of CHECKS) {
     const start = Date.now();
     try {
-      const r  = await fetch(check.url, { signal: AbortSignal.timeout(12000) });
+      const r  = await fetch(check.url, { signal: AbortSignal.timeout(check.timeout || 12000) });
       const ms = Date.now() - start;
 
       let ok = r.ok;

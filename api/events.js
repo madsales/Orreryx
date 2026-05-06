@@ -672,7 +672,7 @@ export default async function handler(req, res) {
   // (GDELT enforces ~1 req/s per IP; firing 11 at once triggers throttling → 0 events)
   const gdeltFetch = async (timespan) => {
     const BATCH  = 2;
-    const DELAY  = 1200; // ms between batches
+    const DELAY  = 800; // ms between batches
     const out    = [];
     for (let i = 0; i < STREAMS.length; i += BATCH) {
       const slice = STREAMS.slice(i, i + BATCH);
