@@ -366,7 +366,7 @@ export default async function handler(req, res) {
 
     try {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 55000);
+      const timer = setTimeout(() => controller.abort(), 50000);
       const cronSecret = process.env.CRON_SECRET || '';
       const r = await fetch(url, {
         headers: {
