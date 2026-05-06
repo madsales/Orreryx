@@ -158,11 +158,25 @@ Only include stories with score >= 6. If none qualify, return [].`;
   } catch (_) { return []; }
 }
 
-// ── Send email brief via Resend ───────────────────────────────────────────────
+// ── Send email via Gmail SMTP (nodemailer) ────────────────────────────────────
+
+async function gmailSend(to, subject, html) {
+  const { default: nodemailer } = await import('nodemailer');
+  const user = process.env.GMAIL_USER;
+  const pass = process.env.GMAIL_APP_PASSWORD;
+  if (!user || !pass) return false;
+  const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: { user, pass },
+  });
+  await transporter.sendMail({ from: `Orrery CMO <${user}>`, to, subject, html });
+  return true;
+}
+
+// ── Send email brief ──────────────────────────────────────────────────────────
 
 async function sendBriefEmail(brief, adminEmail) {
-  const key = process.env.RESEND_API_KEY;
-  if (!key || !adminEmail) return false;
+  if (!adminEmail) return false;
 
   const isBreaking = brief.type === 'breaking';
   const typeLabel  = isBreaking ? '🔴 BREAKING NEWS' : '📰 Regular News';
@@ -275,19 +289,9 @@ async function sendBriefEmail(brief, adminEmail) {
     ? `🔴 BREAKING: ${brief.headline.slice(0, 60)}${brief.headline.length > 60 ? '...' : ''}`
     : `📰 Post Brief: ${brief.headline.slice(0, 60)}${brief.headline.length > 60 ? '...' : ''}`;
 
-  const r = await fetch('https://api.resend.com/emails', {
-    method:  'POST',
-    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-    body:    JSON.stringify({
-      from:    'Orrery CMO <hello@orreryx.io>',
-      to:      [adminEmail],
-      subject,
-      html,
-    }),
-    signal: AbortSignal.timeout(10000),
-  }).catch(() => null);
-
-  return r?.ok ?? false;
+  try {
+    return await gmailSend(adminEmail, subject, html);
+  } catch (_) { return false; }
 }
 
 // ── Handler ───────────────────────────────────────────────────────────────────

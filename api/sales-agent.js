@@ -40,23 +40,19 @@ async function upstashSet(key, value, exSeconds = null) {
   return upstashRaw(cmd);
 }
 
-// ── Email helper ──────────────────────────────────────────────────────────────
+// ── Email helper (Gmail SMTP via nodemailer) ──────────────────────────────────
 
 async function sendEmail(to, subject, html) {
-  const key = process.env.RESEND_API_KEY;
-  if (!key || !to) return false;
-  const r = await fetch('https://api.resend.com/emails', {
-    method:  'POST',
-    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-    body:    JSON.stringify({
-      from:    'Orrery <hello@orreryx.io>',
-      to:      [to],
-      subject,
-      html,
-    }),
-    signal: AbortSignal.timeout(10000),
-  }).catch(() => null);
-  return r?.ok ?? false;
+  if (!to) return false;
+  try {
+    const { default: nodemailer } = await import('nodemailer');
+    const user = process.env.GMAIL_USER;
+    const pass = process.env.GMAIL_APP_PASSWORD;
+    if (!user || !pass) return false;
+    const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user, pass } });
+    await transporter.sendMail({ from: `Orrery <${user}>`, to, subject, html });
+    return true;
+  } catch (_) { return false; }
 }
 
 // ── Email templates ───────────────────────────────────────────────────────────

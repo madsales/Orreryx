@@ -52,19 +52,15 @@ async function upstashSet(key, value) {
 }
 
 async function sendEmail(to, subject, html) {
-  const key = process.env.RESEND_API_KEY;
-  if (!key || !to) return;
-  await fetch('https://api.resend.com/emails', {
-    method:  'POST',
-    headers: { Authorization: `Bearer ${key}`, 'Content-Type': 'application/json' },
-    body:    JSON.stringify({
-      from: 'Orrery COO Agent <coo@orreryx.io>',
-      to:   [to],
-      subject,
-      html,
-    }),
-    signal: AbortSignal.timeout(10000),
-  }).catch(() => {});
+  if (!to) return;
+  try {
+    const { default: nodemailer } = await import('nodemailer');
+    const user = process.env.GMAIL_USER;
+    const pass = process.env.GMAIL_APP_PASSWORD;
+    if (!user || !pass) return;
+    const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user, pass } });
+    await transporter.sendMail({ from: `Orrery COO <${user}>`, to, subject, html });
+  } catch (_) {}
 }
 
 // ── Handler ───────────────────────────────────────────────────────────────────
