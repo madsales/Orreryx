@@ -388,6 +388,30 @@ export default async function handler(req, res) {
 
   const emailSent = await sendEmail(adminEmail, subject, html);
 
+  // ── Write structured summary to Redis for family intelligence ─────────────────
+  const upstashUrl   = process.env.UPSTASH_REDIS_REST_URL;
+  const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (upstashUrl && upstashToken) {
+    const avgLoad = Math.round(auditResults.reduce((s, p) => s + p.loadMs, 0) / auditResults.length);
+    const seoSummary = {
+      ts:               Date.now(),
+      score:            Math.round(((auditResults.length - pagesWithIssues) / auditResults.length) * 100),
+      pagesAudited:     auditResults.length,
+      pagesWithIssues,
+      pagesWithWarnings: auditResults.filter(p => p.warnings.length > 0).length,
+      avgLoadMs:        avgLoad,
+      topIssues:        auditResults.filter(p => p.issues.length > 0).slice(0, 3).map(p => `${p.path}: ${p.issues[0]}`),
+      slowPages:        auditResults.filter(p => p.loadMs > 2500).map(p => p.path),
+      missingFromSitemap: sitemapResult.missingPaths,
+      topRecommendation:  recommendations.slice(0, 500),
+    };
+    await fetch(upstashUrl, {
+      method:  'POST',
+      headers: { Authorization: `Bearer ${upstashToken}`, 'Content-Type': 'application/json' },
+      body:    JSON.stringify(['SET', 'seo:last_audit', JSON.stringify(seoSummary), 'EX', 604800]),
+    }).catch(() => {});
+  }
+
   return res.status(200).json({
     ok:    true,
     pages: auditResults.length,

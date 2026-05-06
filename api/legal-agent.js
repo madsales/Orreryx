@@ -375,6 +375,28 @@ export default async function handler(req, res) {
 
   const emailSent = await sendEmail(adminEmail, subject, html);
 
+  // ── Write structured summary to Redis for family intelligence ─────────────────
+  const upstashUrl   = process.env.UPSTASH_REDIS_REST_URL;
+  const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (upstashUrl && upstashToken) {
+    const riskLevel = failing > 2 ? 'HIGH' : failing > 0 ? 'MEDIUM' : 'LOW';
+    const legalSummary = {
+      ts:           Date.now(),
+      riskLevel,
+      passing:      checkResults.filter(c => c.pass).length,
+      warnings:     checkResults.filter(c => c.warning).length,
+      failing,
+      topIssues:    checkResults.filter(c => !c.pass).map(c => `${c.category}: ${c.item}`),
+      topWarnings:  checkResults.filter(c => c.warning).map(c => c.item).slice(0, 3),
+      analysisSnippet: analysis.slice(0, 400),
+    };
+    await fetch(upstashUrl, {
+      method:  'POST',
+      headers: { Authorization: `Bearer ${upstashToken}`, 'Content-Type': 'application/json' },
+      body:    JSON.stringify(['SET', 'legal:last_audit', JSON.stringify(legalSummary), 'EX', 604800]),
+    }).catch(() => {});
+  }
+
   return res.status(200).json({
     ok:          true,
     passing:     checkResults.filter(c => c.pass).length,

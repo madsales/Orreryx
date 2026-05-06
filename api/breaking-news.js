@@ -343,6 +343,18 @@ export default async function handler(req, res) {
   if (results.twitter || results.linkedin) {
     await markPosted(url);
     await setLastPostTime();
+    // Write last story to Redis for family intelligence (CEO, Ideas agents read this)
+    await upstashCmd(['SET', 'breaking:last_story', JSON.stringify({
+      ts:           Date.now(),
+      title:        article.title,
+      country:      country.name,
+      countryCode:  country.code || '',
+      url,
+      score,
+      marketImpact: country.impact,
+      twitterId:    results.twitter,
+      linkedinId:   results.linkedin,
+    }), 'EX', 86400]);
   }
 
   return res.status(200).json({

@@ -4,6 +4,20 @@
 // Redis key: ideas:latest (JSON, 48h TTL)
 // Required env vars: ANTHROPIC_API_KEY, UPSTASH_REDIS_REST_URL, CRON_SECRET
 
+// ── Redis helper ──────────────────────────────────────────────────────────────
+async function redisGet(key) {
+  const url   = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return null;
+  const r = await fetch(`${url}/get/${encodeURIComponent(key)}`, {
+    headers: { Authorization: `Bearer ${token}` },
+    signal:  AbortSignal.timeout(5000),
+  }).catch(() => null);
+  if (!r?.ok) return null;
+  const j = await r.json().catch(() => null);
+  return j?.result ?? null;
+}
+
 export default async function handler(req, res) {
   const cronSecret  = process.env.CRON_SECRET;
   const authHeader  = req.headers['authorization'];
@@ -16,6 +30,30 @@ export default async function handler(req, res) {
   const upstashToken = process.env.UPSTASH_REDIS_REST_TOKEN;
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const today        = new Date().toISOString().split('T')[0];
+
+  // ── Read sibling agent data for smarter context ───────────────────────────────
+  let seoContext = '';
+  let breakingContext = '';
+  let cfoContext = '';
+  try {
+    const [seoRaw, breakingRaw, cfoRaw] = await Promise.all([
+      redisGet('seo:last_audit'),
+      redisGet('breaking:last_story'),
+      redisGet('cfo:last_week'),
+    ]);
+    if (seoRaw) {
+      const seo = JSON.parse(seoRaw);
+      seoContext = `SEO score: ${seo.score}/100. Top issues: ${(seo.topIssues || []).slice(0,2).join('; ') || 'none'}. Slow pages: ${(seo.slowPages || []).join(', ') || 'none'}.`;
+    }
+    if (breakingRaw) {
+      const b = JSON.parse(breakingRaw);
+      breakingContext = `Last breaking story posted ${Math.round((Date.now() - b.ts) / 3600000)}h ago: "${b.title}" (${b.country}) — market impact: ${b.marketImpact}.`;
+    }
+    if (cfoRaw) {
+      const cfo = JSON.parse(cfoRaw);
+      cfoContext = `MRR: $${cfo.mrr || 0}. Signups this week: ${cfo.weeklySignups || 0}. Visitor→Signup: ${cfo.pageViews ? ((cfo.signups/cfo.pageViews)*100).toFixed(2) : 0}%.`;
+    }
+  } catch (_) {}
 
   // ── Fetch latest geopolitical events for context ──────────────────────────────
   let eventsContext = '- India-Pakistan ceasefire tensions remain fragile\n- Gold hits new ATH above $3,400\n- Iran nuclear talks stalled\n- US-China tariff war escalating';
@@ -53,12 +91,17 @@ export default async function handler(req, res) {
           max_tokens: 900,
           messages: [{
             role: 'user',
-            content: `You are the Ideas Agent for Orrery (orreryx.io), a real-time geopolitical market intelligence SaaS for investors and analysts (orreryx.io).
+            content: `You are the Ideas Agent for Orrery (orreryx.io), a real-time geopolitical market intelligence SaaS targeting a $1B company valuation.
 
 Today's top geopolitical events:
 ${eventsContext}
 
-Generate fresh, specific, high-quality ideas as raw JSON only (no markdown, no explanation):
+Intelligence from sibling agents:
+${seoContext ? `• SEO Agent: ${seoContext}` : ''}
+${breakingContext ? `• Breaking News Agent: ${breakingContext}` : ''}
+${cfoContext ? `• CFO Agent: ${cfoContext}` : ''}
+
+Use this intelligence to generate ideas that directly address the SEO gaps, build on the breaking story, or improve conversion. Generate fresh, specific, high-quality ideas as raw JSON only (no markdown, no explanation):
 {
   "social_posts": [
     {
