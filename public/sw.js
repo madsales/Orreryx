@@ -1,5 +1,5 @@
-// Service Worker for Orreryx — Web Push Notifications + Offline Cache
-const CACHE_NAME = 'orreryx-v1';
+// Service Worker for OrreryX — Web Push Notifications + Offline Cache
+const CACHE_NAME = 'orreryx-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -50,9 +50,9 @@ self.addEventListener('fetch', event => {
 
 // Push notification handler
 self.addEventListener('push', event => {
-  const data = event.data ? event.data.json() : { title: 'Orreryx Alert', body: 'New geopolitical risk update', url: '/' };
+  const data = event.data ? event.data.json() : { title: 'OrreryX Alert', body: 'New geopolitical risk update', url: '/' };
   event.waitUntil(
-    self.registration.showNotification(data.title || 'Orreryx Intelligence', {
+    self.registration.showNotification(data.title || 'OrreryX Intelligence', {
       body: data.body || 'New geopolitical risk update',
       icon: '/icon-192.png',
       badge: '/icon-72.png',

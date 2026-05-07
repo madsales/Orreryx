@@ -1,5 +1,6 @@
 // promo.js — Orreryx upgrade nudge bar
-// Include on any free content page: <script src="/promo.js" defer></script>
+// Include on any free content page: <script src="/push-init.js" defer></script>
+<script src="/promo.js" defer></script>
 // Hides automatically for Command (plan=c) subscribers.
 
 (function () {
