@@ -707,6 +707,9 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
+if (location.hostname === 'orreryx.io') {
+  location.replace('https://www.orreryx.io' + location.pathname + location.search + location.hash);
+}
 // ── AUTH GATE — Command tier only ────────────────────────────────────────────
 (function() {
   const isAdminCookie = document.cookie.split(';').some(c => c.trim() === 'orrery_adm=1');

@@ -304,6 +304,9 @@ nav{position:sticky;top:0;z-index:200;background:rgba(9,9,11,.9);backdrop-filter
 </div>
 
 <script>
+if (location.hostname === 'orreryx.io') {
+  location.replace('https://www.orreryx.io' + location.pathname + location.search + location.hash);
+}
 // ── AUTH GATE ──────────────────────────────────────────────────────────────────
 (function() {
   const isAdminCookie = document.cookie.split(';').some(c => c.trim() === 'orrery_adm=1');
