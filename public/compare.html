@@ -501,6 +501,11 @@ function renderComparison(){
   document.getElementById('marketTagsB').innerHTML = tagsB;
 }
 
+// www redirect — cookie is only shared under www.orreryx.io
+if (location.hostname === 'orreryx.io') {
+  location.replace('https://www.orreryx.io' + location.pathname + location.search + location.hash);
+}
+
 // Auth check — command tier OR admin session OR paid_verified
 const _sess = JSON.parse(localStorage.getItem('orrery_session') || '{}');
 const _pvPlan = (localStorage.getItem('orrery_paid_verified') || '').split('|')[0].toLowerCase();
