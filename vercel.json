@@ -12,6 +12,7 @@
     { "source": "/iran-israel",          "destination": "/iran-nuclear",          "permanent": true },
     { "source": "/africa-conflict",      "destination": "/sudan-war",             "permanent": true },
     { "source": "/global-conflicts-2025","destination": "/global-conflicts-2026", "permanent": true },
+    { "source": "/:file.html",           "destination": "/:file",                "permanent": true }
   ],
   "headers": [
     {
@@ -60,7 +61,6 @@
     "api/legal-agent.js":  { "maxDuration": 60 }
   },
   "routes": [
-    { "src": "/((?!api/).*)\\.html$", "headers": { "Location": "/$1" }, "status": 301 },
     { "src": "/api/buffer-post",      "dest": "/api/buffer-post.js" },
     { "src": "/api/social-post",      "dest": "/api/social-post.js" },
     { "src": "/api/news-post",        "dest": "/api/news-post.js" },
