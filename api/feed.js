@@ -458,95 +458,129 @@ async function handleQuotes(req, res) {
 }
 
 // ─────────── VIDEOS (YouTube RSS) ────────────────────────────────────────────
+// reg: channel's primary region — used to boost/penalise relevance
 const CHANNELS=[
-  // Global English
-  {name:'CNN',        id:'UCupvZG-5ko_eiXAupbDfxWw'},
-  {name:'BBC News',   id:'UCnUYZLuoy1rq1aVMwx4aTzw'},
-  {name:'Reuters',    id:'UChqUTb7kYRX8-EiaN3XFrSQ'},
-  {name:'Al Jazeera', id:'UCNye-wNBqNL5ZzHSJj3l8Bg'},
-  {name:'Sky News',   id:'UCIK31bDqkH8lsYsYMoHcFJQ'},
-  {name:'France 24',  id:'UCQfwfsi5VrQ8yKZ-UWmAEFg'},
-  {name:'DW News',    id:'UCknLrEdhRCp1aegoMqRaCZg'},
-  {name:'NBC News',   id:'UCeY0bbntWzzVIaj2z3QigXg'},
-  {name:'ABC News',   id:'UCBi2mrWuNuyYy4gbM6fU18Q'},
-  {name:'CGTN',       id:'UCIdxT5oAFTCw8KGsH6PCUSA'},
-  {name:'TRT World',  id:'UCg7Bc_rHNf8t-5LAamIDivg'},
-  {name:'Euronews',   id:'UCKy1dAqELo0zrOtPkf0aNSg'},
-  {name:'NHK World',  id:'UCa-g4n1NsKvHvJlKIFIDSAg'},
-  {name:'PBS NewsHour',id:'UCjIsgXPblEE73-ekFAt8tDg'},
-  {name:'Bloomberg',  id:'UCIALMKvObZNtJ6Ts-4BLBPQ'},
-  {name:'WION',       id:'UCsHBMYP0M2Z8S9Kxmv0exgg'},
+  // Global English — cover everywhere
+  {name:'CNN',             id:'UCupvZG-5ko_eiXAupbDfxWw', reg:'global'},
+  {name:'BBC News',        id:'UCnUYZLuoy1rq1aVMwx4aTzw', reg:'global'},
+  {name:'Reuters',         id:'UChqUTb7kYRX8-EiaN3XFrSQ', reg:'global'},
+  {name:'Al Jazeera',      id:'UCNye-wNBqNL5ZzHSJj3l8Bg', reg:'global'},
+  {name:'Sky News',        id:'UCIK31bDqkH8lsYsYMoHcFJQ', reg:'global'},
+  {name:'France 24',       id:'UCQfwfsi5VrQ8yKZ-UWmAEFg', reg:'global'},
+  {name:'DW News',         id:'UCknLrEdhRCp1aegoMqRaCZg', reg:'global'},
+  {name:'NBC News',        id:'UCeY0bbntWzzVIaj2z3QigXg', reg:'global'},
+  {name:'ABC News',        id:'UCBi2mrWuNuyYy4gbM6fU18Q', reg:'global'},
+  {name:'Bloomberg',       id:'UCIALMKvObZNtJ6Ts-4BLBPQ', reg:'global'},
+  {name:'Associated Press',id:'UC16niRr50-MSBwiO3He6o8A', reg:'global'},
+  // Regional — Africa (primary)
+  {name:'Channels TV',     id:'UCmqVQJhDjIBT2mFHLbLZ4nQ', reg:'africa'}, // Nigeria
+  {name:'Africanews',      id:'UCG--bF-fFr0J1CiCPYbZnZg', reg:'africa'}, // pan-Africa English
+  {name:'SABC News',       id:'UCfR4oCaFzLuWy9ixnZxzYhw', reg:'africa'}, // South Africa
+  {name:'NTA News',        id:'UCmB9gMSMvTP3gjkuMqwHHxQ', reg:'africa'}, // Nigeria
+  {name:'KTN News Kenya',  id:'UCMt3A6l8Lm3d3HN52DP5SZA', reg:'africa'}, // Kenya
+  {name:'Arise News',      id:'UCQb-0Qf-sAOQRSKi5fC3pCw', reg:'africa'}, // pan-Africa
+  {name:'TVC News Nigeria',id:'UCp8dBCCQSH1WBWN0l7oJmIA', reg:'africa'}, // Nigeria
   // Regional — South Asia
-  {name:'NDTV',       id:'UCZFMm1mMw0F81Z37aaEzTUA'},
-  {name:'India Today',id:'UCYPvAwZP8pZhSMW8qs7cVCw'},
-  {name:'Geo News',   id:'UCEHsKBHMEeH-5xO9JPVXCJA'},
+  {name:'NDTV',            id:'UCZFMm1mMw0F81Z37aaEzTUA', reg:'southasia'},
+  {name:'India Today',     id:'UCYPvAwZP8pZhSMW8qs7cVCw', reg:'southasia'},
+  {name:'Geo News',        id:'UCEHsKBHMEeH-5xO9JPVXCJA', reg:'southasia'},
+  {name:'WION',            id:'UCsHBMYP0M2Z8S9Kxmv0exgg', reg:'southasia'},
   // Regional — Middle East
-  {name:'Al Arabiya', id:'UCQfwfsi5VrQ8yKZ-UGuJ-TA'},
-  {name:'i24 News',   id:'UCFqcDdWEC3GKNKouADkuAqQ'},
-  // Regional — Africa
-  {name:'Channels TV',id:'UCmqVQJhDjIBT2mFHLbLZ4nQ'},
-  // Regional — East Asia
-  {name:'Arirang',    id:'UCVGaKt26MkEWnrHFo4pqNaQ'},
-  // Investigative
-  {name:'Associated Press',id:'UC16niRr50-MSBwiO3He6o8A'},
-  {name:'TOLOnews',   id:'UCJuTXHKQ7tD8tF35wR3oPsA'},
+  {name:'Al Arabiya',      id:'UCQfwfsi5VrQ8yKZ-UGuJ-TA', reg:'mideast'},
+  {name:'i24 News',        id:'UCFqcDdWEC3GKNKouADkuAqQ', reg:'mideast'},
+  {name:'TRT World',       id:'UCg7Bc_rHNf8t-5LAamIDivg', reg:'mideast'},
+  {name:'TOLOnews',        id:'UCJuTXHKQ7tD8tF35wR3oPsA', reg:'mideast'},
+  // Regional — East Asia / Pacific
+  {name:'CGTN',            id:'UCIdxT5oAFTCw8KGsH6PCUSA', reg:'eastasia'},
+  {name:'NHK World',       id:'UCa-g4n1NsKvHvJlKIFIDSAg', reg:'eastasia'},
+  {name:'Arirang',         id:'UCVGaKt26MkEWnrHFo4pqNaQ', reg:'eastasia'},
+  // Regional — Americas / Europe
+  {name:'PBS NewsHour',    id:'UCjIsgXPblEE73-ekFAt8tDg', reg:'americas'},
+  {name:'Euronews',        id:'UCKy1dAqELo0zrOtPkf0aNSg', reg:'europe'},
 ];
+
+// ── Region detector — maps query keywords → channel region ──────────────────
+function detectRegion(q){
+  const t=q.toLowerCase();
+  if(/\b(africa|nigeria|kenya|ghana|ethiopia|sudan|egypt|congo|tanzania|south africa|senegal|mali|somalia|mozambique|zimbabwe|angola|cameroon|ivory coast|uganda|rwanda|zambia|niger|burkina|sahel|nairobi|lagos|kinshasa|addis|khartoum|johannesburg|abuja|accra|dakar)\b/.test(t)) return 'africa';
+  if(/\b(india|pakistan|bangladesh|nepal|sri lanka|kashmir|modi|delhi|mumbai|islamabad|karachi|dhaka|kathmandu|sindoor|indus)\b/.test(t)) return 'southasia';
+  if(/\b(iran|israel|gaza|saudi|dubai|gulf|iraq|syria|yemen|lebanon|hamas|hezbollah|houthi|idf|irgc|tehran|riyadh|baghdad|beirut|sanaa|hormuz)\b/.test(t)) return 'mideast';
+  if(/\b(china|taiwan|hong kong|korea|japan|beijing|shanghai|pyongyang|seoul|tokyo|pla|ccp|tsai|kim jong)\b/.test(t)) return 'eastasia';
+  if(/\b(russia|ukraine|nato|europe|poland|germany|france|brussels|moscow|kyiv|kremlin|putin|zelensky|donbas|crimea)\b/.test(t)) return 'europe';
+  if(/\b(usa|america|washington|new york|congress|white house|pentagon|mexico|brazil|colombia|venezuela|argentina)\b/.test(t)) return 'americas';
+  return 'global';
+}
+
 const SYNONYMS={
-  military:  ['military','war','attack','strike','troops','army','airstrike','missile','drone','combat','offensive','forces'],
-  conflict:  ['conflict','war','fighting','battle','clash','siege','frontline'],
-  oil:       ['oil','crude','opec','petroleum','energy','barrel','brent'],
-  nuclear:   ['nuclear','atomic','uranium','iaea','warhead','nuke'],
-  economy:   ['economy','economic','gdp','inflation','recession','sanctions','tariff'],
-  iran:      ['iran','iranian','tehran','irgc','hormuz'],
-  russia:    ['russia','russian','kremlin','putin','moscow'],
-  china:     ['china','chinese','beijing','pla','ccp'],
-  ukraine:   ['ukraine','ukrainian','kyiv','zelensky','donbas'],
-  israel:    ['israel','israeli','gaza','idf','hamas','netanyahu','west bank'],
-  india:     ['india','indian','modi','delhi','mumbai','kashmir'],
-  pakistan:  ['pakistan','pakistani','islamabad','karachi','imf'],
-  korea:     ['korea','korean','pyongyang','kim jong','seoul'],
-  taiwan:    ['taiwan','taiwanese','strait','tsai'],
-  turkey:    ['turkey','turkish','erdogan','ankara'],
-  syria:     ['syria','syrian','damascus','aleppo'],
-  yemen:     ['yemen','yemeni','houthi','sanaa'],
-  sudan:     ['sudan','sudanese','khartoum','darfur'],
-  somalia:   ['somalia','somali','mogadishu','al-shabaab'],
-  afghanistan:['afghanistan','afghan','taliban','kabul'],
-  myanmar:   ['myanmar','burma','burmese','junta','rangoon'],
+  military:    ['military','war','attack','strike','troops','army','airstrike','missile','drone','combat','offensive','forces'],
+  conflict:    ['conflict','war','fighting','battle','clash','siege','frontline'],
+  oil:         ['oil','crude','opec','petroleum','energy','barrel','brent'],
+  nuclear:     ['nuclear','atomic','uranium','iaea','warhead','nuke'],
+  economy:     ['economy','economic','gdp','inflation','recession','sanctions','tariff'],
+  iran:        ['iran','iranian','tehran','irgc','hormuz'],
+  russia:      ['russia','russian','kremlin','putin','moscow'],
+  china:       ['china','chinese','beijing','pla','ccp'],
+  ukraine:     ['ukraine','ukrainian','kyiv','zelensky','donbas'],
+  israel:      ['israel','israeli','gaza','idf','hamas','netanyahu','west bank'],
+  india:       ['india','indian','modi','delhi','mumbai','kashmir'],
+  pakistan:    ['pakistan','pakistani','islamabad','karachi'],
+  korea:       ['korea','korean','pyongyang','kim jong','seoul'],
+  taiwan:      ['taiwan','taiwanese','strait','tsai'],
+  turkey:      ['turkey','turkish','erdogan','ankara'],
+  syria:       ['syria','syrian','damascus','aleppo'],
+  yemen:       ['yemen','yemeni','houthi','sanaa'],
+  sudan:       ['sudan','sudanese','khartoum','darfur','rsf'],
+  somalia:     ['somalia','somali','mogadishu','al-shabaab'],
+  ethiopia:    ['ethiopia','ethiopian','addis','tigray','amhara','oromo'],
+  nigeria:     ['nigeria','nigerian','lagos','abuja','boko haram','nnpc'],
+  kenya:       ['kenya','kenyan','nairobi','mombasa'],
+  congo:       ['congo','drc','kinshasa','eastern congo','m23'],
+  southafrica: ['south africa','johannesburg','pretoria','cape town','anc','eskom','zuma','ramaphosa'],
+  ghana:       ['ghana','accra','ghanaian'],
+  africa:      ['africa','african','sahel','sub-saharan','sahara'],
+  afghanistan: ['afghanistan','afghan','taliban','kabul'],
+  myanmar:     ['myanmar','burma','burmese','junta','rangoon'],
 };
 const chanCache=new Map(); const vidCache=new Map();
 const CHAN_TTL=30*60*1000; const VID_TTL=10*60*1000;
 const STOP=new Set(['that','this','with','from','they','have','been','will','says','said','their','about','into','news']);
 function kwds(q){return [...new Set(q.toLowerCase().replace(/[^a-z0-9\s]/g,' ').split(/\s+/).filter(w=>w.length>=3&&!STOP.has(w)))]}
 function expand(kws){const e=new Set(kws);for(const k of kws){const s=SYNONYMS[k];if(s)s.forEach(x=>e.add(x));}return[...e];}
-function score(t,kws,exp){let s=0;const tl=t.toLowerCase();for(const k of kws)if(tl.includes(k))s+=2;for(const k of exp)if(!kws.includes(k)&&tl.includes(k))s+=1;return s;}
-function parseYt(xml,ch){const e=[];const re=/<entry>([\s\S]*?)<\/entry>/g;let m;
+// Regional scoring: boost matching region channels, penalise off-region specialists
+function scoreVideo(v, kws, exp, qReg){
+  let s=0; const tl=v.title.toLowerCase();
+  for(const k of kws) if(tl.includes(k)) s+=2;
+  for(const k of exp) if(!kws.includes(k)&&tl.includes(k)) s+=1;
+  if(s===0) return 0;
+  const cReg=v.reg||'global';
+  if(qReg!=='global'&&cReg!=='global'){
+    if(cReg===qReg) s+=2;          // boost: right region channel
+    else            s=Math.max(0,s-3); // penalise: specialist in wrong region
+  }
+  return s;
+}
+function parseYt(xml,ch,reg){const e=[];const re=/<entry>([\s\S]*?)<\/entry>/g;let m;
   while((m=re.exec(xml))!==null){const b=m[1];const id=b.match(/<yt:videoId>([^<]+)/);const ti=b.match(/<media:title>([^<]*)/)||b.match(/<title>([^<]*)/);const dt=b.match(/<published>([^<]+)/);
-  if(!id||!ti)continue;const v=id[1].trim();e.push({id:v,title:ti[1].replace(/&amp;/g,'&').trim(),thumb:'https://i.ytimg.com/vi/'+v+'/mqdefault.jpg',url:'https://www.youtube.com/watch?v='+v,date:dt?dt[1].substring(0,10):'',channel:ch});}return e;}
+  if(!id||!ti)continue;const v=id[1].trim();e.push({id:v,title:ti[1].replace(/&amp;/g,'&').trim(),thumb:'https://i.ytimg.com/vi/'+v+'/mqdefault.jpg',url:'https://www.youtube.com/watch?v='+v,date:dt?dt[1].substring(0,10):'',channel:ch,reg});}return e;}
 async function fetchChan(ch){const now=Date.now();const hit=chanCache.get(ch.id);if(hit&&now-hit.ts<CHAN_TTL)return hit.items;
-  try{const r=await fetch('https://www.youtube.com/feeds/videos.xml?channel_id='+ch.id,{signal:AbortSignal.timeout(5000)});if(!r.ok)return[];const xml=await r.text();const items=parseYt(xml,ch.name);chanCache.set(ch.id,{items,ts:now});return items;}catch{return[];}}
+  try{const r=await fetch('https://www.youtube.com/feeds/videos.xml?channel_id='+ch.id,{signal:AbortSignal.timeout(5000)});if(!r.ok)return[];const xml=await r.text();const items=parseYt(xml,ch.name,ch.reg||'global');chanCache.set(ch.id,{items,ts:now});return items;}catch{return[];}}
 async function handleVideos(req,res){
   const q=((req.query.q)||'').trim().substring(0,150);
   if(!q)return res.status(400).json({error:'q param required'});
   const ck=q.toLowerCase().replace(/\s+/g,' ');const cached=vidCache.get(ck);
   if(cached&&Date.now()-cached.ts<VID_TTL)return res.status(200).json(cached.data);
-  const kws=kwds(q);const exp=expand(kws);
+  const kws=kwds(q); const exp=expand(kws); const qReg=detectRegion(q);
   const all=(await Promise.all(CHANNELS.map(fetchChan))).flat();
-  const scored=all.map(v=>({...v,score:score(v.title,kws,exp)}));
+  const scored=all.map(v=>({...v,score:scoreVideo(v,kws,exp,qReg)}));
   scored.sort((a,b)=>b.score!==a.score?b.score-a.score:b.date.localeCompare(a.date));
 
-  // Deduplicate by video ID, then limit to 1 clip per channel for diversity,
-  // and require a minimum score of 2 so only genuinely relevant results show
+  // Deduplicate by video ID; max 1 clip per channel; score must be ≥ 2
   const seenIds=new Set(); const seenChannels=new Set(); const clips=[];
   for(const v of scored){
-    if(v.score<2) break; // sorted by score; once below threshold, done
-    if(seenIds.has(v.id)) continue;      // skip exact duplicate video
-    if(seenChannels.has(v.channel)){      // allow a second clip from same channel
-      // only if we have fewer than 2 results total and score is high
-      if(clips.length>=2||v.score<4) continue;
-    }
-    seenIds.add(v.id);
-    seenChannels.add(v.channel);
+    if(v.score<2) break;
+    if(seenIds.has(v.id)) continue;
+    if(seenChannels.has(v.channel)&&(clips.length>=2||v.score<5)) continue;
+    seenIds.add(v.id); seenChannels.add(v.channel);
     clips.push(v);
     if(clips.length>=3) break;
   }

@@ -4977,15 +4977,23 @@ const vidPopup = (() => {
     let left, top;
 
     if (currentPage === 'intel') {
-      // Anchor to the right panel (AI panel = 330px wide) so it never overlaps feed items
-      left = Math.max(210, W - 330 + 8);
-      // Clamp to viewport: don't let it spill off-screen right
-      if (left + pw > W - 8) left = W - pw - 8;
-      top  = Math.max(80, Math.min(mouseY - Math.round(ph / 2), H - ph - 8));
+      // Pin inside the right AI panel (330px wide) — never overlaps feed cards
+      left = Math.max(210, W - 330 + 10);
+      if (left + pw > W - 6) left = W - pw - 6;
+      // Vertically: follow cursor but clamp to panel bounds
+      top = Math.max(90, Math.min(mouseY - Math.round(ph / 2), H - ph - 8));
+
     } else if (currentPage === 'map') {
-      // Anchor to the left edge of the globe area so it never covers the globe or map sidebar
-      left = 210; // just right of the left sidebar
-      top  = Math.max(80, Math.min(mouseY - Math.round(ph / 2), H - ph - 8));
+      // Float ABOVE the hovered marker so it never covers adjacent markers
+      // Horizontally centre over cursor, keep inside globe area (left sidebar ~200px, map sidebar ~268px)
+      const globeRight = W - 268;
+      left = Math.round(mouseX - pw / 2);
+      left = Math.max(206, Math.min(left, globeRight - pw - 4));
+      // Show above cursor; if too close to top, flip below
+      top = mouseY - ph - 28;
+      if (top < 90) top = mouseY + 28;
+      top = Math.min(top, H - ph - 8);
+
     } else {
       // Other pages: follow cursor with boundary guards
       const rightBound = W - 16;
