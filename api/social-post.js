@@ -162,16 +162,21 @@ Only include stories with score >= 6. If none qualify, return [].`;
 // ── Send email via Gmail SMTP (nodemailer) ────────────────────────────────────
 
 async function gmailSend(to, subject, html) {
-  const { default: nodemailer } = await import('nodemailer');
-  const user = process.env.GMAIL_USER;
-  const pass = process.env.GMAIL_APP_PASSWORD;
-  if (!user || !pass) return false;
-  const transporter = nodemailer.createTransport({
-    service: 'gmail',
-    auth: { user, pass },
-  });
-  await transporter.sendMail({ from: `Orrery CMO <${user}>`, to, subject, html });
-  return true;
+  try {
+    const { default: nodemailer } = await import('nodemailer');
+    const user = process.env.GMAIL_USER;
+    const pass = process.env.GMAIL_APP_PASSWORD;
+    if (!user || !pass) return false;
+    const transporter = nodemailer.createTransport({
+      service: 'gmail',
+      auth: { user, pass },
+    });
+    await transporter.sendMail({ from: `Orrery CMO <${user}>`, to, subject, html });
+    return true;
+  } catch (err) {
+    console.error('[gmailSend] failed:', err?.message || err);
+    return false;
+  }
 }
 
 // ── Send email brief ──────────────────────────────────────────────────────────

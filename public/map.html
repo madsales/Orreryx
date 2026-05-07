@@ -714,8 +714,8 @@
     if (raw) {
       const session = JSON.parse(raw);
       const plan = (session.plan || '').toLowerCase().trim();
-      // Command plan code is 'c' — allow access
-      if (plan === 'c' || plan === 'command') return;
+      // Command plan code is 'c' — allow access; also allow Analyst ('a') and admin sessions
+      if (plan === 'c' || plan === 'command' || plan === 'a' || session.isAdmin) return;
     }
   } catch (_) {}
   // Not on Command — show paywall over the map (map still renders as teaser)

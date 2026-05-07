@@ -311,7 +311,7 @@ nav{position:sticky;top:0;z-index:200;background:rgba(9,9,11,.9);backdrop-filter
     if (raw) {
       const session = JSON.parse(raw);
       const plan = (session.plan || '').toLowerCase().trim();
-      if (plan === 'c' || plan === 'command') return;
+      if (plan === 'c' || plan === 'command' || plan === 'a' || session.isAdmin) return;
     }
   } catch (_) {}
   document.getElementById('paywall').style.display = 'flex';

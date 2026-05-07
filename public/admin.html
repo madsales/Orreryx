@@ -976,6 +976,16 @@ function showShell() {
   loadHealth();
   loadContent();
   loadFeedStats();
+  // Grant command-tier access on all pages (compare, watchlist, risk-dashboard, etc.)
+  const adminSess = {
+    plan: 'c',
+    email: 'admin@orreryx.io',
+    token: 'admin-' + (token || '').slice(0, 24) + '-' + Date.now(),
+    expires: Date.now() + 86400000,
+    isAdmin: true,
+  };
+  localStorage.setItem('orrery_session', JSON.stringify(adminSess));
+  localStorage.setItem('orrery_paid_verified', 'c|' + Date.now() + '|' + adminSess.token);
 }
 
 // Auto-login if token in session

@@ -501,8 +501,9 @@ function renderComparison(){
   document.getElementById('marketTagsB').innerHTML = tagsB;
 }
 
-// Auth check
-const isCommand = (JSON.parse(localStorage.getItem('orrery_session')||'{}').plan||'').toLowerCase()==='c';
+// Auth check — command tier OR admin session
+const _sess = JSON.parse(localStorage.getItem('orrery_session') || '{}');
+const isCommand = ['c','a'].includes((_sess.plan || '').toLowerCase()) || !!_sess.isAdmin;
 const overlay = document.getElementById('paywallOverlay');
 if(isCommand){
   overlay.style.display = 'none';

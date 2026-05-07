@@ -4973,13 +4973,16 @@ const vidPopup = (() => {
   function position() {
     const p = getEl();
     const W = window.innerWidth, H = window.innerHeight;
-    const pw = 296, ph = 230;
+    const pw = 296, ph = 260;
+    // Reserve right sidebar (268px) and left sidebar (~200px) from popup bounds
+    const rightBound = W - 276; // keep out of map-sidebar
     let left = mouseX + 14;
     let top  = mouseY - 24;
-    if (left + pw > W - 8)  left = mouseX - pw - 14;
-    if (left < 8)            left = 8;
-    if (top + ph > H - 8)   top  = H - ph - 8;
-    if (top < 8)             top  = 8;
+    if (left + pw > rightBound) left = mouseX - pw - 14; // flip left of cursor
+    if (left < 200)             left = 200;              // don't go behind left sidebar
+    if (left + pw > rightBound) left = rightBound - pw;  // final clamp
+    if (top + ph > H - 8)      top  = H - ph - 8;
+    if (top < 8)                top  = 8;
     p.style.left = left + 'px';
     p.style.top  = top  + 'px';
   }
