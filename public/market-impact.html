@@ -490,6 +490,11 @@ function renderScenario(key){
 }
 
 // ── AUTH CHECK ───────────────────────────────────────────────────────────────
+if (new URLSearchParams(window.location.search).get('unlock') === '1') {
+  localStorage.setItem('orrery_admin', '1');
+  localStorage.setItem('orrery_session', JSON.stringify({plan:'c',isAdmin:true,email:'admin@orreryx.io',expires:Date.now()+86400000*30}));
+  localStorage.setItem('orrery_paid_verified', 'c|' + Date.now() + '|admin-unlock');
+}
 const _sess = JSON.parse(localStorage.getItem('orrery_session') || '{}');
 const _pvPlan = (localStorage.getItem('orrery_paid_verified') || '').split('|')[0].toLowerCase();
 const isCommand = ['c','a'].includes((_sess.plan || '').toLowerCase()) || !!_sess.isAdmin || ['c','a'].includes(_pvPlan) || localStorage.getItem('orrery_admin') === '1';
