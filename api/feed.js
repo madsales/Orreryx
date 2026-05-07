@@ -548,8 +548,9 @@ export default async function handler(req, res) {
   if (req.method!=='GET') return res.status(405).json({error:'GET only'});
   // Route og-image requests (merged from og-image.js)
   if ((req.url||'').split('?')[0].includes('og-image')) return handleOgImage(req, res);
-  // Detect videos path — /api/videos routes here without type param
-  const isVideosPath = (req.url||'').split('?')[0].endsWith('/videos');
+  // Detect videos path — /api/videos routes here; check URL path or type param
+  const urlPath = (req.url||'').split('?')[0];
+  const isVideosPath = urlPath.includes('videos');
   const type = isVideosPath ? 'videos' : (req.query.type||'quotes').toLowerCase();
   if (type==='videos') return handleVideos(req,res);
   return handleQuotes(req,res); // default: quotes
