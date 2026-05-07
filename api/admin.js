@@ -138,8 +138,11 @@ export default async function handler(req, res) {
   }
 
   // ── Token check on all other actions ─────────────────────────────────────
-  const rawToken = (req.headers.authorization || '').replace('Bearer ', '').trim();
-  if (!adminPwd || !checkToken(rawToken, adminPwd))
+  // Accept either a signed Bearer token (from login) OR raw password via ?secret= / Authorization header
+  const rawToken   = (req.headers.authorization || '').replace('Bearer ', '').trim();
+  const secretParam = req.query.secret || '';
+  const authed = adminPwd && (checkToken(rawToken, adminPwd) || secretParam === adminPwd);
+  if (!authed)
     return res.status(401).json({ error: 'Unauthorized' });
 
   // ── LOGOUT ────────────────────────────────────────────────────────────────
