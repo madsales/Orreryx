@@ -350,7 +350,7 @@ async function sendEmail(to, subject, html) {
     const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user, pass } });
     await transporter.sendMail({ from: `Orrery SEO Agent <${user}>`, to, subject, html });
     return true;
-  } catch (_) { return false; }
+  } catch (err) { console.error('[SEO sendEmail]', err?.message||err); return false; }
 }
 
 // ── Handler ───────────────────────────────────────────────────────────────────

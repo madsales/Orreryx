@@ -305,7 +305,7 @@ async function sendBriefEmail(brief, adminEmail) {
 
   try {
     return await gmailSend(adminEmail, subject, html);
-  } catch (_) { return false; }
+  } catch (err) { console.error('[CMO gmailSend]', err?.message||err); return false; }
 }
 
 // ── Handler ───────────────────────────────────────────────────────────────────

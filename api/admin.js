@@ -385,6 +385,33 @@ export default async function handler(req, res) {
     }
   }
 
+  // ── TEST EMAIL ────────────────────────────────────────────────────────────────
+  if (action === 'test-email') {
+    const to = process.env.ADMIN_EMAIL;
+    const gmailUser = process.env.GMAIL_USER;
+    const gmailPass = process.env.GMAIL_APP_PASSWORD;
+    const missing = [];
+    if (!to)        missing.push('ADMIN_EMAIL');
+    if (!gmailUser) missing.push('GMAIL_USER');
+    if (!gmailPass) missing.push('GMAIL_APP_PASSWORD');
+    if (missing.length) {
+      return res.status(200).json({ ok: false, error: 'Missing env vars: ' + missing.join(', ') });
+    }
+    try {
+      const { default: nodemailer } = await import('nodemailer');
+      const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user: gmailUser, pass: gmailPass } });
+      await transporter.sendMail({
+        from: `Orrery Test <${gmailUser}>`,
+        to,
+        subject: '✅ Orrery email test — ' + new Date().toISOString(),
+        html: '<p>Email delivery is working correctly from Orrery agents.</p>'
+      });
+      return res.status(200).json({ ok: true, message: 'Test email sent to ' + to });
+    } catch (err) {
+      return res.status(200).json({ ok: false, error: err?.message || String(err) });
+    }
+  }
+
   return res.status(400).json({ error: 'Unknown action' });
 }
 

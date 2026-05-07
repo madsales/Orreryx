@@ -71,7 +71,7 @@ async function sendEmail(to, subject, html) {
     const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user, pass } });
     await transporter.sendMail({ from: `Orrery CEO <${user}>`, to, subject, html });
     return true;
-  } catch (_) { return false; }
+  } catch (err) { console.error('[CEO sendEmail]', err?.message||err); return false; }
 }
 
 // ── Claude: generate strategic brief ─────────────────────────────────────────

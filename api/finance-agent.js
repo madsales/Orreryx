@@ -42,7 +42,7 @@ async function sendEmail(to, subject, html) {
     const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user, pass } });
     await transporter.sendMail({ from: `Orrery CFO Agent <${user}>`, to, subject, html });
     return true;
-  } catch (_) { return false; }
+  } catch (err) { console.error('[CFO sendEmail]', err?.message||err); return false; }
 }
 
 // ── Pricing tiers (update if you change plans) ────────────────────────────────
