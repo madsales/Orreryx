@@ -70,7 +70,7 @@ async function fetchStories() {
   for (const q of queries) {
     try {
       const r = await fetch(
-        `https://gnews.io/api/v4/search?q=${encodeURIComponent(q)}&lang=en&max=5&sortby=publishedAt&apikey=${apiKey}`,
+        `https://gnews.io/api/v4/search?q=${encodeURIComponent(q)}&lang=en&max=10&sortby=publishedAt&apikey=${apiKey}`,
         { signal: AbortSignal.timeout(8000) }
       ).catch(() => null);
       if (!r?.ok) continue;
@@ -143,7 +143,7 @@ Only include stories with score >= 6. If none qualify, return [].`;
         'Content-Type':      'application/json',
       },
       body: JSON.stringify({
-        model:      'claude-haiku-4-5',
+        model:      'claude-haiku-4-5-20251001',
         max_tokens: 4000,
         messages:   [{ role: 'user', content: prompt }],
       }),
