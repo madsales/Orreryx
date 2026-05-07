@@ -333,8 +333,31 @@ export default async function handler(req, res) {
   // ── Debug: show raw stories + scores ─────────────────────────────────────────
   if (req.query.debug === 'stories') {
     const stories = await fetchStories();
-    const scored  = await generateBrief(stories, anthropicKey);
-    return res.status(200).json({ ok: true, fetched: stories.length, scored, stories: stories.map(s => ({ title: s.title, source: s.source?.name, url: s.url })) });
+    // Raw Claude call for full visibility
+    let claudeRaw = null, claudeStatus = null, claudeError = null;
+    if (anthropicKey && stories.length) {
+      try {
+        const summaries = stories.map((s, i) =>
+          `${i + 1}. TITLE: ${s.title}\n   SOURCE: ${s.source?.name || 'Unknown'}\n   DESCRIPTION: ${s.description || ''}`
+        ).join('\n\n');
+        const r = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: { 'x-api-key': anthropicKey, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
+          body: JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: 200, messages: [{ role: 'user', content: `Score these geopolitical stories 1-10. Return JSON array [{index,score,headline}]. No markdown.\n\n${summaries}` }] }),
+          signal: AbortSignal.timeout(15000),
+        }).catch(e => { claudeError = e?.message; return null; });
+        claudeStatus = r?.status;
+        claudeRaw = await r?.json().catch(() => null);
+      } catch (e) { claudeError = e?.message; }
+    }
+    return res.status(200).json({
+      ok: true,
+      fetched: stories.length,
+      hasAnthropicKey: !!anthropicKey,
+      hasGnewsKey: !!process.env.GNEWS_API_KEY,
+      claudeStatus, claudeError, claudeRaw,
+      stories: stories.map(s => ({ title: s.title, source: s.source?.name, url: s.url })),
+    });
   }
 
   // ── View today's briefs ───────────────────────────────────────────────────────
