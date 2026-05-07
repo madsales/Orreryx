@@ -87,75 +87,98 @@ async function fetchStories() {
   return allArticles.slice(0, 15);
 }
 
-// ── Claude: score + generate full content brief ───────────────────────────────
+// ── Claude: score + generate full content brief (two-pass) ───────────────────
+
+async function claudeCall(anthropicKey, prompt, maxTokens, timeout = 30000) {
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method:  'POST',
+    headers: { 'x-api-key': anthropicKey, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ model: 'claude-haiku-4-5-20251001', max_tokens: maxTokens, messages: [{ role: 'user', content: prompt }] }),
+    signal:  AbortSignal.timeout(timeout),
+  }).catch(() => null);
+  if (!r?.ok) return null;
+  const d = await r.json().catch(() => null);
+  const raw = d?.content?.[0]?.text?.trim() || '';
+  return raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();
+}
 
 async function generateBrief(stories, anthropicKey) {
   if (!anthropicKey || !stories.length) return [];
 
-  const summaries = stories.map((s, i) =>
-    `${i + 1}. TITLE: ${s.title}\n   SOURCE: ${s.source?.name || 'Unknown'}\n   PUBLISHED: ${s.publishedAt}\n   DESCRIPTION: ${s.description || ''}`
-  ).join('\n\n');
+  // ── Pass 1: Score all stories (cheap, small output) ──────────────────────
+  const scoringList = stories.map((s, i) =>
+    `${i + 1}. ${s.title} — ${s.description || ''}`
+  ).join('\n');
 
-  const prompt = `You are the CMO of Orrery — a live geopolitical intelligence platform tracking wars, nuclear risks, sanctions, and market-moving global conflicts.
+  const scorePrompt = `Score these ${stories.length} news stories for GLOBAL GEOPOLITICAL IMPORTANCE (1-10).
+9-10: BREAKING — Active military strike, nuclear escalation, war declaration, mass casualty event
+6-8: IMPORTANT — Sanctions, ceasefire, troop movements, nuclear deal, major diplomatic shift
+1-5: NOT RELEVANT — Domestic politics, business, sports, local news
 
-Analyze these ${stories.length} stories and score each for GLOBAL GEOPOLITICAL IMPORTANCE:
+Return ONLY a compact JSON array, no markdown, no explanation:
+[{"i":1,"s":7},{"i":2,"s":3}]
 
-${summaries}
-
-Scoring:
-- 9-10: BREAKING — Active military strike, nuclear escalation, war declaration, mass casualty event
-- 6-8: IMPORTANT — Sanctions, ceasefire updates, troop movements, major diplomatic development
-- 1-5: NOT RELEVANT — Domestic politics, business earnings, sports, minor local news
-
-For stories scoring >= 6, return a detailed content brief. Return a JSON array (no markdown, no code fences):
-[
-  {
-    "index": 1,
-    "score": 9,
-    "type": "breaking",
-    "headline": "Story headline as written",
-    "source": "Source name",
-    "url": "story URL if available",
-    "summary": "2-3 sentence factual summary of the story and why it matters geopolitically",
-    "marketImpact": "Which assets move and how — e.g. Oil +3%, Gold up, Defence stocks rally",
-    "region": "Geographic region — e.g. Middle East, Eastern Europe, Asia-Pacific",
-    "imageBrief": "Detailed description of the ideal image for this post — scene, mood, colors, composition. Be specific so a designer knows exactly what to create.",
-    "keywords": ["keyword1", "keyword2", "keyword3", "keyword4", "keyword5"],
-    "hashtags": ["#Hashtag1", "#Hashtag2", "#Hashtag3", "#Hashtag4", "#Hashtag5", "#Hashtag6"],
-    "twitter": "Ready-to-post tweet. Max 240 chars. Sharp geopolitical angle. Include source name e.g. 'via Reuters'. Link: orreryx.io/app. 2-3 hashtags inline.",
-    "linkedin": "Full LinkedIn post. 200-300 words. Professional analysis tone. What it means for investors/markets. Cite the source naturally in the text e.g. 'According to [Source],...'. orreryx.io/app link. Hashtags at end.",
-    "instagram": "Instagram caption. Punchy opener. Emojis. Geopolitical context. Include 'Source: [name]' one line above hashtags. CTA: Link in bio → orreryx.io/app. 6-7 hashtags at end.",
-    "redditTitle": "Reddit post title. Compelling, factual, no clickbait. Max 15 words. Suits r/geopolitics or r/worldnews style.",
-    "redditBody": "Reddit post body. 150-250 words. Informative, analytical tone. Cite the source with full URL at the top e.g. 'Source: [name] — [url]'. No promotional language — Reddit hates ads. Present as genuine analysis. Mention orreryx.io/app naturally at the end as a free resource, not a plug. Include suggested subreddits at the end.",
-    "redditSubreddits": ["r/geopolitics", "r/worldnews", "r/investing"],
-    "discord": "Discord server message. 3-5 lines max. Start with a bold headline using **text**. Use Discord markdown. Include market impact. Cite source as 'via [Source Name]'. End with the link orreryx.io/app. Conversational but sharp tone — this is a geopolitics/investing community. 2-3 relevant emojis. No hashtags."
-  }
-]
-
-Only include stories with score >= 6. If none qualify, return [].`;
+Stories:
+${scoringList}`;
 
   try {
-    const r = await fetch('https://api.anthropic.com/v1/messages', {
-      method:  'POST',
-      headers: {
-        'x-api-key':         anthropicKey,
-        'anthropic-version': '2023-06-01',
-        'Content-Type':      'application/json',
-      },
-      body: JSON.stringify({
-        model:      'claude-haiku-4-5-20251001',
-        max_tokens: 4000,
-        messages:   [{ role: 'user', content: prompt }],
-      }),
-      signal: AbortSignal.timeout(30000),
-    }).catch(() => null);
+    const scoreRaw = await claudeCall(anthropicKey, scorePrompt, 600);
+    if (!scoreRaw) return [];
+    const scores = JSON.parse(scoreRaw);
+    if (!Array.isArray(scores)) return [];
 
-    if (!r?.ok) return [];
-    const d   = await r.json().catch(() => null);
-    const raw = d?.content?.[0]?.text?.trim() || '[]';
-    const clean = raw.replace(/^```(?:json)?\n?/, '').replace(/\n?```$/, '').trim();
-    const parsed = JSON.parse(clean);
-    return Array.isArray(parsed) ? parsed : [];
+    // Pick top 3 qualifying stories (score >= 6), highest score first
+    const top3 = scores
+      .filter(x => x.s >= 6)
+      .sort((a, b) => b.s - a.s)
+      .slice(0, 3)
+      .map(x => ({ ...stories[x.i - 1], score: x.s }))
+      .filter(Boolean);
+
+    if (!top3.length) return [];
+
+    // ── Pass 2: Generate full brief for each top story individually ───────
+    const briefs = [];
+    for (const story of top3) {
+      const briefPrompt = `You are the CMO of Orrery — a live geopolitical intelligence platform.
+
+Generate a complete social media content brief for this story. Return a single JSON object (no markdown, no code fences):
+{
+  "score": ${story.score},
+  "type": "${story.score >= 9 ? 'breaking' : 'important'}",
+  "headline": "${(story.title || '').replace(/"/g, "'")}",
+  "source": "${(story.source?.name || 'Unknown').replace(/"/g, "'")}",
+  "url": "${story.url || ''}",
+  "summary": "2-3 sentence factual summary and why it matters geopolitically",
+  "marketImpact": "Which assets move and how — e.g. Oil +3%, Gold up, Defence stocks rally",
+  "region": "Geographic region",
+  "imageBrief": "Detailed visual description for a designer",
+  "keywords": ["kw1","kw2","kw3","kw4","kw5"],
+  "hashtags": ["#Tag1","#Tag2","#Tag3","#Tag4","#Tag5","#Tag6"],
+  "twitter": "Ready-to-post tweet max 240 chars. Sharp angle. Include source name. Link: orreryx.io/app. 2-3 hashtags inline.",
+  "linkedin": "Full LinkedIn post 200-300 words. Professional analysis. What it means for investors. Cite source naturally. orreryx.io/app link. Hashtags at end.",
+  "instagram": "Instagram caption. Punchy opener. Emojis. Geopolitical context. Source: [name] one line above hashtags. CTA: Link in bio → orreryx.io/app. 6-7 hashtags at end.",
+  "redditTitle": "Reddit title max 15 words, factual, no clickbait, suits r/geopolitics",
+  "redditBody": "Reddit body 150-250 words. Analytical. Source URL at top. No promo. Mention orreryx.io/app naturally at end. Suggest subreddits.",
+  "redditSubreddits": ["r/geopolitics","r/worldnews","r/investing"],
+  "discord": "Discord message 3-5 lines. Bold headline with **text**. Market impact. via [Source]. Link orreryx.io/app. 2-3 emojis. No hashtags."
+}
+
+Story:
+TITLE: ${story.title}
+SOURCE: ${story.source?.name || 'Unknown'}
+DESCRIPTION: ${story.description || ''}
+URL: ${story.url || ''}`;
+
+      try {
+        const raw = await claudeCall(anthropicKey, briefPrompt, 2000, 30000);
+        if (!raw) continue;
+        const parsed = JSON.parse(raw);
+        if (parsed && typeof parsed === 'object') briefs.push(parsed);
+      } catch (_) { continue; }
+    }
+
+    return briefs;
   } catch (_) { return []; }
 }
 
