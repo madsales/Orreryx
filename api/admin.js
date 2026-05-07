@@ -134,6 +134,8 @@ export default async function handler(req, res) {
     const { password } = req.body || {};
     if (!password || password !== adminPwd)
       return res.status(401).json({ error: 'Invalid password.' });
+    // Set cookie server-side — survives JS issues, domain=.orreryx.io covers all subdomains
+    res.setHeader('Set-Cookie', 'orrery_adm=1; Path=/; Max-Age=7776000; SameSite=Lax; Domain=.orreryx.io');
     return res.status(200).json({ token: makeToken(adminPwd) });
   }
 
@@ -147,6 +149,12 @@ export default async function handler(req, res) {
 
   // ── LOGOUT ────────────────────────────────────────────────────────────────
   if (action === 'logout') {
+    return res.status(200).json({ ok: true });
+  }
+
+  // ── SET ACCESS COOKIE (called after login to ensure cookie is set server-side) ──
+  if (action === 'set-access-cookie') {
+    res.setHeader('Set-Cookie', 'orrery_adm=1; Path=/; Max-Age=7776000; SameSite=Lax; Domain=.orreryx.io');
     return res.status(200).json({ ok: true });
   }
 

@@ -991,8 +991,12 @@ function showShell() {
   localStorage.setItem('orrery_session', JSON.stringify(adminSess));
   localStorage.setItem('orrery_paid_verified', 'c|' + Date.now() + '|' + adminSess.token);
   localStorage.setItem('orrery_admin', '1');
-  // Secure cookie — survives page refreshes, domain-wide, 90 days
+  // Client-side cookie — fast path
   document.cookie = 'orrery_adm=1; path=/; max-age=7776000; SameSite=Lax; domain=.orreryx.io';
+  // Server-side cookie — guarantees domain-wide cookie is set even if JS cookie is blocked
+  fetch('/api/admin?action=set-access-cookie', {
+    headers: { Authorization: 'Bearer ' + token }
+  }).catch(() => {});
 }
 
 // Auto-login if token in session
