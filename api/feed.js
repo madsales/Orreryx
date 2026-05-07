@@ -534,7 +534,24 @@ async function handleVideos(req,res){
   const all=(await Promise.all(CHANNELS.map(fetchChan))).flat();
   const scored=all.map(v=>({...v,score:score(v.title,kws,exp)}));
   scored.sort((a,b)=>b.score!==a.score?b.score-a.score:b.date.localeCompare(a.date));
-  const data={clips:scored.filter(v=>v.score>=1).slice(0,3)};
+
+  // Deduplicate by video ID, then limit to 1 clip per channel for diversity,
+  // and require a minimum score of 2 so only genuinely relevant results show
+  const seenIds=new Set(); const seenChannels=new Set(); const clips=[];
+  for(const v of scored){
+    if(v.score<2) break; // sorted by score; once below threshold, done
+    if(seenIds.has(v.id)) continue;      // skip exact duplicate video
+    if(seenChannels.has(v.channel)){      // allow a second clip from same channel
+      // only if we have fewer than 2 results total and score is high
+      if(clips.length>=2||v.score<4) continue;
+    }
+    seenIds.add(v.id);
+    seenChannels.add(v.channel);
+    clips.push(v);
+    if(clips.length>=3) break;
+  }
+
+  const data={clips};
   vidCache.set(ck,{data,ts:Date.now()});if(vidCache.size>400)vidCache.delete(vidCache.keys().next().value);
   res.setHeader('Cache-Control','public, max-age=600');
   return res.status(200).json(data);
