@@ -708,23 +708,19 @@
 
 <script>
 // ── AUTH GATE — Command tier only ────────────────────────────────────────────
-if (new URLSearchParams(window.location.search).get('unlock') === '1') {
-  localStorage.setItem('orrery_admin', '1');
-  localStorage.setItem('orrery_session', JSON.stringify({plan:'c',isAdmin:true,email:'admin@orreryx.io',expires:Date.now()+86400000*30}));
-  localStorage.setItem('orrery_paid_verified', 'c|' + Date.now() + '|admin-unlock');
-}
 (function() {
+  const isAdminCookie = document.cookie.split(';').some(c => c.trim() === 'orrery_adm=1');
+  if (isAdminCookie) return;
   try {
     const raw = localStorage.getItem('orrery_session');
     const pvPlan = (localStorage.getItem('orrery_paid_verified') || '').split('|')[0].toLowerCase();
     if (raw) {
       const session = JSON.parse(raw);
       const plan = (session.plan || '').toLowerCase().trim();
-      // Command plan code is 'c' — allow access; also allow Analyst ('a') and admin sessions
       if (plan === 'c' || plan === 'command' || plan === 'a' || session.isAdmin || pvPlan === 'c' || pvPlan === 'a' || localStorage.getItem('orrery_admin') === '1') return;
     } else if (pvPlan === 'c' || pvPlan === 'a' || localStorage.getItem('orrery_admin') === '1') return;
   } catch (_) {}
-  // Not on Command — show paywall over the map (map still renders as teaser)
+  // Not on Command — show paywall over the map
   document.getElementById('paywall').style.display = 'flex';
 })();
 

@@ -987,6 +987,8 @@ function showShell() {
   localStorage.setItem('orrery_session', JSON.stringify(adminSess));
   localStorage.setItem('orrery_paid_verified', 'c|' + Date.now() + '|' + adminSess.token);
   localStorage.setItem('orrery_admin', '1');
+  // Secure cookie — survives page refreshes, domain-wide, 90 days
+  document.cookie = 'orrery_adm=1; path=/; max-age=7776000; SameSite=Strict';
 }
 
 // Auto-login if token in session
