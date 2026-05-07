@@ -910,6 +910,10 @@ p.desc{font:400 12px/1.75 var(--sans);color:var(--txt3);margin-bottom:18px}
 </div><!-- /shell -->
 
 <script>
+// Force www so localStorage and cookies are on the same origin as all other pages
+if (location.hostname === 'orreryx.io') {
+  location.replace('https://www.orreryx.io' + location.pathname + location.search + location.hash);
+}
 const TOKEN_KEY = 'orrery_admin_token';
 let token = sessionStorage.getItem(TOKEN_KEY) || '';
 let statsCache = null;
@@ -988,7 +992,7 @@ function showShell() {
   localStorage.setItem('orrery_paid_verified', 'c|' + Date.now() + '|' + adminSess.token);
   localStorage.setItem('orrery_admin', '1');
   // Secure cookie — survives page refreshes, domain-wide, 90 days
-  document.cookie = 'orrery_adm=1; path=/; max-age=7776000; SameSite=Strict';
+  document.cookie = 'orrery_adm=1; path=/; max-age=7776000; SameSite=Lax; domain=.orreryx.io';
 }
 
 // Auto-login if token in session
