@@ -46,9 +46,10 @@
     }
   ],
   "crons": [
-    { "path": "/api/social-post",  "schedule": "0 */3 * * *" },
-    { "path": "/api/seo-agent",    "schedule": "0 6 * * 1"   },
-    { "path": "/api/legal-agent",  "schedule": "0 7 * * 1"   }
+    { "path": "/api/social-post",    "schedule": "0 */3 * * *" },
+    { "path": "/api/breaking-news",  "schedule": "0 */2 * * *" },
+    { "path": "/api/seo-agent",      "schedule": "0 6 * * 1"   },
+    { "path": "/api/legal-agent",    "schedule": "0 7 * * 1"   }
   ],
   "functions": {
     "api/anthropic.js":     { "maxDuration": 30 },
@@ -69,7 +70,7 @@
     "api/finance-agent.js": { "maxDuration": 30 },
     "api/sales-agent.js":   { "maxDuration": 60 },
     "api/ceo-agent.js":     { "maxDuration": 60 },
-    "api/breaking-news.js": { "maxDuration": 60 },
+    "api/breaking-news.js": { "maxDuration": 90 },
     "api/ideas-agent.js":   { "maxDuration": 30 },
     "api/seo-agent.js":    { "maxDuration": 60 },
     "api/legal-agent.js":  { "maxDuration": 60 }

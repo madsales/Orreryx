@@ -14,6 +14,7 @@
 
 import crypto from 'crypto';
 import { TwitterApi } from 'twitter-api-v2';
+import webpush from 'web-push';
 
 // ── Country → emoji + market impact map ──────────────────────────────────────
 
@@ -239,6 +240,79 @@ async function postLinkedIn(text) {
   return j.id;
 }
 
+// ── Web Push broadcaster ──────────────────────────────────────────────────────
+
+async function getAllPushSubs() {
+  const url   = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return [];
+  // Get all push subscription keys
+  const r = await fetch(`${url}/pipeline`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify([['KEYS', 'push:sub:*']]),
+    signal: AbortSignal.timeout(5000),
+  }).catch(() => null);
+  const keys = (await r?.json().catch(() => null))?.[0]?.result;
+  if (!keys?.length) return [];
+  // Fetch all subscription objects in one pipeline
+  const r2 = await fetch(`${url}/pipeline`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(keys.map(k => ['GET', k])),
+    signal: AbortSignal.timeout(5000),
+  }).catch(() => null);
+  const vals = (await r2?.json().catch(() => null)) || [];
+  return vals.map(v => { try { return JSON.parse(v.result); } catch { return null; } }).filter(Boolean);
+}
+
+async function removePushSub(endpoint) {
+  const url   = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !token) return;
+  const hash = Buffer.from(endpoint).toString('base64').slice(0, 32);
+  await fetch(`${url}/pipeline`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify([['DEL', `push:sub:${hash}`]]),
+  }).catch(() => {});
+}
+
+async function broadcastPush(article, country) {
+  const vapidPublic  = process.env.VAPID_PUBLIC_KEY;
+  const vapidPrivate = process.env.VAPID_PRIVATE_KEY;
+  const vapidEmail   = process.env.VAPID_EMAIL || 'mailto:admin@orreryx.io';
+  if (!vapidPublic || !vapidPrivate) return { sent: 0, skipped: 'VAPID keys not set' };
+
+  webpush.setVapidDetails(vapidEmail, vapidPublic, vapidPrivate);
+
+  const subs = await getAllPushSubs();
+  if (!subs.length) return { sent: 0, skipped: 'No subscribers yet' };
+
+  // Build a punchy push payload
+  const title = `${country.flag} BREAKING: ${(article.title || '').slice(0, 80)}`;
+  const body  = `📊 ${country.impact} · Tap to track live`;
+  const url   = `https://www.orreryx.io/risk-dashboard`;
+  const payload = JSON.stringify({ title, body, url, tag: 'breaking-' + Date.now(), icon: '/icon-192.png' });
+
+  let sent = 0, failed = 0, expired = 0;
+  await Promise.allSettled(subs.map(async sub => {
+    try {
+      await webpush.sendNotification(sub, payload, { TTL: 3600 });
+      sent++;
+    } catch (e) {
+      if (e.statusCode === 410 || e.statusCode === 404) {
+        await removePushSub(sub.endpoint);
+        expired++;
+      } else {
+        failed++;
+      }
+    }
+  }));
+
+  return { sent, failed, expired, total: subs.length };
+}
+
 // ── Handler ───────────────────────────────────────────────────────────────────
 
 export default async function handler(req, res) {
@@ -315,7 +389,7 @@ export default async function handler(req, res) {
   const twitterCaption  = buildTwitterCaption(article, country);
   const linkedInCaption = buildLinkedInCaption(article, country);
 
-  const results = { article: article.title, score, country: country.name, twitter: null, linkedin: null, errors: [] };
+  const results = { article: article.title, score, country: country.name, twitter: null, linkedin: null, push: null, errors: [] };
 
   // ── Post to Twitter ──────────────────────────────────────────────────────────
   if (hasTwitter) {
@@ -339,8 +413,15 @@ export default async function handler(req, res) {
     results.errors.push({ platform: 'linkedin', error: 'Credentials not configured' });
   }
 
+  // ── Push notification to all subscribers ─────────────────────────────────────
+  try {
+    results.push = await broadcastPush(article, country);
+  } catch (e) {
+    results.errors.push({ platform: 'push', error: e.message });
+  }
+
   // Mark as posted + update cooldown if at least one platform succeeded
-  if (results.twitter || results.linkedin) {
+  if (results.twitter || results.linkedin || results.push?.sent > 0) {
     await markPosted(url);
     await setLastPostTime();
     // Write last story to Redis for family intelligence (CEO, Ideas agents read this)
