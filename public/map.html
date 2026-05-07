@@ -716,8 +716,8 @@
       const session = JSON.parse(raw);
       const plan = (session.plan || '').toLowerCase().trim();
       // Command plan code is 'c' — allow access; also allow Analyst ('a') and admin sessions
-      if (plan === 'c' || plan === 'command' || plan === 'a' || session.isAdmin || pvPlan === 'c' || pvPlan === 'a') return;
-    } else if (pvPlan === 'c' || pvPlan === 'a') return;
+      if (plan === 'c' || plan === 'command' || plan === 'a' || session.isAdmin || pvPlan === 'c' || pvPlan === 'a' || localStorage.getItem('orrery_admin') === '1') return;
+    } else if (pvPlan === 'c' || pvPlan === 'a' || localStorage.getItem('orrery_admin') === '1') return;
   } catch (_) {}
   // Not on Command — show paywall over the map (map still renders as teaser)
   document.getElementById('paywall').style.display = 'flex';

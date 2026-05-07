@@ -986,6 +986,7 @@ function showShell() {
   };
   localStorage.setItem('orrery_session', JSON.stringify(adminSess));
   localStorage.setItem('orrery_paid_verified', 'c|' + Date.now() + '|' + adminSess.token);
+  localStorage.setItem('orrery_admin', '1');
 }
 
 // Auto-login if token in session

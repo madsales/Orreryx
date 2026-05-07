@@ -757,8 +757,8 @@ svg.sparkline{width:100%;height:120px;display:block}
     if (raw) {
       const session = JSON.parse(raw);
       const plan = (session.plan || '').toLowerCase().trim();
-      if (plan === 'c' || plan === 'command' || plan === 'a' || session.isAdmin || pvPlan === 'c' || pvPlan === 'a') return;
-    } else if (pvPlan === 'c' || pvPlan === 'a') return;
+      if (plan === 'c' || plan === 'command' || plan === 'a' || session.isAdmin || pvPlan === 'c' || pvPlan === 'a' || localStorage.getItem('orrery_admin') === '1') return;
+    } else if (pvPlan === 'c' || pvPlan === 'a' || localStorage.getItem('orrery_admin') === '1') return;
   } catch (_) {}
   document.getElementById('paywall').style.display = 'flex';
 })();
