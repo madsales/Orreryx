@@ -1,4 +1,4 @@
-// api/ideas-agent.js — Orrery Ideas Agent
+// api/ideas-agent.js — OrreryX Ideas Agent
 // Generates daily: 3 social post ideas + 1 product idea + 1 growth experiment
 // Runs daily 5:30 AM IST (0:00 UTC) via cron-job.org: 0 0 * * *
 // Redis key: ideas:latest (JSON, 48h TTL)
@@ -91,7 +91,7 @@ export default async function handler(req, res) {
           max_tokens: 900,
           messages: [{
             role: 'user',
-            content: `You are the Ideas Agent for Orrery (orreryx.io), a real-time geopolitical market intelligence SaaS targeting a $1B company valuation.
+            content: `You are the Ideas Agent for OrreryX (orreryx.io), a real-time geopolitical market intelligence SaaS targeting a $1B company valuation.
 
 Today's top geopolitical events:
 ${eventsContext}
@@ -168,7 +168,7 @@ Use this intelligence to generate ideas that directly address the SEO gaps, buil
         {
           platform: 'LinkedIn',
           hook: 'Most investors don\'t see geopolitical risk coming. Here\'s the data that changes that.',
-          angle: 'Positioning Orrery as the unfair advantage for macro investors',
+          angle: 'Positioning OrreryX as the unfair advantage for macro investors',
           cta: 'Start free trial → orreryx.io',
         },
       ],

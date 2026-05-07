@@ -69,7 +69,7 @@ async function sendEmail(to, subject, html) {
     const pass = process.env.GMAIL_APP_PASSWORD;
     if (!user || !pass) return false;
     const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user, pass } });
-    await transporter.sendMail({ from: `Orrery CEO <${user}>`, to, subject, html });
+    await transporter.sendMail({ from: `OrreryX CEO <${user}>`, to, subject, html });
     return true;
   } catch (err) { console.error('[CEO sendEmail]', err?.message||err); return false; }
 }
@@ -80,7 +80,7 @@ async function generateStrategicBrief(context, mode = 'weekly') {
   if (!apiKey) return 'AI brief unavailable — ANTHROPIC_API_KEY not set.';
 
   const prompt = mode === 'daily'
-    ? `You are the CEO of Orrery, a geopolitical intelligence SaaS racing toward a $1 billion valuation.
+    ? `You are the CEO of OrreryX, a geopolitical intelligence SaaS racing toward a $1 billion valuation.
 
 Here is today's company intelligence from all 8 agents:
 
@@ -88,7 +88,7 @@ ${context}
 
 Give me ONE specific, concrete thing to do TODAY that will most accelerate the $1B mission. Not a strategy — a specific action with exact steps. Max 80 words. Start with an action verb.`
 
-    : `You are the CEO of Orrery, a geopolitical intelligence SaaS with a $1 billion valuation target (need $5.56M MRR at 15x ARR).
+    : `You are the CEO of OrreryX, a geopolitical intelligence SaaS with a $1 billion valuation target (need $5.56M MRR at 15x ARR).
 
 Here is this week's full company intelligence from all 8 agents:
 
@@ -368,7 +368,7 @@ Ideas today: ${ideasData?.product_idea?.title || 'not generated yet'}`.trim();
   </div>
 
   <div style="background:#f9fafb;padding:12px;text-align:center;border-top:1px solid #e5e7eb;border-radius:0 0 12px 12px">
-    <span style="color:#9ca3af;font-size:11px">— Orrery CEO Command Center · ${today} · 8 agents · $1B mission</span>
+    <span style="color:#9ca3af;font-size:11px">— OrreryX CEO Command Center · ${today} · 8 agents · $1B mission</span>
   </div>
 </div>`;
 
@@ -519,7 +519,7 @@ Visitor→Signup: ${pageViews ? ((signups/pageViews)*100).toFixed(2) : 0}% | Sig
   </div>
 
   <div style="background:#f9fafb;padding:14px;text-align:center;border-top:1px solid #e5e7eb">
-    <span style="color:#9ca3af;font-size:11px">— Orrery CEO Command Center · 8 agents · $1B mission · Weekly digest every Sunday 9 PM IST</span>
+    <span style="color:#9ca3af;font-size:11px">— OrreryX CEO Command Center · 8 agents · $1B mission · Weekly digest every Sunday 9 PM IST</span>
   </div>
 </div>`;
 

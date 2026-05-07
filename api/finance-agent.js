@@ -40,7 +40,7 @@ async function sendEmail(to, subject, html) {
     const pass = process.env.GMAIL_APP_PASSWORD;
     if (!user || !pass) return false;
     const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user, pass } });
-    await transporter.sendMail({ from: `Orrery CFO Agent <${user}>`, to, subject, html });
+    await transporter.sendMail({ from: `OrreryX CFO Agent <${user}>`, to, subject, html });
     return true;
   } catch (err) { console.error('[CFO sendEmail]', err?.message||err); return false; }
 }
@@ -205,7 +205,7 @@ export default async function handler(req, res) {
         </tfoot>
       </table>
 
-      <p style="color:#9ca3af;font-size:12px;padding:16px">— Orrery CFO Agent · Runs every Monday 8 AM IST</p>
+      <p style="color:#9ca3af;font-size:12px;padding:16px">— OrreryX CFO Agent · Runs every Monday 8 AM IST</p>
     </div>
   `;
 
@@ -214,7 +214,7 @@ export default async function handler(req, res) {
   if (adminEmail) {
     await sendEmail(
       adminEmail,
-      `📊 Orrery Weekly P&L — MRR $${mrr.toLocaleString()} (${mrrDelta >= 0 ? '+' : ''}$${mrrDelta})`,
+      `📊 OrreryX Weekly P&L — MRR $${mrr.toLocaleString()} (${mrrDelta >= 0 ? '+' : ''}$${mrrDelta})`,
       html,
     );
   }

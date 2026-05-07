@@ -1,6 +1,6 @@
 // api/breaking-news.js — CMO Live Breaking News Agent
 // Runs every 3 hours via cron-job.org
-// Fetches top breaking geopolitical event from Orrery's own GDELT feed
+// Fetches top breaking geopolitical event from OrreryX's own GDELT feed
 // Generates platform-specific captions and posts to Twitter + LinkedIn
 // Uses Redis deduplication — never posts the same story twice (7-day TTL)
 //
@@ -85,13 +85,13 @@ async function setLastPostTime() {
   await upstashCmd(['SET', 'breaking:last_post_time', Date.now().toString(), 'EX', 86400]);
 }
 
-// ── Fetch breaking events from Orrery's own feed ──────────────────────────────
+// ── Fetch breaking events from OrreryX's own feed ──────────────────────────────
 
 async function fetchBreakingEvents() {
   // Primary: GNews feed (fast, reliable, always returns articles)
   const r = await fetch('https://orreryx.io/api/gnews', {
     signal: AbortSignal.timeout(12000),
-    headers: { 'User-Agent': 'Orrery-BreakingNewsAgent/1.0' },
+    headers: { 'User-Agent': 'OrreryX-BreakingNewsAgent/1.0' },
   }).catch(() => null);
 
   if (r?.ok) {
@@ -103,7 +103,7 @@ async function fetchBreakingEvents() {
   // Fallback: GDELT events API (slower due to batching)
   const r2 = await fetch('https://orreryx.io/api/events', {
     signal: AbortSignal.timeout(25000),
-    headers: { 'User-Agent': 'Orrery-BreakingNewsAgent/1.0' },
+    headers: { 'User-Agent': 'OrreryX-BreakingNewsAgent/1.0' },
   }).catch(() => null);
 
   if (r2?.ok) {
@@ -179,7 +179,7 @@ function buildLinkedInCaption(article, country) {
 
 ${description ? description + '\n\n' : ''}📊 Market impact: ${impact}
 
-This is the type of event Orrery tracks in real time — mapping geopolitical developments directly to affected asset classes: stocks, oil, gold, and crypto.
+This is the type of event OrreryX tracks in real time — mapping geopolitical developments directly to affected asset classes: stocks, oil, gold, and crypto.
 
 🔗 Track this event live (free, no login): https://orreryx.io/app
 

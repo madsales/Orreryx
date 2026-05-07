@@ -1,4 +1,4 @@
-// api/events.js - Orrery Global News Coverage
+// api/events.js - OrreryX Global News Coverage
 // Uses GDELT Article API (mode=artlist) - updates every 15 minutes
 // Supports ?country=XX&lang=XX query params
 
@@ -679,7 +679,7 @@ export default async function handler(req, res) {
       const batch = await Promise.allSettled(
         slice.map(s =>
           fetch(gdeltUrl(s.query, s.max, sourcelang, country !== 'ALL' ? country : null, timespan), {
-            headers: { 'User-Agent': 'OrreryIntelligence/1.0 (https://www.orreryx.io)' },
+            headers: { 'User-Agent': 'OrreryXIntelligence/1.0 (https://www.orreryx.io)' },
             signal:  AbortSignal.timeout(9000),
           })
             .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))

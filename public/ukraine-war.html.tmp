@@ -49,7 +49,7 @@
         "logo": { "@type": "ImageObject", "url": "https://www.orreryx.io/icon.svg" }
       },
       "about": [
-        { "@type": "Event", "name": "Russia-Ukraine War", "location": { "@type": "Place", "name": "Ukraine" } }
+        { "@type": "Thing", "name": "Russia-Ukraine War", "description": "Ongoing armed conflict between Russia and Ukraine that began in February 2022.", "url": "https://www.orreryx.io/ukraine-war" }
       ]
     },
     {

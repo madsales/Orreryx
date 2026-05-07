@@ -50,7 +50,7 @@ async function sendEmail(to, subject, html) {
     const pass = process.env.GMAIL_APP_PASSWORD;
     if (!user || !pass) return false;
     const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user, pass } });
-    await transporter.sendMail({ from: `Orrery <${user}>`, to, subject, html });
+    await transporter.sendMail({ from: `OrreryX <${user}>`, to, subject, html });
     return true;
   } catch (err) { console.error('[Sales sendEmail]', err?.message||err); return false; }
 }
@@ -65,11 +65,11 @@ function day3Email(email) {
       </div>
       <div style="padding:24px;background:#fff;border:1px solid #e5e7eb;border-top:none">
         <p>Hey there,</p>
-        <p>It's been 3 days since you joined Orrery. I wanted to share something most investors miss.</p>
+        <p>It's been 3 days since you joined OrreryX. I wanted to share something most investors miss.</p>
 
         <p><strong>Most market moves don't come from earnings reports — they come from geopolitical events that happen before markets open.</strong></p>
 
-        <p>Here's what Orrery is tracking right now:</p>
+        <p>Here's what OrreryX is tracking right now:</p>
         <ul style="padding-left:20px;line-height:1.8">
           <li>🇺🇦 <strong>Ukraine-Russia</strong> — Energy prices & European equities exposure</li>
           <li>🇮🇷 <strong>Iran nuclear</strong> — Oil futures & Middle East risk premium</li>
@@ -81,13 +81,13 @@ function day3Email(email) {
 
         <p style="margin:24px 0">
           <a href="https://orreryx.io/app" style="background:#1a1a2e;color:white;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600">
-            Open Orrery now →
+            Open OrreryX now →
           </a>
         </p>
 
         <p style="color:#6b7280;font-size:14px">
           If you have any questions, just reply to this email.<br>
-          — The Orrery Team
+          — The OrreryX Team
         </p>
       </div>
       <p style="font-size:11px;color:#9ca3af;padding:12px;text-align:center">
@@ -106,7 +106,7 @@ function day7Email(email) {
       </div>
       <div style="padding:24px;background:#fff;border:1px solid #e5e7eb;border-top:none">
         <p>Hey,</p>
-        <p>You've been using Orrery for a week — here's what our Pro users get that the free tier doesn't:</p>
+        <p>You've been using OrreryX for a week — here's what our Pro users get that the free tier doesn't:</p>
 
         <table style="width:100%;border-collapse:collapse;font-size:14px;margin:16px 0">
           <thead>
@@ -160,7 +160,7 @@ function day7Email(email) {
 
         <p style="color:#6b7280;font-size:14px">
           Questions? Just reply. I read every email.<br>
-          — The Orrery Team
+          — The OrreryX Team
         </p>
       </div>
       <p style="font-size:11px;color:#9ca3af;padding:12px;text-align:center">
@@ -229,7 +229,7 @@ export default async function handler(req, res) {
 
     // Day 3 window: between 3 and 4 days old, not yet sent
     if (ageDays >= 3 && ageDays < 4 && !sub.day3Sent) {
-      const sent = await sendEmail(email, '🌍 3 things Orrery is tracking that move markets today', day3Email(email));
+      const sent = await sendEmail(email, '🌍 3 things OrreryX is tracking that move markets today', day3Email(email));
       if (sent) {
         sub.day3Sent = new Date().toISOString();
         await upstashSet(key, sub);
@@ -242,7 +242,7 @@ export default async function handler(req, res) {
 
     // Day 7 window: between 7 and 8 days old, not yet sent
     if (ageDays >= 7 && ageDays < 8 && !sub.day7Sent) {
-      const sent = await sendEmail(email, '📊 Your 7-day Orrery check-in + Pro offer', day7Email(email));
+      const sent = await sendEmail(email, '📊 Your 7-day OrreryX check-in + Pro offer', day7Email(email));
       if (sent) {
         sub.day7Sent = new Date().toISOString();
         await upstashSet(key, sub);

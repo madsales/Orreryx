@@ -48,9 +48,9 @@ async function handleSend(req, res) {
 
   const baseUrl   = process.env.PESAPAL_HOST || `https://${process.env.VERCEL_URL}`;
   const magicLink = `${baseUrl}/api/magic?token=${magicToken}`;
-  const FROM_ADDRESS = process.env.EMAIL_FROM || 'Orrery <onboarding@resend.dev>';
+  const FROM_ADDRESS = process.env.EMAIL_FROM || 'OrreryX <onboarding@resend.dev>';
   const planLabel  = plan === 'f' ? 'Free Trial' : plan === 'a' ? 'Analyst' : plan === 'c' ? 'Command' : 'Starter';
-  const subject    = plan === 'f' ? 'Your Orrery free trial access link' : 'Your Orrery access link';
+  const subject    = plan === 'f' ? 'Your OrreryX free trial access link' : 'Your OrreryX access link';
 
   const emailRes = await fetch('https://api.resend.com/emails', {
     method:  'POST',
@@ -61,7 +61,7 @@ async function handleSend(req, res) {
       subject,
       html: `<div style="background:#09090b;color:#f0f0ec;padding:40px;max-width:480px;margin:0 auto;border:1px solid rgba(255,255,255,.1);border-radius:8px;font-family:'Helvetica Neue',sans-serif">
         <div style="margin-bottom:32px">
-          <strong style="font-size:16px;letter-spacing:.04em">⊕ Orrery</strong>
+          <strong style="font-size:16px;letter-spacing:.04em">⊕ OrreryX</strong>
           ${plan === 'f' ? '<span style="margin-left:10px;background:rgba(56,188,120,.15);border:1px solid rgba(56,188,120,.3);border-radius:3px;padding:2px 8px;font-size:10px;color:#38bc78;font-weight:700">FREE TRIAL</span>' : ''}
         </div>
         <div style="font-size:22px;font-weight:700;margin-bottom:10px;letter-spacing:-.01em">${plan === 'f' ? 'Start your free 3-day trial' : 'Access your platform'}</div>

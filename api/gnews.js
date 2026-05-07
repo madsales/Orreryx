@@ -46,12 +46,12 @@ function handleRisks(req, res) {
   const { country, type } = req.query || {};
   if (url && url.includes('/summary')) {
     const scores = CONFLICTS.map(c => c.risk_score);
-    return res.status(200).json({ version:'1.0', updated:RISK_LAST_UPDATED_ISO, attribution:'Orreryx Intelligence — orreryx.io', total_conflicts:CONFLICTS.length, critical_count:CONFLICTS.filter(c=>c.risk_score>=80).length, avg_score:Math.round(scores.reduce((a,b)=>a+b,0)/scores.length), last_updated:RISK_LAST_UPDATED_ISO, countries:RISK_COUNTRIES.length });
+    return res.status(200).json({ version:'1.0', updated:RISK_LAST_UPDATED_ISO, attribution:'OrreryX Intelligence — orreryx.io', total_conflicts:CONFLICTS.length, critical_count:CONFLICTS.filter(c=>c.risk_score>=80).length, avg_score:Math.round(scores.reduce((a,b)=>a+b,0)/scores.length), last_updated:RISK_LAST_UPDATED_ISO, countries:RISK_COUNTRIES.length });
   }
   let results = [...CONFLICTS];
   if (country) { const q=country.toLowerCase(); results=results.filter(c=>c.countries.some(n=>n.toLowerCase().includes(q))); }
   if (type) { const q=type.toLowerCase(); results=results.filter(c=>c.type.toLowerCase()===q); }
-  return res.status(200).json({ version:'1.0', updated:RISK_LAST_UPDATED_ISO, attribution:'Orreryx Intelligence — orreryx.io', data:results });
+  return res.status(200).json({ version:'1.0', updated:RISK_LAST_UPDATED_ISO, attribution:'OrreryX Intelligence — orreryx.io', data:results });
 }
 
 const CACHE_TTL = 8 * 60 * 1000;
@@ -774,7 +774,7 @@ export default async function handler(req, res) {
       activeFeed.map(feed =>
         fetch(feed.url, {
           headers: {
-            'User-Agent': 'OrreryIntelligence/1.0 (https://www.orreryx.io)',
+            'User-Agent': 'OrreryXIntelligence/1.0 (https://www.orreryx.io)',
             'Accept': 'application/rss+xml, application/xml, text/xml',
           },
           signal: AbortSignal.timeout(8000),

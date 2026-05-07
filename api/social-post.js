@@ -140,7 +140,7 @@ ${scoringList}`;
     // ── Pass 2: Generate full brief for each top story individually ───────
     const briefs = [];
     for (const story of top3) {
-      const briefPrompt = `You are the CMO of Orrery — a live geopolitical intelligence platform.
+      const briefPrompt = `You are the CMO of OrreryX — a live geopolitical intelligence platform.
 
 Generate a complete social media content brief for this story. Return a single JSON object (no markdown, no code fences):
 {
@@ -194,7 +194,7 @@ async function gmailSend(to, subject, html) {
       service: 'gmail',
       auth: { user, pass },
     });
-    await transporter.sendMail({ from: `Orrery CMO <${user}>`, to, subject, html });
+    await transporter.sendMail({ from: `OrreryX CMO <${user}>`, to, subject, html });
     return true;
   } catch (err) {
     console.error('[gmailSend] failed:', err?.message || err);
@@ -318,7 +318,7 @@ async function sendBriefEmail(brief, adminEmail) {
 
   <!-- Footer -->
   <div style="padding:16px 24px;background:#060b14;text-align:center;font-size:12px;color:#4b5563">
-    Orrery CMO Agent &nbsp;·&nbsp; orreryx.io &nbsp;·&nbsp; Auto-generated content brief
+    OrreryX CMO Agent &nbsp;·&nbsp; orreryx.io &nbsp;·&nbsp; Auto-generated content brief
   </div>
 </div>`;
 

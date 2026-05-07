@@ -42,7 +42,7 @@ const WEBHOOK_ID = process.env.PAYPAL_WEBHOOK_ID;
 const R_URL      = process.env.UPSTASH_REDIS_REST_URL;
 const R_TOKEN    = process.env.UPSTASH_REDIS_REST_TOKEN;
 const RESEND_KEY = process.env.RESEND_API_KEY;
-const FROM       = process.env.EMAIL_FROM || 'Orrery <onboarding@resend.dev>';
+const FROM       = process.env.EMAIL_FROM || 'OrreryX <onboarding@resend.dev>';
 const HOST       = (process.env.APP_HOST || process.env.PESAPAL_HOST || 'https://www.orreryx.io').replace(/\/$/, '');
 
 async function redis(...cmd) {
@@ -103,11 +103,11 @@ async function verifySig(req) {
 
 function emailHtml(title, body, ctaText, ctaUrl) {
   return `<div style="background:#09090b;color:#f0f0ec;padding:40px;max-width:480px;margin:0 auto;border:1px solid rgba(255,255,255,.1);border-radius:8px;font-family:'Helvetica Neue',sans-serif">
-  <div style="margin-bottom:24px"><strong style="font-size:16px">⊕ Orrery</strong></div>
+  <div style="margin-bottom:24px"><strong style="font-size:16px">⊕ OrreryX</strong></div>
   <div style="font-size:20px;font-weight:700;margin-bottom:12px">${title}</div>
   <div style="font-size:13px;color:#a0a09a;line-height:1.7;margin-bottom:24px">${body}</div>
   ${ctaText ? `<a href="${ctaUrl}" style="display:block;background:#f0f0ec;color:#09090b;text-decoration:none;text-align:center;padding:14px;border-radius:4px;font-weight:700;font-size:13px">${ctaText}</a>` : ''}
-  <div style="margin-top:24px;font-size:11px;color:#484844">© 2026 Orrery · orreryx.io</div>
+  <div style="margin-top:24px;font-size:11px;color:#484844">© 2026 OrreryX · orreryx.io</div>
 </div>`;
 }
 
@@ -152,10 +152,10 @@ export default async function handler(req, res) {
         await redis('SET', `user:${email}:sub_status`, 'cancelled');
         await sendEmail(
           email,
-          'Your Orrery subscription has been cancelled',
+          'Your OrreryX subscription has been cancelled',
           emailHtml(
             'Subscription Cancelled',
-            'Your Orrery subscription has ended. You can re-subscribe at any time to regain full access.',
+            'Your OrreryX subscription has ended. You can re-subscribe at any time to regain full access.',
             'RE-SUBSCRIBE →', `${HOST}/login`
           )
         );
@@ -172,7 +172,7 @@ export default async function handler(req, res) {
         ]);
         await sendEmail(
           email,
-          'Orrery — payment issue, 3 days to resolve',
+          'OrreryX — payment issue, 3 days to resolve',
           emailHtml(
             "We couldn't charge your PayPal",
             'Your payment failed after 3 attempts. You still have <strong>3 days of access</strong>. Please update your PayPal payment method to keep your subscription active.',
@@ -198,10 +198,10 @@ export default async function handler(req, res) {
         ]);
         await sendEmail(
           email,
-          `Orrery — payment confirmed ${currency} ${amount}`,
+          `OrreryX — payment confirmed ${currency} ${amount}`,
           emailHtml(
             'Payment Confirmed ✓',
-            `Your <strong>${planNames[plan] || 'Orrery'}</strong> subscription has been renewed.<br><br>Amount: <strong>${currency} ${amount}</strong><br>Next billing: <strong>${new Date(nextMs).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</strong>`,
+            `Your <strong>${planNames[plan] || 'OrreryX'}</strong> subscription has been renewed.<br><br>Amount: <strong>${currency} ${amount}</strong><br>Next billing: <strong>${new Date(nextMs).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}</strong>`,
             'OPEN ORRERY →', `${HOST}/app-v2.html`
           )
         );
@@ -219,7 +219,7 @@ export default async function handler(req, res) {
         ]);
         await sendEmail(
           email,
-          'Orrery — payment failed, action required',
+          'OrreryX — payment failed, action required',
           emailHtml(
             'Payment Failed',
             "We couldn't process your PayPal payment. Your access remains active for <strong>3 more days</strong>. Please update your PayPal balance or payment method to avoid losing access.",

@@ -1,4 +1,4 @@
-// api/paypal.js — Orrery PayPal Subscriptions Handler
+// api/paypal.js — OrreryX PayPal Subscriptions Handler
 // Actions: setup, subscribe, activate, cancel, status
 
 const IS_LIVE   = String(process.env.PAYPAL_ENV || '').toLowerCase() === 'live';
@@ -89,7 +89,7 @@ export default async function handler(req, res) {
         const pr = await fetch(`${BASE}/v1/catalogs/products`, {
           method:  'POST',
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
-          body:    JSON.stringify({ name: `Orrery ${meta.name}`, type: 'SERVICE', category: 'SOFTWARE' }),
+          body:    JSON.stringify({ name: `OrreryX ${meta.name}`, type: 'SERVICE', category: 'SOFTWARE' }),
         });
         const prod = await pr.json();
         if (!pr.ok) { out[code] = { error: prod.message }; continue; }
@@ -100,7 +100,7 @@ export default async function handler(req, res) {
           headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${tok}` },
           body:    JSON.stringify({
             product_id: prod.id,
-            name:       `Orrery ${meta.name} Monthly`,
+            name:       `OrreryX ${meta.name} Monthly`,
             status:     'ACTIVE',
             billing_cycles: [{
               frequency:      { interval_unit: 'MONTH', interval_count: 1 },
@@ -143,7 +143,7 @@ export default async function handler(req, res) {
           plan_id:    planId,
           subscriber: { email_address: email },
           application_context: {
-            brand_name:          'Orrery',
+            brand_name:          'OrreryX',
             locale:              'en-US',
             shipping_preference: 'NO_SHIPPING',
             user_action:         'SUBSCRIBE_NOW',

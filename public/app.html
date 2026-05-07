@@ -8,7 +8,7 @@
 <meta http-equiv="X-Content-Type-Options" content="nosniff">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=()">
-<title>Orrery — Geopolitical Market Intelligence</title>
+<title>OrreryX — Geopolitical Market Intelligence</title>
 <link rel="icon" type="image/svg+xml" href="/icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -22,19 +22,19 @@
 <meta name="keywords" content="geopolitical risk, live conflict tracker, war news, market impact, russia ukraine, india pakistan, iran nuclear, oil price war, safe haven assets">
 <link rel="canonical" href="https://www.orreryx.io/app">
 <meta property="og:type" content="website">
-<meta property="og:title" content="Orrery — Live Geopolitical Risk & Market Intelligence">
+<meta property="og:title" content="OrreryX — Live Geopolitical Risk & Market Intelligence">
 <meta property="og:description" content="Real-time conflict tracker covering 35 countries. See live war updates, nuclear alerts, sanctions and their direct market impact on stocks, oil, gold and crypto.">
 <meta property="og:url" content="https://www.orreryx.io/app">
 <meta property="og:image" content="https://www.orreryx.io/og-image.svg">
-<meta property="og:site_name" content="Orreryx">
+<meta property="og:site_name" content="OrreryX">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@orreryx">
-<meta name="twitter:title" content="Orrery — Live Geopolitical Risk & Market Intelligence">
+<meta name="twitter:title" content="OrreryX — Live Geopolitical Risk & Market Intelligence">
 <meta name="twitter:description" content="Real-time conflict tracker: 35 countries, live war feed, nuclear flashpoints, market impact. Free — no signup needed.">
 <meta name="twitter:image" content="https://www.orreryx.io/og-image.svg">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Orrery">
+<meta name="apple-mobile-web-app-title" content="OrreryX">
 <link rel="apple-touch-icon" href="/icon-192.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script src="https://unpkg.com/globe.gl@2.30.0/dist/globe.gl.min.js"></script>
@@ -635,7 +635,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
       <circle cx="23" cy="11" r="1.5" fill="#09090a"/>
       <circle cx="12" cy="20" r="1" fill="#e03836"/>
     </svg>
-    <div><div class="logo-name">Orrery</div><div class="logo-sub">Intel Platform</div></div>
+    <div><div class="logo-name">OrreryX</div><div class="logo-sub">Intel Platform</div></div>
   </a>
   <div class="sep"></div>
   <div class="crisis-txt" id="crisis-txt">LOADING…</div>
@@ -1228,7 +1228,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
 <div class="modal-ov" id="setup-modal">
   <div class="modal" style="width:540px">
     <div class="modal-hd">
-      <div><div class="modal-title">Welcome to Orrery</div><div class="modal-sub">Geopolitical Market Intelligence</div></div>
+      <div><div class="modal-title">Welcome to OrreryX</div><div class="modal-sub">Geopolitical Market Intelligence</div></div>
     </div>
     <div class="wiz-steps">
       <div class="wiz-step active" id="wz1"><div class="wiz-num">1</div><div class="wiz-lbl">Choose Plan</div></div>
@@ -1340,7 +1340,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
         <div style="width:8px;height:8px;border-radius:50%;background:var(--grn);flex-shrink:0;animation:pulse 1.4s infinite"></div>
         <div>
           <div style="font:700 10.5px/1 var(--mono);color:var(--grn);letter-spacing:.06em">LIVE DATA ACTIVE</div>
-          <div style="font:400 10px/1.4 var(--sans);color:var(--txt2);margin-top:3px" id="feed-status-detail">Polling live prices via Orrery proxy</div>
+          <div style="font:400 10px/1.4 var(--sans);color:var(--txt2);margin-top:3px" id="feed-status-detail">Polling live prices via OrreryX proxy</div>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px" id="feed-stats-grid"></div>
@@ -1357,7 +1357,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
         Live prices are already enabled. Click below to activate.
       </div>
       <div class="modal-lbl" style="margin-top:4px">Twelve Data API Key <span style="color:var(--txt4);font-weight:400;text-transform:none;letter-spacing:0">(optional — for direct WebSocket)</span></div>
-      <input class="modal-inp" id="feed-reconnect" type="password" placeholder="Leave blank to use Orrery proxy…" onkeydown="if(event.key==='Enter')doReconnect()">
+      <input class="modal-inp" id="feed-reconnect" type="password" placeholder="Leave blank to use OrreryX proxy…" onkeydown="if(event.key==='Enter')doReconnect()">
       <div class="modal-err" id="feed-reconnect-err">Please enter your API key.</div>
       <div class="modal-hint">Get key at <a href="https://twelvedata.com/account/api-keys" target="_blank" style="color:var(--blu)">twelvedata.com</a> → Grow plan for WebSocket.</div>
       <button class="modal-go" onclick="doReconnect()">ACTIVATE LIVE FEED →</button>
@@ -2147,7 +2147,7 @@ function initPaywall() {
   el.innerHTML = `
     <div style="max-width:440px;width:100%;text-align:center">
       <svg width="40" height="40" viewBox="0 0 32 32" style="margin:0 auto 18px;display:block"><rect width="32" height="32" rx="5" fill="#f0f0ec"/><ellipse cx="16" cy="16" rx="10" ry="4" fill="none" stroke="#09090a" stroke-width="1" transform="rotate(-30,16,16)"/><ellipse cx="16" cy="16" rx="6.5" ry="2.5" fill="none" stroke="rgba(9,9,10,.4)" stroke-width=".8" stroke-dasharray="3 2" transform="rotate(-30,16,16)"/><circle cx="16" cy="16" r="2" fill="#09090a"/><circle cx="23" cy="11" r="1.5" fill="#09090a"/><circle cx="12" cy="20" r="1" fill="#e03836"/></svg>
-      <div style="font:700 28px/1 var(--mono);color:var(--txt);margin-bottom:10px;letter-spacing:-.02em">Orrery</div>
+      <div style="font:700 28px/1 var(--mono);color:var(--txt);margin-bottom:10px;letter-spacing:-.02em">OrreryX</div>
       <div style="font:400 13.5px/1.65 var(--sans);color:var(--txt2);margin-bottom:28px">Real-time geopolitical crisis intelligence.<br>Live stocks, crypto, AI briefings from $0.99/month.</div>
       <div style="display:flex;flex-direction:column;gap:9px;max-width:280px;margin:0 auto">
         <a href="/login?plan=f" style="display:block;background:#38bc78;color:#000;padding:12px;border-radius:4px;font:700 9.5px/1 var(--mono);letter-spacing:.06em;text-decoration:none;text-align:center">START FREE — 3 DAYS, NO CARD →</a>
@@ -3823,7 +3823,7 @@ const SYS_PROMPT = () => {
   const oilPrice = (xom && oxy) ? (oilBase * (1 + ((xom.change + oxy.change) / 2) / 100)) : 86.10;
   const eventCount = feedEvents.length || 29;
 
-  return `You are Orrery, an expert geopolitical market intelligence analyst. Today is ${new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' })}.
+  return `You are OrreryX, an expert geopolitical market intelligence analyst. Today is ${new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' })}.
 
 CURRENT GEOPOLITICAL SITUATION:
 - US-Israel military strikes on Iran's Bandar Abbas naval base (ongoing)
@@ -4346,7 +4346,7 @@ function wizSkip(step) {
 function launch() {
   closeM('setup-modal');
   localStorage.setItem('orrery_wizard_done', '1');
-  toast('✓ Orrery live. Crisis feed active.');
+  toast('✓ OrreryX live. Crisis feed active.');
   setTimeout(() => autoFireBrief(), 800);
 }
 
@@ -4580,28 +4580,28 @@ function doReconnect() {
 const LEGAL_CONTENT = {
   terms: {
     title: 'Terms of Service',
-    body: `<h4 style="color:var(--txt);margin:0 0 10px">Terms of Service — Orrery</h4>
+    body: `<h4 style="color:var(--txt);margin:0 0 10px">Terms of Service — OrreryX</h4>
 <p style="font-size:10px;color:var(--txt3);margin-bottom:14px">Last updated: March 2026 · Effective: March 18, 2026</p>
 <h4 style="color:var(--txt);margin:14px 0 7px">1. Service Description</h4>
-<p>Orrery provides geopolitical intelligence, financial market data, artificial intelligence analysis, and investment tools ("Services") for informational and educational purposes only. By accessing or using the Services, you agree to be bound by these Terms.</p>
+<p>OrreryX provides geopolitical intelligence, financial market data, artificial intelligence analysis, and investment tools ("Services") for informational and educational purposes only. By accessing or using the Services, you agree to be bound by these Terms.</p>
 <h4 style="color:var(--txt);margin:14px 0 7px">2. Not Financial Advice</h4>
-<p>All content on Orrery — including AI-generated briefings, price data, investment analysis, market signals, and AI predictions — is for informational purposes only and does not constitute regulated financial advice, investment advice, or a solicitation to buy or sell any financial instrument. You should consult a licensed financial adviser before making any investment decisions. Past performance does not guarantee future results.</p>
+<p>All content on OrreryX — including AI-generated briefings, price data, investment analysis, market signals, and AI predictions — is for informational purposes only and does not constitute regulated financial advice, investment advice, or a solicitation to buy or sell any financial instrument. You should consult a licensed financial adviser before making any investment decisions. Past performance does not guarantee future results.</p>
 <h4 style="color:var(--txt);margin:14px 0 7px">3. Data Accuracy</h4>
-<p>Market data is sourced from Yahoo Finance and CoinGecko and refreshes every 15 seconds. Intraday micro-movements shown between refreshes use GBM simulation for visual continuity. We do not warrant the accuracy, completeness or timeliness of any data. Do not use Orrery data as the sole basis for trading decisions.</p>
+<p>Market data is sourced from Yahoo Finance and CoinGecko and refreshes every 15 seconds. Intraday micro-movements shown between refreshes use GBM simulation for visual continuity. We do not warrant the accuracy, completeness or timeliness of any data. Do not use OrreryX data as the sole basis for trading decisions.</p>
 <h4 style="color:var(--txt);margin:14px 0 7px">4. Subscriptions</h4>
 <p>Subscriptions are billed monthly. Your subscription renews automatically until cancelled. You may cancel at any time through your Account page. Access continues until the end of the current billing period. We reserve the right to modify pricing with 30 days notice.</p>
 <h4 style="color:var(--txt);margin:14px 0 7px">5. Acceptable Use</h4>
 <p>You may not scrape, redistribute, resell, or commercialize any Platform content without written permission. You may not use the Platform for any unlawful purpose. You may not attempt to reverse engineer, decompile, or interfere with Platform infrastructure.</p>
 <h4 style="color:var(--txt);margin:14px 0 7px">6. Limitation of Liability</h4>
-<p>To the maximum extent permitted by law, Orrery and its operators shall not be liable for any direct, indirect, incidental, consequential, or punitive damages arising from use of the Platform, including financial losses. Our total liability is limited to fees paid in the 30 days preceding any claim.</p>
+<p>To the maximum extent permitted by law, OrreryX and its operators shall not be liable for any direct, indirect, incidental, consequential, or punitive damages arising from use of the Platform, including financial losses. Our total liability is limited to fees paid in the 30 days preceding any claim.</p>
 <h4 style="color:var(--txt);margin:14px 0 7px">7. Intellectual Property</h4>
-<p>All Platform content, design, code, and AI-generated outputs are the property of Orrery. You receive a limited, personal, non-transferable license to access the Platform for your own use only.</p>
+<p>All Platform content, design, code, and AI-generated outputs are the property of OrreryX. You receive a limited, personal, non-transferable license to access the Platform for your own use only.</p>
 <h4 style="color:var(--txt);margin:14px 0 7px">8. Contact</h4>
 <p>Legal queries &amp; Support: <a href="mailto:orrerysupport@gmail.com" style="color:var(--blu)">orrerysupport@gmail.com</a></p>`
   },
   privacy: {
     title: 'Privacy Policy',
-    body: `<h4 style="color:var(--txt);margin:0 0 10px">Privacy Policy — Orrery</h4>
+    body: `<h4 style="color:var(--txt);margin:0 0 10px">Privacy Policy — OrreryX</h4>
 <p style="font-size:10px;color:var(--txt3);margin-bottom:14px">Last updated: March 2026</p>
 <h4 style="color:var(--txt);margin:14px 0 7px">Data We Collect</h4>
 <p>We collect only the minimum necessary: email address (for account access and communications), phone number (optional, for your records), and subscription plan code. We do not collect browsing history, device fingerprints, or personal identifiers beyond payment requirements.</p>
@@ -4618,7 +4618,7 @@ const LEGAL_CONTENT = {
   },
   refund: {
     title: 'Refund Policy',
-    body: `<h4 style="color:var(--txt);margin:0 0 10px">Refund Policy — Orrery</h4>
+    body: `<h4 style="color:var(--txt);margin:0 0 10px">Refund Policy — OrreryX</h4>
 
 <h4 style="color:var(--txt);margin:14px 0 7px">General Policy</h4>
 <p>All payments are final. We do not offer refunds on subscription payments once processed.</p>
@@ -4757,7 +4757,7 @@ window.addEventListener('error', function(e) {
 });
 
 // ── CHATBOT ──────────────────────────────────────────────────────────────────
-const CB_SYS = `You are Orrery Assistant — a friendly, concise support agent for Orrery (orreryx.io), a geopolitical market intelligence platform.
+const CB_SYS = `You are OrreryX Assistant — a friendly, concise support agent for OrreryX (orreryx.io), a geopolitical market intelligence platform.
 
 PLATFORM:
 - Live 3D globe with world events from GDELT (politics, war, economy, disasters, tech, health, crime)
@@ -4783,7 +4783,7 @@ function toggleChatbot() {
   if (panel) panel.classList.toggle('open', cbOpen);
   if (cbOpen) {
     if (cbHistory.length === 0) {
-      cbAddMsg('bot', 'Hi! I\'m the Orrery Assistant 👋\n\nAsk me anything — plans, features, live data, AI intel, or how to get the most from the platform.');
+      cbAddMsg('bot', 'Hi! I\'m the OrreryX Assistant 👋\n\nAsk me anything — plans, features, live data, AI intel, or how to get the most from the platform.');
     }
     setTimeout(() => document.getElementById('cb-inp')?.focus(), 160);
   }
@@ -4801,7 +4801,7 @@ function cbAddMsg(role, text, isTyping) {
   bub.textContent = text;
   const tsEl = document.createElement('div');
   tsEl.className = 'cb-ts';
-  tsEl.textContent = role === 'bot' ? 'Orrery · ' + ts : ts;
+  tsEl.textContent = role === 'bot' ? 'OrreryX · ' + ts : ts;
   el.appendChild(bub);
   el.appendChild(tsEl);
   msgs.appendChild(el);
@@ -5132,7 +5132,7 @@ const vidPopup = (() => {
 </div>
 
 <!-- ── CHATBOT WIDGET ── -->
-<button id="cb-btn" onclick="toggleChatbot()" title="Orrery Assistant — Ask anything" aria-label="Open support chat">
+<button id="cb-btn" onclick="toggleChatbot()" title="OrreryX Assistant — Ask anything" aria-label="Open support chat">
   <svg width="26" height="26" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
     <ellipse cx="16" cy="16" rx="10" ry="4" fill="none" stroke="#09090b" stroke-width="1.8" transform="rotate(-30,16,16)"/>
     <ellipse cx="16" cy="16" rx="6.5" ry="2.5" fill="none" stroke="rgba(9,9,11,.45)" stroke-width="1.1" stroke-dasharray="3 2" transform="rotate(-30,16,16)"/>
@@ -5141,7 +5141,7 @@ const vidPopup = (() => {
     <circle cx="12" cy="20" r="1.2" fill="#e03836"/>
   </svg>
 </button>
-<div id="cb-panel" role="dialog" aria-label="Orrery Assistant">
+<div id="cb-panel" role="dialog" aria-label="OrreryX Assistant">
   <div class="cb-head">
     <div class="cb-head-left">
       <div class="cb-head-dot"></div>

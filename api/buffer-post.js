@@ -13,11 +13,11 @@ const BUFFER_API = 'https://api.bufferapp.com/1';
 
 // ─── Google Business Profile posts (short, local-SEO friendly) ──────────────
 const GOOGLE_POSTS = [
-  `🌍 Track live geopolitical conflicts and their market impact — free, no login.\n\nOrrery monitors 35 countries in real-time: Ukraine, Iran, Taiwan, India-Pakistan and more.\n\nhttps://orreryx.io/app`,
+  `🌍 Track live geopolitical conflicts and their market impact — free, no login.\n\nOrreryX monitors 35 countries in real-time: Ukraine, Iran, Taiwan, India-Pakistan and more.\n\nhttps://orreryx.io/app`,
   `Real-time intelligence on wars, sanctions and nuclear flashpoints — with live stock, oil and gold prices.\n\nFree at orreryx.io/app`,
-  `New on Orrery: filter live conflict news by country and language. 35 countries, 9 languages, AI analysis on demand.\n\nhttps://orreryx.io/app`,
+  `New on OrreryX: filter live conflict news by country and language. 35 countries, 9 languages, AI analysis on demand.\n\nhttps://orreryx.io/app`,
   `Which markets move when geopolitical events happen?\n→ Oil on Middle East tensions\n→ Gold on nuclear news\n→ Defence stocks on active conflicts\n\nTrack it live free: orreryx.io/app`,
-  `Orrery: free geopolitical risk tracker used by investors, analysts and researchers.\n\nLive conflict feed · Market impact · AI briefs · Video coverage\n\norreryx.io/app`,
+  `OrreryX: free geopolitical risk tracker used by investors, analysts and researchers.\n\nLive conflict feed · Market impact · AI briefs · Video coverage\n\norreryx.io/app`,
   `India-Pakistan, Iran, Ukraine, Taiwan — all tracked live with real-time market impact.\n\nFree intelligence platform: orreryx.io/app`,
   `Stay ahead of geopolitical risk. Free real-time tracker: orreryx.io/app\n\n35 countries · 9 languages · stocks, oil, gold, crypto · no signup needed`,
 ];
@@ -32,7 +32,7 @@ When Taiwan headlines break, semiconductor stocks drop.
 
 Most people see the news 12 hours late and wonder why their portfolio moved.
 
-Orrery tracks 35 conflict zones in real time — with direct market impact mapped to stocks, oil, gold and crypto.
+OrreryX tracks 35 conflict zones in real time — with direct market impact mapped to stocks, oil, gold and crypto.
 
 Free. No login. No paywall.
 👉 orreryx.io/app
@@ -45,7 +45,7 @@ Most investors found out they were exposed after the fact.
 
 Real-time geopolitical intelligence used to cost $24,000/year (Bloomberg terminal).
 
-Orrery gives you the same conflict tracking, market impact mapping and AI analysis — completely free.
+OrreryX gives you the same conflict tracking, market impact mapping and AI analysis — completely free.
 
 35 countries · Live feed · AI briefs · Video coverage per event
 
@@ -57,7 +57,7 @@ Orrery gives you the same conflict tracking, market impact mapping and AI analys
 
 These aren't just political events — they're market-moving signals that serious investors track daily.
 
-Orrery is a free geopolitical intelligence platform that maps every major conflict to its asset class impact:
+OrreryX is a free geopolitical intelligence platform that maps every major conflict to its asset class impact:
 → Oil and gas exposure
 → Gold and safe-haven flows
 → Defence and aerospace stocks
@@ -78,13 +78,13 @@ The market impact is already visible:
 • Emerging market indices under pressure
 • Energy prices elevated on regional instability
 
-Orrery tracks this and 14 other active conflict zones in real time — with live price feeds mapped to each event.
+OrreryX tracks this and 14 other active conflict zones in real time — with live price feeds mapped to each event.
 
 Free: orreryx.io/app
 
 #IndiaPakistan #GeopoliticalRisk #Gold #EmergingMarkets #MacroIntelligence`,
 
-  `What a Bloomberg Terminal won't tell you — but Orrery will:
+  `What a Bloomberg Terminal won't tell you — but OrreryX will:
 
 ✅ Which specific conflict is driving today's oil move
 ✅ Which country's risk score just changed and why
@@ -123,7 +123,7 @@ Track them all in real time at orreryx.io/app — free.
 🎥 Video coverage per country
 
 This is what institutional desks pay millions for.
-Orrery gives it to you free.
+OrreryX gives it to you free.
 
 👉 orreryx.io/app
 
@@ -196,7 +196,7 @@ Free intelligence platform: orreryx.io/app
 
   `The world doesn't pause between your news checks 🌐
 
-Orrery monitors conflicts, sanctions and political crises 24/7.
+OrreryX monitors conflicts, sanctions and political crises 24/7.
 
 AI brief on any event. Video coverage per country. Market impact in real time.
 

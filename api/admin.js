@@ -1,4 +1,4 @@
-// api/admin.js — Orrery Admin API
+// api/admin.js — OrreryX Admin API
 // Uses Upstash REST API directly via fetch — NO npm package required.
 // Auth uses HMAC self-verifying tokens — no Redis needed to log in.
 
@@ -404,10 +404,10 @@ export default async function handler(req, res) {
       const { default: nodemailer } = await import('nodemailer');
       const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user: gmailUser, pass: gmailPass } });
       await transporter.sendMail({
-        from: `Orrery Test <${gmailUser}>`,
+        from: `OrreryX Test <${gmailUser}>`,
         to,
-        subject: '✅ Orrery email test — ' + new Date().toISOString(),
-        html: '<p>Email delivery is working correctly from Orrery agents.</p>'
+        subject: '✅ OrreryX email test — ' + new Date().toISOString(),
+        html: '<p>Email delivery is working correctly from OrreryX agents.</p>'
       });
       return res.status(200).json({ ok: true, message: 'Test email sent to ' + to });
     } catch (err) {

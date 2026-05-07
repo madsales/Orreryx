@@ -108,7 +108,7 @@ const COMPLIANCE_CHECKS = [
     category: 'Platform',
     item: 'PayPal integration — no PCI data stored locally',
     check: async () => {
-      return { pass: true, detail: 'Payment processing delegated to PayPal — no card data touches Orrery servers' };
+      return { pass: true, detail: 'Payment processing delegated to PayPal — no card data touches OrreryX servers' };
     },
   },
   {
@@ -178,7 +178,7 @@ async function generateLegalAnalysis(checkResults, newsArticles, anthropicKey) {
   const warnings = checkResults.filter(c => c.warning);
   const newsText = newsArticles.map(a => `- ${a.title} (${a.source?.name})`).join('\n');
 
-  const prompt = `You are a legal compliance advisor for Orrery — a geopolitical intelligence platform that:
+  const prompt = `You are a legal compliance advisor for OrreryX — a geopolitical intelligence platform that:
 - Tracks live wars, nuclear risks, sanctions, and conflicts
 - Uses GDELT, GNews, Anthropic AI, Twitter/X API, LinkedIn API, PayPal
 - Stores subscriber emails in Redis (Upstash)
@@ -319,7 +319,7 @@ function buildReport(checkResults, newsArticles, analysis) {
   </div>
 
   <div style="padding:16px 24px;background:#060b14;text-align:center;font-size:12px;color:#4b5563">
-    Orrery Legal Agent &nbsp;·&nbsp; orreryx.io &nbsp;·&nbsp; Weekly compliance report · Not a substitute for legal counsel
+    OrreryX Legal Agent &nbsp;·&nbsp; orreryx.io &nbsp;·&nbsp; Weekly compliance report · Not a substitute for legal counsel
   </div>
 </div>`;
 }
@@ -334,7 +334,7 @@ async function sendEmail(to, subject, html) {
     const pass = process.env.GMAIL_APP_PASSWORD;
     if (!user || !pass) return false;
     const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user, pass } });
-    await transporter.sendMail({ from: `Orrery Legal Agent <${user}>`, to, subject, html });
+    await transporter.sendMail({ from: `OrreryX Legal Agent <${user}>`, to, subject, html });
     return true;
   } catch (err) { console.error('[Legal sendEmail]', err?.message||err); return false; }
 }
@@ -370,8 +370,8 @@ export default async function handler(req, res) {
   const failing   = checkResults.filter(c => !c.pass).length;
   const html      = buildReport(checkResults, newsArticles, analysis);
   const subject   = failing > 0
-    ? `🔴 Legal Alert: ${failing} compliance issue${failing > 1 ? 's' : ''} — Orrery Weekly`
-    : `✅ Legal Status: All Clear — Orrery Weekly`;
+    ? `🔴 Legal Alert: ${failing} compliance issue${failing > 1 ? 's' : ''} — OrreryX Weekly`
+    : `✅ Legal Status: All Clear — OrreryX Weekly`;
 
   const emailSent = await sendEmail(adminEmail, subject, html);
 

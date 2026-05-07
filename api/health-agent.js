@@ -60,7 +60,7 @@ async function sendEmail(to, subject, html) {
     const pass = process.env.GMAIL_APP_PASSWORD;
     if (!user || !pass) return;
     const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user, pass } });
-    await transporter.sendMail({ from: `Orrery COO <${user}>`, to, subject, html });
+    await transporter.sendMail({ from: `OrreryX COO <${user}>`, to, subject, html });
   } catch (_) {}
 }
 
@@ -120,8 +120,8 @@ export default async function handler(req, res) {
       </tr>`).join('');
 
     const subject = allOk
-      ? '✅ Orrery Health — All Systems Operational'
-      : '🚨 Orrery Alert — Platform Issue Detected';
+      ? '✅ OrreryX Health — All Systems Operational'
+      : '🚨 OrreryX Alert — Platform Issue Detected';
 
     await sendEmail(adminEmail, subject, `
       <div style="font-family:sans-serif;max-width:640px;margin:0 auto">
@@ -143,7 +143,7 @@ export default async function handler(req, res) {
           </thead>
           <tbody>${rows}</tbody>
         </table>
-        <p style="color:#9ca3af;font-size:12px;padding:16px">— Orrery COO Agent · Runs daily 7 AM IST</p>
+        <p style="color:#9ca3af;font-size:12px;padding:16px">— OrreryX COO Agent · Runs daily 7 AM IST</p>
       </div>
     `);
   }

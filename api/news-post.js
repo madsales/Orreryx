@@ -185,7 +185,7 @@ ${desc}
 📰 Source: ${src}
 🔗 Full coverage: ${article.url}
 
-Track this story + live market impact on Orrery (free, no login):
+Track this story + live market impact on OrreryX (free, no login):
 👉 https://orreryx.io/app
 
 #geopolitics #worldnews #breakingnews #markets #geopoliticalrisk #intelligence

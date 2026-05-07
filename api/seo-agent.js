@@ -1,6 +1,6 @@
 // api/seo-agent.js — SEO/AEO Intelligence Agent
 // Runs weekly (Mondays 6 AM UTC) via Vercel cron
-// Crawls all Orrery pages, checks SEO health, AEO schema, keyword presence
+// Crawls all OrreryX pages, checks SEO health, AEO schema, keyword presence
 // Emails a full weekly SEO report to ADMIN_EMAIL
 //
 // Required env vars:
@@ -31,7 +31,7 @@ const PAGES = [
   { path: '/risk-dashboard',        priority: 'medium', keywords: ['geopolitical risk dashboard', 'risk score', 'country risk tracker'] },
 ];
 
-// ── AEO: Target AI search queries Orrery should answer ───────────────────────
+// ── AEO: Target AI search queries OrreryX should answer ───────────────────────
 
 const AEO_QUERIES = [
   'What is the current geopolitical risk level?',
@@ -76,7 +76,7 @@ async function auditPage(path) {
     const start = Date.now();
     const r = await fetch(url, {
       signal: AbortSignal.timeout(10000),
-      headers: { 'User-Agent': 'OrreryBot/1.0 SEO-Audit' },
+      headers: { 'User-Agent': 'OrreryXBot/1.0 SEO-Audit' },
     }).catch(() => null);
 
     result.loadMs    = Date.now() - start;
@@ -191,14 +191,14 @@ async function generateRecommendations(auditResults, sitemapResult, anthropicKey
     `PAGE: ${p.path}\n  Issues: ${p.issues.join('; ') || 'none'}\n  Warnings: ${p.warnings.join('; ') || 'none'}`
   ).join('\n\n');
 
-  const prompt = `You are an SEO and AEO expert for Orrery — a geopolitical intelligence platform targeting investors, analysts and researchers.
+  const prompt = `You are an SEO and AEO expert for OrreryX — a geopolitical intelligence platform targeting investors, analysts and researchers.
 
 Pages with issues:
 ${summary}
 
 Sitemap coverage: ${sitemapResult.urlCount} URLs indexed${sitemapResult.missingPaths.length ? `, missing: ${sitemapResult.missingPaths.join(', ')}` : ', all high-priority pages covered'}
 
-Target AEO queries Orrery should rank for in AI search engines (Perplexity, ChatGPT, Gemini):
+Target AEO queries OrreryX should rank for in AI search engines (Perplexity, ChatGPT, Gemini):
 ${AEO_QUERIES.join('\n')}
 
 Provide:
@@ -333,7 +333,7 @@ function buildReport(auditResults, sitemapResult, recommendations) {
   </div>
 
   <div style="padding:16px 24px;background:#060b14;text-align:center;font-size:12px;color:#4b5563">
-    Orrery SEO/AEO Agent &nbsp;·&nbsp; orreryx.io &nbsp;·&nbsp; Weekly report
+    OrreryX SEO/AEO Agent &nbsp;·&nbsp; orreryx.io &nbsp;·&nbsp; Weekly report
   </div>
 </div>`;
 }
@@ -348,7 +348,7 @@ async function sendEmail(to, subject, html) {
     const pass = process.env.GMAIL_APP_PASSWORD;
     if (!user || !pass) return false;
     const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user, pass } });
-    await transporter.sendMail({ from: `Orrery SEO Agent <${user}>`, to, subject, html });
+    await transporter.sendMail({ from: `OrreryX SEO Agent <${user}>`, to, subject, html });
     return true;
   } catch (err) { console.error('[SEO sendEmail]', err?.message||err); return false; }
 }
@@ -383,8 +383,8 @@ export default async function handler(req, res) {
   const pagesWithIssues = auditResults.filter(p => p.issues.length > 0).length;
   const html    = buildReport(auditResults, sitemapResult, recommendations);
   const subject = pagesWithIssues > 0
-    ? `⚠️ SEO Alert: ${pagesWithIssues} pages with critical issues — Orrery Weekly`
-    : `✅ SEO Health OK — Orrery Weekly Report`;
+    ? `⚠️ SEO Alert: ${pagesWithIssues} pages with critical issues — OrreryX Weekly`
+    : `✅ SEO Health OK — OrreryX Weekly Report`;
 
   const emailSent = await sendEmail(adminEmail, subject, html);
 
