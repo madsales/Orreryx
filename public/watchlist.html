@@ -308,11 +308,12 @@ nav{position:sticky;top:0;z-index:200;background:rgba(9,9,11,.9);backdrop-filter
 (function() {
   try {
     const raw = localStorage.getItem('orrery_session');
+    const pvPlan = (localStorage.getItem('orrery_paid_verified') || '').split('|')[0].toLowerCase();
     if (raw) {
       const session = JSON.parse(raw);
       const plan = (session.plan || '').toLowerCase().trim();
-      if (plan === 'c' || plan === 'command' || plan === 'a' || session.isAdmin) return;
-    }
+      if (plan === 'c' || plan === 'command' || plan === 'a' || session.isAdmin || pvPlan === 'c' || pvPlan === 'a') return;
+    } else if (pvPlan === 'c' || pvPlan === 'a') return;
   } catch (_) {}
   document.getElementById('paywall').style.display = 'flex';
 })();

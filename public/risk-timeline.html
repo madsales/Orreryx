@@ -753,11 +753,12 @@ svg.sparkline{width:100%;height:120px;display:block}
 (function() {
   try {
     const raw = localStorage.getItem('orrery_session');
+    const pvPlan = (localStorage.getItem('orrery_paid_verified') || '').split('|')[0].toLowerCase();
     if (raw) {
       const session = JSON.parse(raw);
       const plan = (session.plan || '').toLowerCase().trim();
-      if (plan === 'c' || plan === 'command' || plan === 'a' || session.isAdmin) return;
-    }
+      if (plan === 'c' || plan === 'command' || plan === 'a' || session.isAdmin || pvPlan === 'c' || pvPlan === 'a') return;
+    } else if (pvPlan === 'c' || pvPlan === 'a') return;
   } catch (_) {}
   document.getElementById('paywall').style.display = 'flex';
 })();

@@ -711,12 +711,13 @@
 (function() {
   try {
     const raw = localStorage.getItem('orrery_session');
+    const pvPlan = (localStorage.getItem('orrery_paid_verified') || '').split('|')[0].toLowerCase();
     if (raw) {
       const session = JSON.parse(raw);
       const plan = (session.plan || '').toLowerCase().trim();
       // Command plan code is 'c' — allow access; also allow Analyst ('a') and admin sessions
-      if (plan === 'c' || plan === 'command' || plan === 'a' || session.isAdmin) return;
-    }
+      if (plan === 'c' || plan === 'command' || plan === 'a' || session.isAdmin || pvPlan === 'c' || pvPlan === 'a') return;
+    } else if (pvPlan === 'c' || pvPlan === 'a') return;
   } catch (_) {}
   // Not on Command — show paywall over the map (map still renders as teaser)
   document.getElementById('paywall').style.display = 'flex';
