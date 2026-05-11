@@ -185,6 +185,8 @@
     { "src": "/global-conflicts-2026",    "dest": "/global-conflicts-2026.html" },
     { "src": "/russia-sanctions",         "dest": "/russia-sanctions.html" },
     { "src": "/oil-price-forecast-2026", "dest": "/oil-price-forecast-2026.html" },
+    { "src": "/china-economy-risk",    "dest": "/china-economy-risk.html" },
+    { "src": "/north-korea-sanctions", "dest": "/north-korea-sanctions.html" },
     { "src": "/",                    "dest": "/index.html" }
   ]
 }
