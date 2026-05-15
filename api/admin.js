@@ -370,6 +370,40 @@ export default async function handler(req, res) {
     }
   }
 
+  // ── SEO DASHBOARD ─────────────────────────────────────────────────────────────
+  if (action === 'seo-dashboard') {
+    if (!hasRedis()) return res.status(503).json({ error: 'Redis not configured' });
+    try {
+      const results = await upstashPipeline([
+        ['GET', 'seo:gsc:latest'],
+        ['GET', 'seo:keywords:latest'],
+        ['GET', 'seo:technical:latest'],
+        ['GET', 'seo:content:latest'],
+        ['GET', 'seo:auditor:latest'],
+        ['GET', 'seo:analytics:latest'],
+        ['GET', 'seo:competitive:latest'],
+        ['GET', 'seo:links:latest'],
+        ['GET', 'seo:aeo:latest'],
+        ['GET', 'seo:orchestrator:latest'],
+      ]);
+      const parse = (v) => { try { return v ? JSON.parse(v) : null; } catch { return null; } };
+      return res.status(200).json({
+        gsc:         parse(results?.[0]),
+        keywords:    parse(results?.[1]),
+        technical:   parse(results?.[2]),
+        content:     parse(results?.[3]),
+        auditor:     parse(results?.[4]),
+        analytics:   parse(results?.[5]),
+        competitive: parse(results?.[6]),
+        links:       parse(results?.[7]),
+        aeo:         parse(results?.[8]),
+        orchestrator: parse(results?.[9]),
+      });
+    } catch(e) {
+      return res.status(500).json({ error: e.message });
+    }
+  }
+
   // ── RUN AGENT ─────────────────────────────────────────────────────────────────
   if (action === 'run-agent') {
     const VALID_AGENTS = ['health-agent', 'finance-agent', 'sales-agent', 'ceo-agent', 'breaking-news', 'ideas-agent', 'legal-agent', 'seo-orchestrator', 'seo-keyword', 'seo-content', 'seo-technical', 'seo-aeo', 'seo-links', 'seo-analytics', 'seo-competitive', 'seo-auditor', 'seo-gsc'];

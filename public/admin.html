@@ -289,6 +289,7 @@ p.desc{font:400 12px/1.75 var(--sans);color:var(--txt3);margin-bottom:18px}
   <div class="tabs">
     <div class="tab active" onclick="switchTab('overview')"  id="tab-overview">Overview</div>
     <div class="tab"        onclick="switchTab('analytics')" id="tab-analytics">Analytics</div>
+    <div class="tab"        onclick="switchTab('seo')"       id="tab-seo">🔍 SEO</div>
     <div class="tab"        onclick="switchTab('agents')"    id="tab-agents">🤖 Agents</div>
     <div class="tab"        onclick="switchTab('test')"      id="tab-test">🧪 Test Access</div>
     <div class="tab"        onclick="switchTab('platform')"  id="tab-platform">Platform</div>
@@ -323,6 +324,92 @@ p.desc{font:400 12px/1.75 var(--sans);color:var(--txt3);margin-bottom:18px}
       <div class="section">
         <div class="sec-title">Top Clicked Elements</div>
         <div id="clicks-body"><div class="loading-txt"><span class="spinner"></span>Loading…</div></div>
+      </div>
+    </div>
+
+    <!-- SEO TAB -->
+    <div id="pg-seo" style="display:none">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+        <div>
+          <div class="sec-title" style="margin:0">🔍 SEO Intelligence Dashboard</div>
+          <div style="font:400 11px/1 var(--sans);color:var(--txt4);margin-top:4px">Live data from Google Search Console + 10 AI SEO agents</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span id="seo-last-updated" style="font:400 10px/1 var(--mono);color:var(--txt4)"></span>
+          <button class="btn-sm" onclick="loadSeoDashboard()" id="seo-refresh-btn">↻ Refresh</button>
+          <button class="btn-sm" style="background:var(--ind)" onclick="runAgent('seo-orchestrator',true)">⚡ Run Full SEO Team</button>
+        </div>
+      </div>
+
+      <!-- KPI Cards -->
+      <div id="seo-kpi-row" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:12px;margin-bottom:20px">
+        <div class="loading-txt"><span class="spinner"></span>Loading SEO data…</div>
+      </div>
+
+      <!-- GSC Rankings + Near Miss -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div class="section" style="margin:0">
+          <div class="sec-title">📊 Google Rankings — Top Keywords</div>
+          <div id="seo-rankings-table"><div class="loading-txt"><span class="spinner"></span></div></div>
+        </div>
+        <div class="section" style="margin:0">
+          <div class="sec-title">🎯 Near-Miss Keywords <span style="font-size:10px;color:var(--amb);font-weight:400">(positions 6–15 — push to top 5)</span></div>
+          <div id="seo-nearmiss-table"><div class="loading-txt"><span class="spinner"></span></div></div>
+        </div>
+      </div>
+
+      <!-- Technical + Content Scores -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div class="section" style="margin:0">
+          <div class="sec-title">⚙️ Technical SEO</div>
+          <div id="seo-technical-panel"><div class="loading-txt"><span class="spinner"></span></div></div>
+        </div>
+        <div class="section" style="margin:0">
+          <div class="sec-title">🔬 Content Audit</div>
+          <div id="seo-audit-panel"><div class="loading-txt"><span class="spinner"></span></div></div>
+        </div>
+      </div>
+
+      <!-- Keywords + Competitive -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div class="section" style="margin:0">
+          <div class="sec-title">🔥 Keyword Opportunities</div>
+          <div id="seo-keywords-panel"><div class="loading-txt"><span class="spinner"></span></div></div>
+        </div>
+        <div class="section" style="margin:0">
+          <div class="sec-title">🏆 Competitive Intelligence</div>
+          <div id="seo-competitive-panel"><div class="loading-txt"><span class="spinner"></span></div></div>
+        </div>
+      </div>
+
+      <!-- Link Building + AEO -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div class="section" style="margin:0">
+          <div class="sec-title">🔗 Link Building Plan</div>
+          <div id="seo-links-panel"><div class="loading-txt"><span class="spinner"></span></div></div>
+        </div>
+        <div class="section" style="margin:0">
+          <div class="sec-title">🤖 AEO — AI Search Optimization</div>
+          <div id="seo-aeo-panel"><div class="loading-txt"><span class="spinner"></span></div></div>
+        </div>
+      </div>
+
+      <!-- GSC Device + Country breakdown -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div class="section" style="margin:0">
+          <div class="sec-title">📱 Traffic by Device</div>
+          <div id="seo-device-panel"><div class="loading-txt"><span class="spinner"></span></div></div>
+        </div>
+        <div class="section" style="margin:0">
+          <div class="sec-title">🌍 Traffic by Country</div>
+          <div id="seo-country-panel"><div class="loading-txt"><span class="spinner"></span></div></div>
+        </div>
+      </div>
+
+      <!-- Top Pages -->
+      <div class="section">
+        <div class="sec-title">📄 Top Pages by Clicks</div>
+        <div id="seo-pages-table"><div class="loading-txt"><span class="spinner"></span></div></div>
       </div>
     </div>
 
@@ -1007,7 +1094,7 @@ window.addEventListener('load', () => {
 });
 
 // ── TABS ─────────────────────────────────────────────────────────────────────
-const TABS = ['overview', 'analytics', 'agents', 'test', 'platform', 'content', 'health'];
+const TABS = ['overview', 'analytics', 'seo', 'agents', 'test', 'platform', 'content', 'health'];
 function switchTab(name) {
   TABS.forEach(t => {
     document.getElementById('tab-' + t).classList.toggle('active', t === name);
@@ -1016,6 +1103,7 @@ function switchTab(name) {
   if (name === 'test')   runApiChecks();
   if (name === 'health') loadFeedStats();
   if (name === 'agents') loadAgentStatus();
+  if (name === 'seo')    loadSeoDashboard();
 }
 
 // ── TEST ACCESS ───────────────────────────────────────────────────────────────
@@ -1486,6 +1574,265 @@ const AGENT_DEFS = [
     lastKey:   'generatedAt',
   },
 ];
+
+// ── SEO DASHBOARD ─────────────────────────────────────────────────────────────
+function posColor(p) {
+  const n = parseFloat(p);
+  if (n <= 3)  return '#16a34a';
+  if (n <= 5)  return '#22c55e';
+  if (n <= 10) return '#d97706';
+  if (n <= 20) return '#ef4444';
+  return '#9ca3af';
+}
+function posBadge(p) {
+  const n = parseFloat(p);
+  const emoji = n <= 3 ? '🥇' : n <= 5 ? '🥈' : n <= 10 ? '🥉' : '📍';
+  return `<span style="font-weight:700;color:${posColor(p)}">${emoji} #${parseFloat(p).toFixed(1)}</span>`;
+}
+function kpiCard(icon, label, value, sub, color) {
+  return `<div style="background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:16px;display:flex;flex-direction:column;gap:6px">
+    <div style="font-size:20px">${icon}</div>
+    <div style="font:700 22px/1 var(--mono);color:${color||'var(--txt)'}">${value}</div>
+    <div style="font:600 11px/1 var(--sans);color:var(--txt3)">${label}</div>
+    ${sub ? `<div style="font:400 10px/1 var(--sans);color:var(--txt4)">${sub}</div>` : ''}
+  </div>`;
+}
+function noData(msg) {
+  return `<div style="padding:20px;text-align:center;color:var(--txt4);font:400 12px/1.5 var(--sans)">${msg}</div>`;
+}
+
+async function loadSeoDashboard() {
+  const btn = document.getElementById('seo-refresh-btn');
+  if (btn) btn.textContent = '↻ Loading…';
+  try {
+    const r = await fetch('/api/admin?action=seo-dashboard', { headers: { Authorization: 'Bearer ' + token } });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
+    renderSeoDashboard(d);
+    const upd = document.getElementById('seo-last-updated');
+    if (upd) upd.textContent = 'Updated ' + new Date().toLocaleTimeString();
+  } catch(e) {
+    document.getElementById('seo-kpi-row').innerHTML = `<div style="color:var(--red);padding:12px">Error: ${esc(e.message)}</div>`;
+  } finally {
+    if (btn) btn.textContent = '↻ Refresh';
+  }
+}
+
+function renderSeoDashboard(d) {
+  const gsc  = d.gsc;
+  const kw   = d.keywords;
+  const tech = d.technical;
+  const aud  = d.auditor;
+  const comp = d.competitive;
+  const lnk  = d.links;
+  const aeo  = d.aeo;
+
+  // ── KPI Row ──
+  const totalClicks = gsc?.summary?.totalClicks ?? '—';
+  const totalImpr   = gsc?.summary?.totalImpressions ?? '—';
+  const avgPos      = gsc?.summary?.avgPosition ?? '—';
+  const top5        = gsc?.summary?.top5Keywords ?? '—';
+  const techScore   = tech?.score ?? '—';
+  const contentScore= aud?.avgScore ?? '—';
+  const autoCommits = (d.orchestrator?.autoCommits ?? '—');
+
+  document.getElementById('seo-kpi-row').innerHTML = [
+    kpiCard('👆','Total Clicks (28d)', typeof totalClicks==='number'?totalClicks.toLocaleString():totalClicks, 'From Google Search Console', '#6366f1'),
+    kpiCard('👁️','Impressions (28d)', typeof totalImpr==='number'?totalImpr.toLocaleString():totalImpr, 'Times shown in search results', '#0891b2'),
+    kpiCard('📍','Avg Position', avgPos, 'Lower is better', parseFloat(avgPos)<=10?'#16a34a':'#d97706'),
+    kpiCard('🥇','Top 5 Keywords', top5, 'Keywords ranking in top 5', '#16a34a'),
+    kpiCard('⚙️','Tech SEO Score', techScore !== '—' ? techScore+'/100' : '—', 'Technical health score', parseInt(techScore)>=80?'#16a34a':parseInt(techScore)>=60?'#d97706':'#ef4444'),
+    kpiCard('📝','Content Score', contentScore !== '—' ? contentScore+'/100' : '—', 'Avg E-E-A-T content quality', parseInt(contentScore)>=70?'#16a34a':'#d97706'),
+    kpiCard('🤖','Auto-Commits', autoCommits, 'SEO changes auto-committed', '#7c3aed'),
+  ].join('');
+
+  // ── Rankings Table ──
+  const kwRows = (gsc?.keywords || []).slice(0, 15);
+  document.getElementById('seo-rankings-table').innerHTML = kwRows.length ? `
+    <table style="width:100%;border-collapse:collapse;font-size:11px">
+      <thead><tr style="border-bottom:1px solid var(--brd);color:var(--txt4)">
+        <th style="padding:6px 4px;text-align:left;font-weight:600">Keyword</th>
+        <th style="padding:6px 4px;text-align:center;font-weight:600">Pos</th>
+        <th style="padding:6px 4px;text-align:center;font-weight:600">Clicks</th>
+        <th style="padding:6px 4px;text-align:center;font-weight:600">Impr</th>
+        <th style="padding:6px 4px;text-align:center;font-weight:600">CTR</th>
+      </tr></thead>
+      <tbody>${kwRows.map(k => `<tr style="border-bottom:1px solid var(--brd);transition:background .1s" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+        <td style="padding:7px 4px;max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(k.keyword)}">${esc(k.keyword)}</td>
+        <td style="padding:7px 4px;text-align:center">${posBadge(k.position)}</td>
+        <td style="padding:7px 4px;text-align:center;font-weight:600">${k.clicks}</td>
+        <td style="padding:7px 4px;text-align:center;color:var(--txt3)">${k.impressions?.toLocaleString?.()??k.impressions}</td>
+        <td style="padding:7px 4px;text-align:center;color:var(--txt3)">${k.ctr}</td>
+      </tr>`).join('')}</tbody>
+    </table>` : noData(gsc?.available === false ? '⚠️ ' + (gsc?.reason || 'GSC not connected. Add GSC_CLIENT_ID, GSC_CLIENT_SECRET, GSC_REFRESH_TOKEN to Vercel.') : 'Run SEO Orchestrator to fetch rankings.');
+
+  // ── Near-Miss Table ──
+  const nmRows = (gsc?.nearMissKeywords || []).slice(0, 12);
+  document.getElementById('seo-nearmiss-table').innerHTML = nmRows.length ? `
+    <div style="font:400 10px/1.5 var(--sans);color:var(--txt4);margin-bottom:8px">These keywords are close to top 5 — target them first for quick ranking wins.</div>
+    <table style="width:100%;border-collapse:collapse;font-size:11px">
+      <thead><tr style="border-bottom:1px solid var(--brd);color:var(--txt4)">
+        <th style="padding:6px 4px;text-align:left;font-weight:600">Keyword</th>
+        <th style="padding:6px 4px;text-align:center;font-weight:600">Pos</th>
+        <th style="padding:6px 4px;text-align:center;font-weight:600">Impr</th>
+        <th style="padding:6px 4px;text-align:center;font-weight:600">CTR</th>
+      </tr></thead>
+      <tbody>${nmRows.map(k => `<tr style="border-bottom:1px solid var(--brd)" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+        <td style="padding:7px 4px;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(k.keyword)}">${esc(k.keyword)}</td>
+        <td style="padding:7px 4px;text-align:center">${posBadge(k.position)}</td>
+        <td style="padding:7px 4px;text-align:center;color:var(--txt3)">${k.impressions?.toLocaleString?.()??k.impressions}</td>
+        <td style="padding:7px 4px;text-align:center;color:var(--txt3)">${k.ctr}</td>
+      </tr>`).join('')}</tbody>
+    </table>` : noData('No near-miss keyword data yet. Run SEO Orchestrator first.');
+
+  // ── Technical SEO ──
+  const techColor = parseInt(techScore)>=80?'#16a34a':parseInt(techScore)>=60?'#d97706':'#ef4444';
+  document.getElementById('seo-technical-panel').innerHTML = tech ? `
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
+      <div style="font:700 42px/1 var(--mono);color:${techColor}">${tech.score}</div>
+      <div>
+        <div style="font:600 12px/1 var(--sans);color:var(--txt)">Technical Score</div>
+        <div style="font:400 11px/1 var(--sans);color:var(--txt4);margin-top:4px">Avg TTFB: ${tech.avgTtfb || 0}ms</div>
+        <div style="background:var(--bg3);border-radius:4px;height:6px;width:140px;margin-top:6px;overflow:hidden">
+          <div style="height:100%;width:${tech.score}%;background:${techColor};border-radius:4px;transition:width 1s"></div>
+        </div>
+      </div>
+    </div>
+    ${(tech.allIssues||[]).length ? `<div style="font:600 11px/1 var(--sans);color:var(--red);margin-bottom:6px">🚨 Issues:</div>
+    <ul style="margin:0;padding:0 0 0 14px;font:400 11px/1.8 var(--sans);color:var(--txt3)">${(tech.allIssues||[]).slice(0,6).map(i=>`<li>${esc(i)}</li>`).join('')}</ul>` : '<div style="color:var(--grn);font:400 11px/1 var(--sans)">✅ No critical technical issues</div>'}
+    ${(tech.recommendations||[]).length ? `<div style="font:600 11px/1 var(--sans);color:var(--txt);margin:10px 0 6px">💡 Recommendations:</div>
+    <ul style="margin:0;padding:0 0 0 14px;font:400 11px/1.8 var(--sans);color:var(--txt3)">${(tech.recommendations||[]).slice(0,4).map(r=>`<li>${esc(r)}</li>`).join('')}</ul>` : ''}
+  ` : noData('Run SEO Orchestrator to get technical SEO data.');
+
+  // ── Content Audit ──
+  document.getElementById('seo-audit-panel').innerHTML = aud ? `
+    <div style="display:flex;align-items:center;gap:16px;margin-bottom:12px">
+      <div style="font:700 42px/1 var(--mono);color:${parseInt(aud.avgScore)>=70?'#16a34a':'#d97706'}">${aud.avgScore}</div>
+      <div>
+        <div style="font:600 12px/1 var(--sans);color:var(--txt)">Avg Content Score</div>
+        <div style="font:400 11px/1 var(--sans);color:var(--txt4);margin-top:4px">${(aud.auditResults||[]).length} pages audited</div>
+        <div style="background:var(--bg3);border-radius:4px;height:6px;width:140px;margin-top:6px;overflow:hidden">
+          <div style="height:100%;width:${aud.avgScore}%;background:${parseInt(aud.avgScore)>=70?'#16a34a':'#d97706'};border-radius:4px;transition:width 1s"></div>
+        </div>
+      </div>
+    </div>
+    ${(aud.criticalIssues||[]).length ? `<div style="font:600 11px/1 var(--sans);color:var(--red);margin-bottom:6px">🚨 Critical Issues:</div>
+    <ul style="margin:0;padding:0 0 0 14px;font:400 11px/1.8 var(--sans);color:var(--txt3)">${(aud.criticalIssues||[]).slice(0,5).map(i=>`<li>${esc(i)}</li>`).join('')}</ul>` : '<div style="color:var(--grn);font:400 11px/1 var(--sans)">✅ No critical content issues</div>'}
+  ` : noData('Run SEO Orchestrator to get content audit data.');
+
+  // ── Keyword Opportunities ──
+  const hiKws = (kw?.high_priority || []).slice(0,5);
+  const qwKws = (kw?.quick_wins || []).slice(0,4);
+  document.getElementById('seo-keywords-panel').innerHTML = (hiKws.length || qwKws.length) ? `
+    ${hiKws.length ? `<div style="font:600 11px/1 var(--sans);color:var(--txt);margin-bottom:8px">🔥 High Priority</div>
+    ${hiKws.map(k=>`<div style="display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--brd);font-size:11px">
+      <div><strong>${esc(k.keyword)}</strong><br><span style="color:var(--txt4)">${esc(k.target_page||'')}</span></div>
+      <div style="text-align:right;flex-shrink:0;margin-left:8px">
+        <span style="background:${k.difficulty==='low'?'#16a34a':k.difficulty==='medium'?'#d97706':'#ef4444'};color:#fff;border-radius:3px;padding:2px 6px;font-size:10px">${esc(k.difficulty||'')}</span><br>
+        <span style="color:var(--txt4);font-size:10px">${esc(k.monthly_volume_est||'')}</span>
+      </div>
+    </div>`).join('')}` : ''}
+    ${qwKws.length ? `<div style="font:600 11px/1 var(--sans);color:var(--txt);margin:12px 0 8px">⚡ Quick Wins</div>
+    ${qwKws.map(k=>`<div style="padding:7px 0;border-bottom:1px solid var(--brd);font-size:11px">
+      <strong>${esc(k.keyword)}</strong><br>
+      <span style="color:var(--txt4)">${esc(k.action||'')}</span>
+    </div>`).join('')}` : ''}
+  ` : noData('Run SEO Orchestrator to get keyword research data.');
+
+  // ── Competitive Intel ──
+  const gaps = (comp?.analysis?.content_gaps || []).slice(0,4);
+  document.getElementById('seo-competitive-panel').innerHTML = comp ? `
+    ${comp.analysis?.weekly_action ? `<div style="background:var(--bg3);border-left:3px solid var(--ind);padding:10px 12px;border-radius:4px;font:400 11px/1.6 var(--sans);color:var(--txt3);margin-bottom:12px">🎯 ${esc(comp.analysis.weekly_action)}</div>` : ''}
+    ${gaps.length ? `<div style="font:600 11px/1 var(--sans);color:var(--txt);margin-bottom:8px">Content Gaps vs Competitors</div>
+    ${gaps.map(g=>`<div style="padding:7px 0;border-bottom:1px solid var(--brd);font-size:11px">
+      <strong>${esc(g.topic)}</strong> → <span style="color:var(--ind)">${esc(g.suggested_page||'')}</span><br>
+      <span style="color:var(--txt4)">${esc(g.why_we_can_win||'')}</span>
+    </div>`).join('')}` : ''}
+  ` : noData('Run SEO Orchestrator to get competitive intelligence.');
+
+  // ── Link Building ──
+  const dirs = (lnk?.weeklyPlan?.directorySubmissions || []).slice(0,4);
+  const outreach = (lnk?.weeklyPlan?.outreachCampaign?.targets || []).slice(0,4);
+  document.getElementById('seo-links-panel').innerHTML = (dirs.length||outreach.length) ? `
+    ${dirs.length ? `<div style="font:600 11px/1 var(--sans);color:var(--txt);margin-bottom:8px">📁 Directory Submissions</div>
+    ${dirs.map(d=>`<div style="padding:6px 0;border-bottom:1px solid var(--brd);font-size:11px">
+      <a href="${esc(d.url||'#')}" target="_blank" style="color:var(--ind);font-weight:600">${esc(d.action||d.url||'')}</a><br>
+      <span style="color:var(--txt4)">${esc(d.angle||'')}</span>
+    </div>`).join('')}` : ''}
+    ${outreach.length ? `<div style="font:600 11px/1 var(--sans);color:var(--txt);margin:12px 0 8px">✉️ Outreach Targets</div>
+    ${outreach.map(t=>`<div style="padding:5px 0;border-bottom:1px solid var(--brd);font-size:11px;color:var(--txt3)">${esc(t)}</div>`).join('')}` : ''}
+  ` : noData('Run SEO Orchestrator to get link building plan.');
+
+  // ── AEO ──
+  const aeoPages = (aeo?.results || []).slice(0,5);
+  const geoRecs  = (aeo?.geoRecommendations || []).slice(0,4);
+  document.getElementById('seo-aeo-panel').innerHTML = (aeoPages.length||geoRecs.length) ? `
+    <div style="font:400 11px/1 var(--sans);color:var(--txt4);margin-bottom:10px">FAQ schema injected on ${aeoPages.filter(r=>r.committed).length}/${aeoPages.length} pages</div>
+    ${aeoPages.map(r=>`<div style="display:flex;justify-content:space-between;padding:6px 0;border-bottom:1px solid var(--brd);font-size:11px">
+      <span style="color:var(--txt3)">${esc(r.path||'')}</span>
+      <span style="color:${r.committed?'#16a34a':'#d97706'}">${r.committed?'✅ Live':'⏳ Pending'}</span>
+    </div>`).join('')}
+    ${geoRecs.length ? `<div style="font:600 11px/1 var(--sans);color:var(--txt);margin:12px 0 8px">🌐 GEO Recommendations</div>
+    <ul style="margin:0;padding:0 0 0 14px;font:400 11px/1.8 var(--sans);color:var(--txt3)">${geoRecs.map(r=>`<li>${esc(r)}</li>`).join('')}</ul>` : ''}
+  ` : noData('Run SEO Orchestrator to get AEO data.');
+
+  // ── Device Breakdown ──
+  const devs = gsc?.devices || [];
+  document.getElementById('seo-device-panel').innerHTML = devs.length ? `
+    ${devs.map(d=>{
+      const icon = d.device==='MOBILE'?'📱':d.device==='DESKTOP'?'🖥️':'💻';
+      const total = devs.reduce((a,x)=>a+x.clicks,0)||1;
+      const pct = Math.round(d.clicks/total*100);
+      return `<div style="margin-bottom:12px">
+        <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:4px">
+          <span>${icon} ${esc(d.device)}</span>
+          <span style="font-weight:600">${d.clicks} clicks (${pct}%)</span>
+        </div>
+        <div style="background:var(--bg3);border-radius:4px;height:8px;overflow:hidden">
+          <div style="height:100%;width:${pct}%;background:var(--ind);border-radius:4px;transition:width 1s"></div>
+        </div>
+      </div>`;
+    }).join('')}
+  ` : noData('GSC device data not available yet.');
+
+  // ── Country Breakdown ──
+  const countries = (gsc?.countries || []).slice(0,8);
+  document.getElementById('seo-country-panel').innerHTML = countries.length ? `
+    <table style="width:100%;border-collapse:collapse;font-size:11px">
+      <thead><tr style="border-bottom:1px solid var(--brd);color:var(--txt4)">
+        <th style="padding:6px 4px;text-align:left;font-weight:600">Country</th>
+        <th style="padding:6px 4px;text-align:right;font-weight:600">Clicks</th>
+      </tr></thead>
+      <tbody>${countries.map(c=>`<tr style="border-bottom:1px solid var(--brd)">
+        <td style="padding:7px 4px;text-transform:uppercase;color:var(--txt3)">${esc(c.country)}</td>
+        <td style="padding:7px 4px;text-align:right;font-weight:600">${c.clicks}</td>
+      </tr>`).join('')}</tbody>
+    </table>
+  ` : noData('GSC country data not available yet.');
+
+  // ── Top Pages ──
+  const pages = (gsc?.pages || []).slice(0,12);
+  document.getElementById('seo-pages-table').innerHTML = pages.length ? `
+    <table style="width:100%;border-collapse:collapse;font-size:11px">
+      <thead><tr style="border-bottom:1px solid var(--brd);color:var(--txt4)">
+        <th style="padding:6px 4px;text-align:left;font-weight:600">Page</th>
+        <th style="padding:6px 4px;text-align:center;font-weight:600">Position</th>
+        <th style="padding:6px 4px;text-align:center;font-weight:600">Clicks</th>
+        <th style="padding:6px 4px;text-align:center;font-weight:600">Impressions</th>
+        <th style="padding:6px 4px;text-align:center;font-weight:600">CTR</th>
+      </tr></thead>
+      <tbody>${pages.map(p=>`<tr style="border-bottom:1px solid var(--brd)" onmouseover="this.style.background='var(--bg3)'" onmouseout="this.style.background=''">
+        <td style="padding:7px 4px;max-width:260px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+          <a href="https://www.orreryx.io${esc(p.page)}" target="_blank" style="color:var(--ind)">${esc(p.page||'/')}</a>
+        </td>
+        <td style="padding:7px 4px;text-align:center">${posBadge(p.position)}</td>
+        <td style="padding:7px 4px;text-align:center;font-weight:600">${p.clicks}</td>
+        <td style="padding:7px 4px;text-align:center;color:var(--txt3)">${p.impressions?.toLocaleString?.()??p.impressions}</td>
+        <td style="padding:7px 4px;text-align:center;color:var(--txt3)">${p.ctr}</td>
+      </tr>`).join('')}</tbody>
+    </table>
+  ` : noData('Run SEO Orchestrator to get top pages data.');
+}
 
 let agentLogs = {};
 
