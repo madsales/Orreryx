@@ -63,13 +63,26 @@ function safeParse(raw) {
 // ── Gmail SMTP email ───────────────────────────────────────────────────────────
 async function sendEmail(to, subject, html) {
   if (!to) return false;
+  const resendKey = process.env.RESEND_API_KEY;
+  const from = process.env.EMAIL_FROM || 'OrreryX CEO <noreply@orreryx.io>';
+  if (resendKey) {
+    try {
+      const r = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from, to: to.trim(), subject, html }),
+      });
+      if (r.ok) return true;
+    } catch (_) {}
+  }
+  // Fallback: Gmail SMTP
   try {
     const { default: nodemailer } = await import('nodemailer');
     const user = process.env.GMAIL_USER;
     const pass = process.env.GMAIL_APP_PASSWORD;
     if (!user || !pass) return false;
     const transporter = nodemailer.createTransport({ service: 'gmail', auth: { user, pass } });
-    await transporter.sendMail({ from: `OrreryX CEO <${user}>`, to, subject, html });
+    await transporter.sendMail({ from: `OrreryX CEO <${user}>`, to: to.trim(), subject, html });
     return true;
   } catch (err) { console.error('[CEO sendEmail]', err?.message||err); return false; }
 }

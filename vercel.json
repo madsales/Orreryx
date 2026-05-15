@@ -49,7 +49,11 @@
     { "path": "/api/social-post",    "schedule": "0 */3 * * *" },
     { "path": "/api/breaking-news",  "schedule": "0 */2 * * *" },
     { "path": "/api/seo-agent",      "schedule": "0 6 * * 1"   },
-    { "path": "/api/legal-agent",    "schedule": "0 7 * * 1"   }
+    { "path": "/api/legal-agent",    "schedule": "0 7 * * 1"   },
+    { "path": "/api/health-agent",   "schedule": "0 7 * * *"   },
+    { "path": "/api/ceo-agent",      "schedule": "0 8 * * *"   },
+    { "path": "/api/finance-agent",  "schedule": "0 8 * * 1"   },
+    { "path": "/api/sales-agent",    "schedule": "0 9 * * *"   }
   ],
   "functions": {
     "api/anthropic.js":     { "maxDuration": 30 },
