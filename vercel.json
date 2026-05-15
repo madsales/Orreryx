@@ -48,7 +48,8 @@
   "crons": [
     { "path": "/api/social-post",    "schedule": "0 */3 * * *" },
     { "path": "/api/breaking-news",  "schedule": "0 */2 * * *" },
-    { "path": "/api/seo-agent",      "schedule": "0 6 * * 1"   },
+    { "path": "/api/seo-agent",        "schedule": "0 6 * * 1"   },
+    { "path": "/api/seo-orchestrator", "schedule": "0 5 * * 1"   },
     { "path": "/api/legal-agent",    "schedule": "0 7 * * 1"   },
     { "path": "/api/health-agent",   "schedule": "0 7 * * *"   },
     { "path": "/api/ceo-agent",      "schedule": "0 8 * * *"   },
@@ -77,8 +78,18 @@
     "api/ceo-agent.js":     { "maxDuration": 60 },
     "api/breaking-news.js": { "maxDuration": 90 },
     "api/ideas-agent.js":   { "maxDuration": 30 },
-    "api/seo-agent.js":    { "maxDuration": 60 },
-    "api/legal-agent.js":  { "maxDuration": 60 }
+    "api/seo-agent.js":        { "maxDuration": 60 },
+    "api/seo-orchestrator.js": { "maxDuration": 300 },
+    "api/seo-keyword.js":      { "maxDuration": 30 },
+    "api/seo-content.js":      { "maxDuration": 60 },
+    "api/seo-technical.js":    { "maxDuration": 60 },
+    "api/seo-aeo.js":          { "maxDuration": 60 },
+    "api/seo-links.js":        { "maxDuration": 30 },
+    "api/seo-analytics.js":    { "maxDuration": 30 },
+    "api/seo-competitive.js":  { "maxDuration": 30 },
+    "api/seo-auditor.js":      { "maxDuration": 60 },
+    "api/seo-gsc.js":          { "maxDuration": 30 },
+    "api/legal-agent.js":      { "maxDuration": 60 }
   },
   "routes": [
     { "src": "/api/buffer-post",      "dest": "/api/buffer-post.js" },
