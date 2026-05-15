@@ -1140,8 +1140,8 @@ async function runApiChecks() {
   const grid = document.getElementById('api-check-grid');
   const checks = [
     { name: 'Admin Auth',     test: () => fetch('/api/admin?action=auth', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ password: '___probe___' }) }).then(r => r.status === 401 ? '✅ Reachable (401 as expected)' : '⚠️ HTTP ' + r.status) },
-    { name: 'Events API',     test: () => fetch('/api/events').then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => '✅ ' + (d.count || 0) + ' events · ' + Object.keys(d.bycat||{}).length + ' categories').catch(e => '❌ ' + e) },
-    { name: 'GNews API',      test: () => fetch('/api/gnews').then(r => r.ok ? r.json() : Promise.reject(r.status)).then(d => '✅ ' + (d.count || 0) + ' articles · ' + (d.feeds||0) + ' feeds live').catch(e => '❌ ' + e) },
+    { name: 'Events API',     timeout: 25000, test: () => fetch('/api/events', { signal: AbortSignal.timeout(24000) }).then(r => r.ok ? r.json() : Promise.reject('HTTP ' + r.status)).then(d => '✅ ' + (d.events?.length || d.count || 0) + ' events · ' + Object.keys(d.bycat||{}).length + ' categories').catch(e => '❌ ' + e) },
+    { name: 'GNews API',      timeout: 25000, test: () => fetch('/api/gnews', { signal: AbortSignal.timeout(24000) }).then(r => r.ok ? r.json() : Promise.reject('HTTP ' + r.status)).then(d => '✅ ' + (d.count || d.articles?.length || 0) + ' articles · ' + (d.feeds||0) + ' feeds live').catch(e => '❌ ' + e) },
     { name: 'Anthropic API',  test: () => fetch('/api/anthropic', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ messages:[{role:'user',content:'ping'}], max_tokens:1 }) }).then(r => r.status === 200 || r.status === 400 ? '✅ Reachable' : '❌ HTTP ' + r.status) },
     { name: 'Track API',      test: () => fetch('/api/track', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ event:'pv', page:'/admin-test' }) }).then(r => r.ok ? '✅ OK' : '⚠️ HTTP ' + r.status) },
     { name: 'Send Magic',     test: () => fetch('/api/send-magic', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ email:'probe@test.com' }) }).then(r => r.status < 500 ? '✅ Reachable' : '❌ HTTP ' + r.status) },
@@ -1156,8 +1156,9 @@ async function runApiChecks() {
 
   checks.forEach(async c => {
     const el = document.getElementById('ac-' + c.name.replace(/\s/g,'_'));
+    const ms = c.timeout || 8000;
     try {
-      const result = await Promise.race([c.test(), new Promise((_,rej) => setTimeout(() => rej(new Error('Timeout')), 8000))]);
+      const result = await Promise.race([c.test(), new Promise((_,rej) => setTimeout(() => rej(new Error('Timeout after ' + (ms/1000) + 's')), ms))]);
       el.textContent = result;
       el.className = 'api-result ' + (result.startsWith('✅') ? 'ok' : 'err');
     } catch(e) {
