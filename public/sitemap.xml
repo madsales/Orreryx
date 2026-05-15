@@ -500,4 +500,18 @@
     <priority>0.90</priority>
   </url>
 
+  <url>
+    <loc>https://www.orreryx.io/middle-east-oil-risk</loc>
+    <lastmod>2026-05-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/black-swan-events-2026</loc>
+    <lastmod>2026-05-15</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+
 </urlset>

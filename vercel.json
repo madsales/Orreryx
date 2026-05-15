@@ -187,6 +187,8 @@
     { "src": "/oil-price-forecast-2026", "dest": "/oil-price-forecast-2026.html" },
     { "src": "/china-economy-risk",    "dest": "/china-economy-risk.html" },
     { "src": "/north-korea-sanctions", "dest": "/north-korea-sanctions.html" },
+    { "src": "/middle-east-oil-risk",  "dest": "/middle-east-oil-risk.html" },
+    { "src": "/black-swan-events-2026","dest": "/black-swan-events-2026.html" },
     { "src": "/",                    "dest": "/index.html" }
   ]
 }
