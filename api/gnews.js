@@ -755,6 +755,18 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'public, max-age=480, stale-while-revalidate=60');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
+  // ?ping=1 — fast health check, returns cached data or status without hitting RSS feeds
+  if (req.query.ping === '1') {
+    const anyCache = cacheMap.size > 0 ? [...cacheMap.values()][0] : null;
+    return res.status(200).json({
+      ok: true,
+      cached: !!anyCache,
+      count: anyCache?.data?.count || 0,
+      feeds: anyCache?.data?.feeds || 0,
+      age: anyCache ? Math.round((Date.now() - anyCache.time) / 1000) + 's ago' : 'no cache',
+    });
+  }
+
   const country = (req.query.country || 'all').toUpperCase();
   const lang    = (req.query.lang    || 'en').toLowerCase();
   const cacheKey = `${country}:${lang}`;
