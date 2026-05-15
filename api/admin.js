@@ -430,7 +430,8 @@ export default async function handler(req, res) {
 
     try {
       const controller = new AbortController();
-      const timer = setTimeout(() => controller.abort(), 50000);
+      const timeoutMs = agentPath === 'seo-orchestrator' ? 290000 : 50000;
+      const timer = setTimeout(() => controller.abort(), timeoutMs);
       const cronSecret = process.env.CRON_SECRET || '';
       const r = await fetch(url, {
         headers: {
