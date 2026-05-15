@@ -346,6 +346,9 @@ p.desc{font:400 12px/1.75 var(--sans);color:var(--txt3);margin-bottom:18px}
         <div class="loading-txt"><span class="spinner"></span>Loading SEO data…</div>
       </div>
 
+      <!-- Chief Strategy Panel -->
+      <div id="seo-chief-panel" style="margin-bottom:14px"></div>
+
       <!-- GSC Rankings + Near Miss -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
         <div class="section" style="margin:0">
@@ -1514,6 +1517,17 @@ const AGENT_DEFS = [
     lastKey:   'generatedAt',
   },
   {
+    id: 'seo-chief',
+    icon: '🎯',
+    name: 'Chief SEO Strategist',
+    role: '#1 Ranking Battle Plan',
+    schedule: 'Monday 2:30 PM IST',
+    desc: 'Reads all 10 SEO agents\' data, uses Claude to create a precise weekly battle plan for hitting #1 on Google. Sends specific instructions to each agent.',
+    statusKey: 'seo_chief',
+    lastKey:   'generatedAt',
+    hasForce: true,
+  },
+  {
     id: 'seo-orchestrator',
     icon: '🤖',
     name: 'SEO Orchestrator',
@@ -1686,13 +1700,78 @@ async function runSeoTeam(btn) {
 }
 
 function renderSeoDashboard(d) {
-  const gsc  = d.gsc;
-  const kw   = d.keywords;
-  const tech = d.technical;
-  const aud  = d.auditor;
-  const comp = d.competitive;
-  const lnk  = d.links;
-  const aeo  = d.aeo;
+  const gsc   = d.gsc;
+  const kw    = d.keywords;
+  const tech  = d.technical;
+  const aud   = d.auditor;
+  const comp  = d.competitive;
+  const lnk   = d.links;
+  const aeo   = d.aeo;
+  const chief = d.chief;
+
+  // ── Chief Strategy Panel ──
+  const chiefEl = document.getElementById('seo-chief-panel');
+  if (chiefEl) {
+    const s = chief?.strategy;
+    if (s) {
+      const top3Html = (s.this_week_top3_actions || []).map(a => `
+        <div style="background:#f0fdf4;border-left:3px solid #16a34a;padding:10px 12px;border-radius:4px;margin-bottom:6px">
+          <div style="font:600 12px/1 var(--sans);color:#15803d">${esc(a.action)}</div>
+          <div style="font:400 10px/1.5 var(--sans);color:#166534;margin-top:4px">📈 ${esc(a.expected_impact)} · 🤖 ${esc(a.agent)}</div>
+        </div>`).join('');
+
+      const targetsHtml = (s['#1_target_keywords'] || []).slice(0,5).map(k => `
+        <div style="display:flex;justify-content:space-between;align-items:start;padding:8px 0;border-bottom:1px solid var(--brd);font-size:11px;gap:8px">
+          <div style="flex:1"><strong>${esc(k.keyword)}</strong><br><span style="color:var(--txt4)">${esc(k.what_to_do)}</span></div>
+          <span style="background:var(--ind);color:#fff;border-radius:3px;padding:2px 7px;font-size:10px;font-weight:700;flex-shrink:0">#${esc(String(k.current_position))}</span>
+        </div>`).join('');
+
+      const agentInstrHtml = Object.entries(s.agent_instructions || {}).slice(0,5).map(([agent, instr]) => `
+        <div style="padding:8px 0;border-bottom:1px solid var(--brd)">
+          <div style="font:700 10px/1 var(--sans);text-transform:uppercase;letter-spacing:.06em;color:var(--ind);margin-bottom:3px">${esc(agent.replace(/_/g,' '))}</div>
+          <div style="font:400 11px/1.5 var(--sans);color:var(--txt3)">${esc(instr)}</div>
+        </div>`).join('');
+
+      chiefEl.innerHTML = `
+        <div style="background:linear-gradient(135deg,#1a1a2e,#0f3460);border-radius:10px;padding:20px;margin-bottom:4px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-wrap:wrap;gap:8px">
+            <div>
+              <div style="font:700 15px/1 var(--sans);color:#fff">🎯 Chief SEO Strategist — Weekly Battle Plan</div>
+              <div style="font:400 11px/1 var(--sans);color:#94a3b8;margin-top:5px">Generated ${chief.date} · ${chief.agentsAnalyzed} agents analyzed</div>
+            </div>
+            <button class="btn-sm" style="background:#6366f1" onclick="runAgent('seo-chief',true)">⚡ Re-Run Strategy</button>
+          </div>
+          ${s.biggest_ranking_blocker ? `<div style="background:rgba(239,68,68,.15);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:12px;margin-bottom:12px">
+            <div style="font:700 10px/1 var(--sans);text-transform:uppercase;letter-spacing:.06em;color:#fca5a5;margin-bottom:5px">🚨 Biggest Ranking Blocker</div>
+            <div style="font:400 12px/1.5 var(--sans);color:#fee2e2">${esc(s.biggest_ranking_blocker)}</div>
+          </div>` : ''}
+          ${s.overall_ranking_assessment ? `<div style="font:400 12px/1.6 var(--sans);color:#cbd5e1;margin-bottom:12px">${esc(s.overall_ranking_assessment)}</div>` : ''}
+          ${s['30_day_ranking_forecast'] ? `<div style="background:rgba(99,102,241,.2);border-radius:6px;padding:10px 12px;font:400 11px/1.5 var(--sans);color:#a5b4fc">📅 30-Day Forecast: ${esc(s['30_day_ranking_forecast'])}</div>` : ''}
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:12px">
+          <div class="section" style="margin:0">
+            <div class="sec-title">✅ Top 3 Actions This Week</div>
+            ${top3Html || noData('Run Chief Strategy agent')}
+          </div>
+          <div class="section" style="margin:0">
+            <div class="sec-title">🎯 #1 Target Keywords</div>
+            ${targetsHtml || noData('Run Chief Strategy agent')}
+          </div>
+          <div class="section" style="margin:0">
+            <div class="sec-title">🤖 Agent Instructions</div>
+            ${agentInstrHtml || noData('Run Chief Strategy agent')}
+          </div>
+        </div>`;
+    } else {
+      chiefEl.innerHTML = `<div style="background:var(--bg2);border:1px solid var(--brd);border-radius:10px;padding:20px;display:flex;justify-content:space-between;align-items:center">
+        <div>
+          <div style="font:700 13px/1 var(--sans);color:var(--txt)">🎯 Chief SEO Strategist</div>
+          <div style="font:400 11px/1.5 var(--sans);color:var(--txt4);margin-top:5px">No battle plan generated yet. Run the orchestrator first, then run the Chief agent.</div>
+        </div>
+        <button class="btn-sm" style="background:var(--ind);flex-shrink:0" onclick="runAgent('seo-chief',true)">⚡ Generate Battle Plan</button>
+      </div>`;
+    }
+  }
 
   // ── KPI Row ──
   const totalClicks = gsc?.summary?.totalClicks ?? '—';
