@@ -341,16 +341,28 @@ export default async function handler(req, res) {
         ['GET', 'breaking:last_post_time'],
         ['GET', `ceo:approved:${today}`],
         ['GET', 'ideas:latest'],
+        ['GET', 'seo:orchestrator:latest'],
+        ['GET', 'seo:gsc:latest'],
+        ['GET', 'seo:keywords:latest'],
+        ['GET', 'seo:technical:latest'],
+        ['GET', 'seo:content:latest'],
+        ['GET', 'seo:auditor:latest'],
       ]);
       const parse = (v) => { try { return v ? JSON.parse(v) : null; } catch { return v ? { ts: v } : null; } };
       return res.status(200).json({
-        coo:      parse(results?.[0]),
-        cfo:      parse(results?.[1]),
-        sales:    parse(results?.[2]),
-        ceo:      parse(results?.[3]),
-        breaking: results?.[4] ? { last_post_time: parseInt(results[4]) || results[4], ts: parseInt(results[4]) || null } : null,
-        approved: parse(results?.[5]),
-        ideas:    parse(results?.[6]),
+        coo:             parse(results?.[0]),
+        cfo:             parse(results?.[1]),
+        sales:           parse(results?.[2]),
+        ceo:             parse(results?.[3]),
+        breaking:        results?.[4] ? { last_post_time: parseInt(results[4]) || results[4], ts: parseInt(results[4]) || null } : null,
+        approved:        parse(results?.[5]),
+        ideas:           parse(results?.[6]),
+        seo_orchestrator: parse(results?.[7]),
+        seo_gsc:         parse(results?.[8]),
+        seo_keyword:     parse(results?.[9]),
+        seo_technical:   parse(results?.[10]),
+        seo_content:     parse(results?.[11]),
+        seo_auditor:     parse(results?.[12]),
         today,
       });
     } catch(e) {
@@ -360,10 +372,17 @@ export default async function handler(req, res) {
 
   // ── RUN AGENT ─────────────────────────────────────────────────────────────────
   if (action === 'run-agent') {
-    const VALID_AGENTS = ['health-agent', 'finance-agent', 'sales-agent', 'ceo-agent', 'breaking-news'];
+    const VALID_AGENTS = ['health-agent', 'finance-agent', 'sales-agent', 'ceo-agent', 'breaking-news', 'ideas-agent', 'legal-agent', 'seo-orchestrator', 'seo-keyword', 'seo-content', 'seo-technical', 'seo-aeo', 'seo-links', 'seo-analytics', 'seo-competitive', 'seo-auditor', 'seo-gsc'];
     // Accept short names (e.g. 'health') or full names (e.g. 'health-agent')
     const rawAgent = (req.query.agent || '').trim();
-    const agentMap = { health: 'health-agent', finance: 'finance-agent', sales: 'sales-agent', ceo: 'ceo-agent', 'breaking-news': 'breaking-news' };
+    const agentMap = {
+      health: 'health-agent', finance: 'finance-agent', sales: 'sales-agent', ceo: 'ceo-agent',
+      'breaking-news': 'breaking-news', ideas: 'ideas-agent', legal: 'legal-agent',
+      'seo-orchestrator': 'seo-orchestrator', 'seo-keyword': 'seo-keyword',
+      'seo-content': 'seo-content', 'seo-technical': 'seo-technical',
+      'seo-aeo': 'seo-aeo', 'seo-links': 'seo-links', 'seo-analytics': 'seo-analytics',
+      'seo-competitive': 'seo-competitive', 'seo-auditor': 'seo-auditor', 'seo-gsc': 'seo-gsc',
+    };
     const agentPath = agentMap[rawAgent] || (VALID_AGENTS.includes(rawAgent) ? rawAgent : null);
     if (!agentPath) return res.status(400).json({ error: 'Unknown agent: ' + rawAgent });
 

@@ -1,6 +1,7 @@
 // api/seo-gsc.js — Google Search Console Manager Agent
-// Reads real ranking data from GSC API: impressions, clicks, CTR, average position
-// Requires: GSC_SERVICE_ACCOUNT_JSON (base64 encoded service account JSON)
+// Reads real ranking data from GSC API using OAuth refresh token
+// Required env vars: GSC_REFRESH_TOKEN, GSC_CLIENT_ID, GSC_CLIENT_SECRET
+// Optional: GSC_SITE_URL (defaults to https://www.orreryx.io/)
 // Redis: seo:gsc:latest (48h TTL)
 
 async function redis(cmd) {
@@ -16,79 +17,79 @@ async function redis(cmd) {
   return (await r?.json().catch(() => null))?.result ?? null;
 }
 
-async function getGoogleAccessToken(serviceAccountJson) {
-  const sa    = JSON.parse(serviceAccountJson);
-  const now   = Math.floor(Date.now() / 1000);
-  const claim = {
-    iss: sa.client_email,
-    scope: 'https://www.googleapis.com/auth/webmasters.readonly',
-    aud: 'https://oauth2.googleapis.com/token',
-    exp: now + 3600,
-    iat: now,
-  };
-
-  // Build JWT manually using crypto
-  const { createSign } = await import('crypto');
-  const header  = Buffer.from(JSON.stringify({ alg: 'RS256', typ: 'JWT' })).toString('base64url');
-  const payload = Buffer.from(JSON.stringify(claim)).toString('base64url');
-  const unsigned = `${header}.${payload}`;
-  const sign = createSign('RSA-SHA256');
-  sign.update(unsigned);
-  const signature = sign.sign(sa.private_key).toString('base64url');
-  const jwt = `${unsigned}.${signature}`;
-
-  const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+// Exchange refresh token for a short-lived access token
+async function getAccessToken() {
+  const r = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `grant_type=urn%3Aietf%3Aparams%3Aoauth%3Agrant-type%3Ajwt-bearer&assertion=${jwt}`,
+    body: new URLSearchParams({
+      client_id:     process.env.GSC_CLIENT_ID,
+      client_secret: process.env.GSC_CLIENT_SECRET,
+      refresh_token: process.env.GSC_REFRESH_TOKEN,
+      grant_type:    'refresh_token',
+    }),
     signal: AbortSignal.timeout(10000),
   });
-  if (!tokenRes.ok) throw new Error(`Token error: ${await tokenRes.text()}`);
-  const tokenData = await tokenRes.json();
-  return tokenData.access_token;
+  if (!r.ok) {
+    const err = await r.text().catch(() => 'unknown');
+    throw new Error(`OAuth token exchange failed: ${err}`);
+  }
+  const d = await r.json();
+  if (!d.access_token) throw new Error(`No access_token in response: ${JSON.stringify(d)}`);
+  return d.access_token;
 }
 
 async function queryGSC(accessToken, siteUrl, query) {
-  const r = await fetch(`https://searchconsole.googleapis.com/webmasters/v3/sites/${encodeURIComponent(siteUrl)}/searchAnalytics/query`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(query),
-    signal: AbortSignal.timeout(15000),
-  });
-  if (!r.ok) throw new Error(`GSC error: ${await r.text()}`);
+  const r = await fetch(
+    `https://searchconsole.googleapis.com/webmasters/v3/sites/${encodeURIComponent(siteUrl)}/searchAnalytics/query`,
+    {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
+      body: JSON.stringify(query),
+      signal: AbortSignal.timeout(15000),
+    }
+  );
+  if (!r.ok) {
+    const err = await r.text().catch(() => 'unknown');
+    throw new Error(`GSC query failed: ${err}`);
+  }
   return r.json();
 }
 
 export async function run() {
   const today   = new Date().toISOString().split('T')[0];
-  const saJson  = process.env.GSC_SERVICE_ACCOUNT_JSON;
   const siteUrl = process.env.GSC_SITE_URL || 'https://www.orreryx.io/';
 
-  if (!saJson) {
+  const hasCredentials =
+    process.env.GSC_REFRESH_TOKEN &&
+    process.env.GSC_CLIENT_ID &&
+    process.env.GSC_CLIENT_SECRET;
+
+  if (!hasCredentials) {
     const setupGuide = {
       available: false,
-      reason: 'GSC not configured',
+      reason: 'GSC OAuth credentials not configured',
       setup_steps: [
-        '1. Go to Google Search Console → Settings → Users and permissions → Add user',
-        '2. Go to Google Cloud Console → Create project → Enable Search Console API',
-        '3. Create Service Account → Download JSON key',
-        '4. In Vercel: add env var GSC_SERVICE_ACCOUNT_JSON = base64 encode of the JSON key',
-        '5. In GSC: add the service account email as a "Full" user for your property',
-        '6. Set GSC_SITE_URL = https://www.orreryx.io/ in Vercel',
+        '1. Go to Google Cloud Console → APIs & Services → Credentials',
+        '2. Create an OAuth 2.0 Client ID (Web Application type)',
+        '3. Go to OAuth Playground (https://developers.google.com/oauthplayground)',
+        '4. Authorize scope: https://www.googleapis.com/auth/webmasters.readonly',
+        '5. Exchange authorization code for tokens — copy the Refresh Token',
+        '6. Add to Vercel env vars: GSC_CLIENT_ID, GSC_CLIENT_SECRET, GSC_REFRESH_TOKEN',
+        '7. Make sure your Google account has access to www.orreryx.io in Search Console',
       ],
-      impact: 'Once connected, this agent will give you real Google ranking positions, impressions, CTR, and keyword performance data every week.',
+      impact: 'Once connected, this agent provides real Google ranking positions, impressions, CTR, and keyword data every week.',
     };
     await redis(['SET', 'seo:gsc:latest', JSON.stringify({ ...setupGuide, date: today }), 'EX', 172800]);
     return setupGuide;
   }
 
   try {
-    const decodedJson = Buffer.from(saJson, 'base64').toString('utf8');
-    const accessToken = await getGoogleAccessToken(decodedJson);
+    const accessToken = await getAccessToken();
     const endDate     = today;
     const startDate   = new Date(Date.now() - 28 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
 
-    // Run queries in parallel
+    // Run all GSC queries in parallel
     const [topKeywords, topPages, deviceBreakdown, countryBreakdown] = await Promise.all([
       queryGSC(accessToken, siteUrl, {
         startDate, endDate,
@@ -133,9 +134,9 @@ export async function run() {
       position:    r.position.toFixed(1),
     }));
 
-    const top5Keywords   = keywords.filter(k => parseFloat(k.position) <= 5);
-    const page1Keywords  = keywords.filter(k => parseFloat(k.position) <= 10);
-    const nearMissKws    = keywords.filter(k => parseFloat(k.position) > 5 && parseFloat(k.position) <= 15);
+    const top5Keywords  = keywords.filter(k => parseFloat(k.position) <= 5);
+    const page1Keywords = keywords.filter(k => parseFloat(k.position) <= 10);
+    const nearMissKws   = keywords.filter(k => parseFloat(k.position) > 5 && parseFloat(k.position) <= 15);
 
     const totalClicks      = keywords.reduce((a, k) => a + k.clicks, 0);
     const totalImpressions = keywords.reduce((a, k) => a + k.impressions, 0);
@@ -146,16 +147,22 @@ export async function run() {
     const result = {
       available: true,
       period: `${startDate} to ${endDate}`,
-      summary: { totalClicks, totalImpressions, avgPosition, top5Keywords: top5Keywords.length, page1Keywords: page1Keywords.length },
+      summary: {
+        totalClicks,
+        totalImpressions,
+        avgPosition,
+        top5Keywords: top5Keywords.length,
+        page1Keywords: page1Keywords.length,
+      },
       keywords,
       pages,
       nearMissKeywords: nearMissKws,
-      devices: (deviceBreakdown.rows || []).map(r => ({ device: r.keys[0], clicks: r.clicks, impressions: r.impressions })),
+      devices:   (deviceBreakdown.rows  || []).map(r => ({ device:  r.keys[0], clicks: r.clicks, impressions: r.impressions })),
       countries: (countryBreakdown.rows || []).map(r => ({ country: r.keys[0], clicks: r.clicks })),
       opportunities: nearMissKws.slice(0, 5).map(k => ({
-        keyword: k.keyword,
+        keyword:         k.keyword,
         currentPosition: k.position,
-        action: `Improve content for "${k.keyword}" — position ${k.position} needs 2-3 boost to hit top 5`,
+        action: `Improve content for "${k.keyword}" — currently at position ${k.position}, needs ~${Math.ceil(parseFloat(k.position) - 5)} position boost to hit top 5`,
       })),
       date: today,
     };
