@@ -197,6 +197,62 @@ Use this intelligence to generate ideas that directly address the SEO gaps, buil
     }).catch(() => {});
   }
 
+  // ── Email ideas to admin ───────────────────────────────────────────────────────
+  const adminEmail = process.env.ADMIN_EMAIL?.trim();
+  const resendKey  = process.env.RESEND_API_KEY;
+  if (adminEmail && resendKey) {
+    const postsHtml = (ideas.social_posts || []).map((p, i) => `
+      <div style="background:#f8f9fa;border-left:4px solid #6366f1;padding:14px 18px;margin-bottom:12px;border-radius:0 8px 8px 0">
+        <div style="font-size:11px;font-weight:700;color:#6366f1;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">${p.platform} Post ${i+1}</div>
+        <div style="font-size:14px;color:#1a1a1a;margin-bottom:6px">${p.hook}</div>
+        ${p.angle ? `<div style="font-size:12px;color:#666">💡 ${p.angle}</div>` : ''}
+        ${p.cta   ? `<div style="font-size:12px;color:#16a34a;margin-top:4px">→ ${p.cta}</div>` : ''}
+      </div>`).join('');
+
+    const html = `
+      <div style="font-family:sans-serif;max-width:640px;margin:0 auto;background:#fff">
+        <div style="background:#1a1a2e;padding:24px;border-radius:8px 8px 0 0">
+          <h2 style="color:#fff;margin:0;font-size:18px">💡 Ideas Agent — ${today}</h2>
+          <p style="color:#aaa;margin:6px 0 0;font-size:13px">Daily social posts, product idea & growth experiment</p>
+        </div>
+        <div style="padding:24px">
+          <h3 style="margin:0 0 12px;font-size:15px;color:#1a1a2e">📱 Social Post Ideas</h3>
+          ${postsHtml}
+
+          <h3 style="margin:20px 0 12px;font-size:15px;color:#1a1a2e">🚀 Product Idea</h3>
+          <div style="background:#f0fdf4;border:1px solid #86efac;border-radius:8px;padding:16px">
+            <div style="font-weight:700;color:#166534;margin-bottom:6px">${ideas.product_idea?.title || ''}</div>
+            <div style="color:#1a1a1a;font-size:13px;margin-bottom:4px">${ideas.product_idea?.description || ''}</div>
+            <div style="color:#555;font-size:12px">💰 User value: ${ideas.product_idea?.user_value || ''}</div>
+            <div style="color:#888;font-size:11px;margin-top:4px">Effort: ${ideas.product_idea?.effort || 'unknown'}</div>
+          </div>
+
+          <h3 style="margin:20px 0 12px;font-size:15px;color:#1a1a2e">🧪 Growth Experiment</h3>
+          <div style="background:#eff6ff;border:1px solid #93c5fd;border-radius:8px;padding:16px">
+            <div style="font-weight:700;color:#1e40af;margin-bottom:6px">${ideas.growth_experiment?.title || ''}</div>
+            <div style="color:#1a1a1a;font-size:13px;margin-bottom:4px">${ideas.growth_experiment?.hypothesis || ''}</div>
+            <div style="color:#555;font-size:12px">📊 Metric: ${ideas.growth_experiment?.metric || ''}</div>
+            <div style="color:#888;font-size:11px;margin-top:4px">Effort: ${ideas.growth_experiment?.effort || 'unknown'}</div>
+          </div>
+
+          <div style="margin-top:24px;text-align:center">
+            <a href="https://www.orreryx.io/admin" style="background:#6366f1;color:#fff;padding:12px 28px;border-radius:6px;text-decoration:none;font-size:13px;font-weight:600">View in Admin Panel →</a>
+          </div>
+        </div>
+      </div>`;
+
+    await fetch('https://api.resend.com/emails', {
+      method:  'POST',
+      headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+      body:    JSON.stringify({
+        from:    process.env.EMAIL_FROM || 'OrreryX Ideas <noreply@orreryx.io>',
+        to:      adminEmail,
+        subject: `💡 Ideas Agent — ${today} — ${ideas.social_posts?.length || 0} posts + 1 product idea`,
+        html,
+      }),
+    }).catch(() => {});
+  }
+
   return res.status(200).json({ ok: true, date: today, ideas });
 }
 
