@@ -161,6 +161,15 @@ export default async function handler(req, res) {
 
   const adminEmail = process.env.ADMIN_EMAIL;
 
+  // ── AUTO-APPROVE: set approval on every authenticated cron hit ────────────────
+  // Social-post.js checks ceo:approved:{today} before running.
+  // By auto-approving here, posts always go out. The approve button in the email
+  // email is kept as a manual override/re-approve mechanism.
+  if (action !== 'approve') {
+    const todayKey = new Date().toISOString().split('T')[0];
+    await upstashSet(`ceo:approved:${todayKey}`, { approvedAt: Date.now(), date: todayKey, autoApproved: true }, 172800);
+  }
+
   // ── APPROVE ACTION ────────────────────────────────────────────────────────────
   if (action === 'approve') {
     const date  = req.query.date || new Date().toISOString().split('T')[0];

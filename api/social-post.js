@@ -182,9 +182,23 @@ URL: ${story.url || ''}`;
   } catch (_) { return []; }
 }
 
-// ── Send email via Gmail SMTP (nodemailer) ────────────────────────────────────
+// ── Send email via Resend (with Gmail SMTP fallback) ─────────────────────────
 
 async function gmailSend(to, subject, html) {
+  // Try Resend first (primary)
+  const resendKey = process.env.RESEND_API_KEY;
+  const from = process.env.EMAIL_FROM || 'OrreryX CMO <noreply@orreryx.io>';
+  if (resendKey) {
+    try {
+      const r = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${resendKey}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from, to: to.trim(), subject, html }),
+      });
+      if (r.ok) return true;
+    } catch (_) {}
+  }
+  // Fallback: Gmail SMTP
   try {
     const { default: nodemailer } = await import('nodemailer');
     const user = process.env.GMAIL_USER;
