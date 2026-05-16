@@ -386,6 +386,7 @@ export default async function handler(req, res) {
         ['GET', 'seo:aeo:latest'],
         ['GET', 'seo:orchestrator:latest'],
         ['GET', 'seo:chief:latest'],
+        ['GET', 'seo:geo:latest'],
       ]);
       const parse = (v) => { try { return v ? JSON.parse(v) : null; } catch { return null; } };
       return res.status(200).json({
@@ -400,6 +401,7 @@ export default async function handler(req, res) {
         aeo:         parse(results?.[8]),
         orchestrator: parse(results?.[9]),
         chief:       parse(results?.[10]),
+        geo:         parse(results?.[11]),
       });
     } catch(e) {
       return res.status(500).json({ error: e.message });
@@ -408,7 +410,7 @@ export default async function handler(req, res) {
 
   // ── RUN AGENT ─────────────────────────────────────────────────────────────────
   if (action === 'run-agent') {
-    const VALID_AGENTS = ['health-agent', 'finance-agent', 'sales-agent', 'ceo-agent', 'breaking-news', 'ideas-agent', 'legal-agent', 'seo-orchestrator', 'seo-keyword', 'seo-content', 'seo-technical', 'seo-aeo', 'seo-links', 'seo-analytics', 'seo-competitive', 'seo-auditor', 'seo-gsc', 'seo-chief'];
+    const VALID_AGENTS = ['health-agent', 'finance-agent', 'sales-agent', 'ceo-agent', 'breaking-news', 'ideas-agent', 'legal-agent', 'seo-orchestrator', 'seo-keyword', 'seo-content', 'seo-technical', 'seo-aeo', 'seo-links', 'seo-analytics', 'seo-competitive', 'seo-auditor', 'seo-gsc', 'seo-chief', 'seo-geo'];
     // Accept short names (e.g. 'health') or full names (e.g. 'health-agent')
     const rawAgent = (req.query.agent || '').trim();
     const agentMap = {
@@ -417,7 +419,7 @@ export default async function handler(req, res) {
       'seo-orchestrator': 'seo-orchestrator', 'seo-keyword': 'seo-keyword',
       'seo-content': 'seo-content', 'seo-technical': 'seo-technical',
       'seo-aeo': 'seo-aeo', 'seo-links': 'seo-links', 'seo-analytics': 'seo-analytics',
-      'seo-competitive': 'seo-competitive', 'seo-auditor': 'seo-auditor', 'seo-gsc': 'seo-gsc', 'seo-chief': 'seo-chief',
+      'seo-competitive': 'seo-competitive', 'seo-auditor': 'seo-auditor', 'seo-gsc': 'seo-gsc', 'seo-chief': 'seo-chief', 'seo-geo': 'seo-geo',
     };
     const agentPath = agentMap[rawAgent] || (VALID_AGENTS.includes(rawAgent) ? rawAgent : null);
     if (!agentPath) return res.status(400).json({ error: 'Unknown agent: ' + rawAgent });

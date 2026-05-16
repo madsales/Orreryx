@@ -1,13 +1,14 @@
 // api/seo-orchestrator.js — SEO Team Master Orchestrator
-// Runs all 10 SEO agents, collects results, sends one comprehensive weekly report
+// Runs all 11 SEO agents, collects results, sends one comprehensive weekly report
 // Schedule: Every Monday 5:00 AM UTC (10:30 AM IST)
 // Required env vars: ANTHROPIC_API_KEY, RESEND_API_KEY, ADMIN_EMAIL, CRON_SECRET
-// Optional: GITHUB_TOKEN (for auto-commits), GSC_SERVICE_ACCOUNT_JSON (for real rankings)
+// Optional: GITHUB_TOKEN (for auto-commits), GSC_REFRESH_TOKEN (for real rankings), PERPLEXITY_API_KEY (for GEO)
 
 import { run as runKeyword }     from './seo-keyword.js';
 import { run as runContent }     from './seo-content.js';
 import { run as runTechnical }   from './seo-technical.js';
 import { run as runAEO }         from './seo-aeo.js';
+import { run as runGEO }         from './seo-geo.js';
 import { run as runLinks }       from './seo-links.js';
 import { run as runAnalytics }   from './seo-analytics.js';
 import { run as runCompetitive } from './seo-competitive.js';
@@ -56,7 +57,7 @@ function badge(text, color) {
 }
 
 function buildReport(results, date) {
-  const { keyword, content, technical, aeo, links, analytics, competitive, auditor, gsc } = results;
+  const { keyword, content, technical, aeo, geo, links, analytics, competitive, auditor, gsc } = results;
 
   // ── GSC Rankings Section ──────────────────────────────────────────────────────
   const gscHtml = gsc?.available
@@ -93,11 +94,19 @@ function buildReport(results, date) {
     <strong>💡 Recommendations:</strong><br>
     ${(technical?.recommendations || []).map(r => `• ${r}`).join('<br>') || '• All good!'}`;
 
-  // ── AEO / GEO Section ─────────────────────────────────────────────────────────
-  const aeoHtml = `<strong>AI Search Optimization (AEO + GEO)</strong><br>
-    Pages patched with FAQ schema: <strong>${(aeo?.results || []).filter(r => r.committed).length}</strong> / ${(aeo?.results || []).length}<br><br>
-    <strong>GEO Recommendations:</strong><br>
+  // ── AEO Section ───────────────────────────────────────────────────────────────
+  const aeoHtml = `<strong>Answer Engine Optimization (AEO)</strong><br>
+    Pages patched with FAQ/Article/HowTo schema: <strong>${(aeo?.results || []).filter(r => r.committed).length}</strong> / ${(aeo?.results || []).length}<br><br>
+    <strong>Schema Recommendations:</strong><br>
     ${(aeo?.geoRecommendations || []).slice(0, 4).map(r => `• ${r}`).join('<br>')}`;
+
+  // ── GEO Section ───────────────────────────────────────────────────────────────
+  const geoCited = geo?.citationCheck?.citesOrreryX;
+  const geoHtml = `<strong>Generative Engine Optimization (GEO)</strong><br>
+    AI Citation Status: <strong>${geoCited ? '✅ OrreryX IS cited by AI engines' : '❌ OrreryX NOT yet cited — entity building needed'}</strong><br>
+    Content blocks injected this week: <strong>${(geo?.contentResults || []).filter(r => r.committed).length}</strong> / ${(geo?.contentResults || []).length}<br><br>
+    <strong>🎯 Top Immediate GEO Actions:</strong><br>
+    ${(geo?.geoStrategy?.immediateActions || []).slice(0, 3).map(a => `• ${a}`).join('<br>')}`;
 
   // ── Content Optimization Section ──────────────────────────────────────────────
   const contentHtml = `Pages optimized this week: <strong>${(content?.results || []).filter(r => r.committed).length} auto-committed to GitHub</strong><br><br>
@@ -138,19 +147,21 @@ function buildReport(results, date) {
     ).filter(Boolean).join('<br>')}`;
 
   const autoCommits = (content?.results || []).filter(r => r.committed).length +
-                      (aeo?.results || []).filter(r => r.committed).length;
+                      (aeo?.results || []).filter(r => r.committed).length +
+                      (geo?.contentResults || []).filter(r => r.committed).length;
 
   return `
     <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:700px;margin:0 auto;background:#f9fafb">
       <div style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);padding:28px;border-radius:12px 12px 0 0">
         <h1 style="color:#fff;margin:0;font-size:22px">🤖 OrreryX SEO Team — Weekly Report</h1>
-        <p style="color:#94a3b8;margin:8px 0 0;font-size:14px">Week ending ${date} &nbsp;|&nbsp; 10 agents ran &nbsp;|&nbsp; ${autoCommits} auto-commits to GitHub</p>
+        <p style="color:#94a3b8;margin:8px 0 0;font-size:14px">Week ending ${date} &nbsp;|&nbsp; 11 agents ran &nbsp;|&nbsp; ${autoCommits} auto-commits to GitHub</p>
       </div>
       <div style="padding:24px">
         ${section('📊 Google Rankings (GSC)', '#6366f1', gscHtml)}
         ${section('🔍 Keyword Research', '#0891b2', kwHtml)}
         ${section('⚙️ Technical SEO', '#7c3aed', techHtml)}
-        ${section('🤖 AEO + GEO (AI Search)', '#059669', aeoHtml)}
+        ${section('🤖 AEO (Answer Engine)', '#059669', aeoHtml)}
+        ${section('🧠 GEO (AI Citation — ChatGPT/Perplexity)', '#0d9488', geoHtml)}
         ${section('✍️ Content Optimization', '#dc2626', contentHtml)}
         ${section('🔗 Link Building', '#d97706', linksHtml)}
         ${section('📈 Analytics', '#2563eb', analyticsHtml)}
@@ -183,21 +194,22 @@ export default async function handler(req, res) {
   ]);
 
   // Run content-heavy agents
-  const [keyword, technical, aeo, links, content] = await Promise.all([
+  const [keyword, technical, aeo, geo, links, content] = await Promise.all([
     runKeyword(host).catch(e => ({ error: e.message })),
     runTechnical().catch(e => ({ error: e.message })),
     runAEO().catch(e => ({ error: e.message })),
+    runGEO().catch(e => ({ error: e.message })),
     runLinks().catch(e => ({ error: e.message })),
     runContent(host).catch(e => ({ error: e.message })),
   ]);
 
-  const results = { keyword, content, technical, aeo, links, analytics, competitive, auditor, gsc };
+  const results = { keyword, content, technical, aeo, geo, links, analytics, competitive, auditor, gsc };
 
   // Save orchestrator summary to Redis
   const summary = {
     date: today,
-    agentsRan: 10,
-    autoCommits: (content?.results || []).filter(r => r.committed).length + (aeo?.results || []).filter(r => r.committed).length,
+    agentsRan: 11,
+    autoCommits: (content?.results || []).filter(r => r.committed).length + (aeo?.results || []).filter(r => r.committed).length + (geo?.contentResults || []).filter(r => r.committed).length,
     techScore: technical?.score || 0,
     avgContentScore: auditor?.avgScore || 0,
     weeklyPV: analytics?.analytics?.weeklyPV || 0,

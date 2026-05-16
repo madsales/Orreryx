@@ -1,8 +1,11 @@
-// api/seo-chief.js — Chief SEO Strategist Agent
-// Reads all 10 SEO agents' data from Redis, uses Claude to analyze everything,
-// produces a master #1 ranking battle plan with specific instructions for each agent.
-// Schedule: Every Monday 9:00 AM UTC (runs AFTER orchestrator at 5am)
-// Redis: seo:chief:latest (7 day TTL)
+// api/seo-chief.js — Chief SEO Strategist + Multi-Agent Discussion Engine
+// Phase 1: Reads all 11 SEO agents' Redis data
+// Phase 2: Simulates agent-to-agent discussion using Claude
+// Phase 3: Produces consensus decisions + specific instructions for each agent
+// Phase 4: Writes instructions back to Redis so agents implement them automatically
+// Phase 5: Triggers AEO + GEO + Content agents to re-run with new instructions
+// Schedule: Monday 9:00 AM UTC (after orchestrator at 5am)
+// Redis: seo:chief:latest + seo:chief:instructions:{agent} (7 day TTL)
 
 async function redis(cmd) {
   const url = process.env.UPSTASH_REDIS_REST_URL;
@@ -43,7 +46,7 @@ async function sendEmail(to, subject, html) {
   return r?.ok || false;
 }
 
-async function claudeAnalyze(prompt) {
+async function claude(prompt, maxTokens = 2500) {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) return null;
   const r = await fetch('https://api.anthropic.com/v1/messages', {
@@ -51,10 +54,10 @@ async function claudeAnalyze(prompt) {
     headers: { 'x-api-key': key, 'anthropic-version': '2023-06-01', 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model: 'claude-haiku-4-5-20251001',
-      max_tokens: 2000,
+      max_tokens: maxTokens,
       messages: [{ role: 'user', content: prompt }],
     }),
-    signal: AbortSignal.timeout(30000),
+    signal: AbortSignal.timeout(35000),
   }).catch(() => null);
   if (!r?.ok) return null;
   const d = await r.json().catch(() => null);
@@ -62,11 +65,24 @@ async function claudeAnalyze(prompt) {
   try { return JSON.parse(text.replace(/^```json\n?/, '').replace(/\n?```$/, '').trim()); } catch { return null; }
 }
 
-export async function run() {
+// Trigger an agent to re-run via internal API call
+async function triggerAgent(agentPath, host) {
+  const cronSecret = process.env.CRON_SECRET || '';
+  const proto = host?.includes('localhost') ? 'http' : 'https';
+  const url = `${proto}://${host || 'www.orreryx.io'}/api/${agentPath}`;
+  const r = await fetch(url, {
+    method: 'GET',
+    headers: { Authorization: `Bearer ${cronSecret}` },
+    signal: AbortSignal.timeout(55000),
+  }).catch(() => null);
+  return r?.ok || false;
+}
+
+export async function run(host) {
   const today = new Date().toISOString().split('T')[0];
 
-  // Read all SEO agent data from Redis in one pipeline
-  const results = await upstashPipeline([
+  // ── PHASE 1: Read all agent data ──────────────────────────────────────────────
+  const raw = await upstashPipeline([
     ['GET', 'seo:gsc:latest'],
     ['GET', 'seo:keywords:latest'],
     ['GET', 'seo:technical:latest'],
@@ -76,156 +92,213 @@ export async function run() {
     ['GET', 'seo:competitive:latest'],
     ['GET', 'seo:links:latest'],
     ['GET', 'seo:aeo:latest'],
+    ['GET', 'seo:geo:latest'],
     ['GET', 'seo:orchestrator:latest'],
   ]);
 
   const parse = v => { try { return v ? JSON.parse(v) : null; } catch { return null; } };
-  const gsc         = parse(results[0]);
-  const keywords    = parse(results[1]);
-  const technical   = parse(results[2]);
-  const content     = parse(results[3]);
-  const auditor     = parse(results[4]);
-  const analytics   = parse(results[5]);
-  const competitive = parse(results[6]);
-  const links       = parse(results[7]);
-  const aeo         = parse(results[8]);
-  const orchestrator= parse(results[9]);
+  const [gsc, keywords, technical, content, auditor, analytics, competitive, links, aeo, geo, orch] =
+    raw.map(parse);
 
-  // Build a data summary for Claude
-  const dataSummary = JSON.stringify({
-    gsc_available: gsc?.available || false,
-    avg_position: gsc?.summary?.avgPosition || 'unknown',
-    top5_keywords: gsc?.summary?.top5Keywords || 0,
-    total_clicks_28d: gsc?.summary?.totalClicks || 0,
-    near_miss_keywords: (gsc?.nearMissKeywords || []).slice(0, 10).map(k => ({ keyword: k.keyword, position: k.position, impressions: k.impressions })),
-    top_ranking_keywords: (gsc?.keywords || []).slice(0, 10).map(k => ({ keyword: k.keyword, position: k.position, clicks: k.clicks })),
-    tech_score: technical?.score || 0,
-    tech_issues: (technical?.allIssues || []).slice(0, 8),
-    content_score: auditor?.avgScore || 0,
-    content_critical_issues: (auditor?.criticalIssues || []).slice(0, 6),
-    high_priority_keywords: (keywords?.high_priority || []).slice(0, 5),
-    quick_win_keywords: (keywords?.quick_wins || []).slice(0, 5),
-    content_gaps_vs_competitors: (competitive?.analysis?.content_gaps || []).slice(0, 5),
-    weekly_pv: analytics?.analytics?.weeklyPV || 0,
-    conversion_rate: analytics?.analytics?.conversionRate || 0,
-    aeo_pages_live: (aeo?.results || []).filter(r => r.committed).length,
-    link_directories: (links?.weeklyPlan?.directorySubmissions || []).length,
-  }, null, 2);
+  // ── PHASE 2: Agent Discussion ─────────────────────────────────────────────────
+  // Simulate agents presenting their findings and responding to each other
 
-  const strategy = await claudeAnalyze(`You are the Chief SEO Strategist for OrreryX (orreryx.io) — a geopolitical risk intelligence platform competing against CFR, Stratfor, ACLED, and Crisis Group for #1 Google rankings.
+  const agentReports = {
+    GSC_Agent: gsc?.available
+      ? `I have real Google ranking data. Average position: ${gsc.summary?.avgPosition}. Total clicks: ${gsc.summary?.totalClicks}. Keywords in top 5: ${gsc.summary?.top5Keywords}. Near-miss keywords (6-15): ${(gsc.nearMissKeywords || []).slice(0,5).map(k=>`${k.keyword}(#${k.position})`).join(', ')}.`
+      : 'GSC not connected — no real ranking data available.',
+    Keyword_Agent: keywords
+      ? `Top opportunities: ${(keywords.high_priority||[]).slice(0,3).map(k=>k.keyword).join(', ')}. Quick wins: ${(keywords.quick_wins||[]).slice(0,3).map(k=>k.keyword).join(', ')}.`
+      : 'No keyword data yet.',
+    Technical_Agent: technical
+      ? `Tech score: ${technical.score}/100. TTFB: ${technical.avgTtfb}ms. Critical issues: ${(technical.allIssues||[]).slice(0,3).join('; ')}.`
+      : 'No technical data yet.',
+    Content_Agent: content
+      ? `Optimized ${(content.results||[]).length} pages. Auto-committed: ${(content.results||[]).filter(r=>r.committed).length}. Top recommendations: ${(content.recommendations||[]).slice(0,2).join('; ')}.`
+      : 'No content data yet.',
+    AEO_Agent: aeo
+      ? `Processed ${aeo.pagesProcessed} pages. Total FAQs: ${aeo.totalFAQs}. Committed: ${aeo.committed}/${aeo.pagesProcessed}. Schema types: ${(aeo.schemaTypes||[]).join(', ')}.`
+      : 'No AEO data yet.',
+    GEO_Agent: geo
+      ? `AI citation check: ${geo.citationCheck?.citesOrreryX ? '✅ CITED by Perplexity' : '❌ NOT cited yet'}. Content blocks injected: ${(geo.contentResults||[]).filter(r=>r.committed).length}. Top action: ${(geo.geoStrategy?.immediateActions||[])[0]}.`
+      : 'No GEO data yet.',
+    Competitive_Agent: competitive
+      ? `Top opportunity: ${competitive.analysis?.weekly_action}. Content gaps vs competitors: ${(competitive.analysis?.content_gaps||[]).slice(0,2).map(g=>g.topic).join(', ')}.`
+      : 'No competitive data yet.',
+    Links_Agent: links
+      ? `Directory submissions ready: ${(links.weeklyPlan?.directorySubmissions||[]).length}. Outreach targets: ${(links.weeklyPlan?.outreachCampaign?.targets||[]).length}.`
+      : 'No links data yet.',
+    Auditor_Agent: auditor
+      ? `Avg content score: ${auditor.avgScore}/100. Critical issues: ${(auditor.criticalIssues||[]).slice(0,3).join('; ')}.`
+      : 'No audit data yet.',
+  };
 
-Here is the current SEO data from all 10 agents this week:
-${dataSummary}
+  const discussion = await claude(`You are moderating a discussion between 9 SEO specialist agents for OrreryX (orreryx.io) — a geopolitical risk intelligence platform. The goal is to rank #1 on Google for "geopolitical risk", "geopolitical risk intelligence", "ww3 probability", "ukraine war", "iran nuclear", and related keywords.
 
-Analyze this data and create a precise battle plan. Return raw JSON only:
+Each agent has reported their findings for this week:
+
+${Object.entries(agentReports).map(([agent, report]) => `**${agent}:** ${report}`).join('\n')}
+
+Simulate a brief 3-round discussion between the most relevant agents, then produce consensus decisions and specific implementation instructions.
+
+Return raw JSON only:
 {
-  "overall_ranking_assessment": "2-3 sentence honest assessment of where we stand and what's blocking #1",
-  "#1_target_keywords": [
-    { "keyword": "exact keyword", "current_position": "X or unknown", "why_we_can_win": "specific reason", "what_to_do": "precise action" }
+  "discussion": [
+    { "agent": "AgentName", "says": "What this agent proposes based on their data — specific and actionable" },
+    { "agent": "AgentName", "says": "Response or counter-proposal from another agent" },
+    { "agent": "AgentName", "says": "Building on that idea..." },
+    { "agent": "AgentName", "says": "I agree, and additionally..." },
+    { "agent": "AEO_Agent", "says": "For AI search specifically..." },
+    { "agent": "GEO_Agent", "says": "To get cited by ChatGPT and Perplexity..." },
+    { "agent": "Chief_Consensus", "says": "Based on our discussion, here is the agreed battle plan..." }
+  ],
+  "consensus_decisions": [
+    "Specific decision 1 that all agents agreed on",
+    "Specific decision 2",
+    "Specific decision 3",
+    "Specific decision 4",
+    "Specific decision 5"
   ],
   "agent_instructions": {
-    "keyword_agent": "Specific instructions: which keywords to focus on next week, which to drop, what new research to do",
-    "content_agent": "Specific instructions: which exact pages to optimize first, what title/description changes to make",
-    "technical_agent": "Specific instructions: which technical issues are most critical to fix for ranking, exact priority order",
-    "aeo_agent": "Specific instructions: which pages need FAQ schema, what questions to answer, GEO targeting advice",
-    "links_agent": "Specific instructions: which specific sites to target for backlinks this week, anchor text to use",
-    "analytics_agent": "Specific instructions: which metrics to watch, what conversion improvements to track",
-    "competitive_agent": "Specific instructions: which competitor pages to study, what content gaps to exploit first",
-    "auditor_agent": "Specific instructions: which pages are at risk of losing rankings, what E-E-A-T improvements needed",
-    "gsc_agent": "Specific instructions: which near-miss keywords to monitor daily, what CTR improvements to make"
+    "keyword": "Exact instruction for Keyword Agent to execute this week",
+    "content": "Exact instruction for Content Agent — which pages, what changes",
+    "technical": "Exact instruction for Technical Agent — which issues to fix first",
+    "aeo": "Exact instruction for AEO Agent — which schemas, which pages, which FAQ questions to add",
+    "geo": "Exact instruction for GEO Agent — which AI citation signals to inject, which pages",
+    "links": "Exact instruction for Links Agent — which sites to target, what anchor text",
+    "analytics": "Exact instruction for Analytics Agent — what metrics to watch",
+    "competitive": "Exact instruction for Competitive Agent — which competitor pages to analyze",
+    "auditor": "Exact instruction for Content Auditor — which pages are at highest risk"
   },
-  "this_week_top3_actions": [
-    { "action": "specific action", "expected_impact": "what ranking improvement to expect", "agent": "which agent does this", "deadline": "this week" }
+  "top3_this_week": [
+    { "action": "Most impactful action", "agent": "which agent does it", "impact": "expected ranking improvement", "auto_implement": true },
+    { "action": "Second action", "agent": "which agent does it", "impact": "expected impact", "auto_implement": true },
+    { "action": "Third action", "agent": "which agent does it", "impact": "expected impact", "auto_implement": false }
   ],
-  "30_day_ranking_forecast": "Where we expect to be in 30 days if we execute this plan",
-  "biggest_ranking_blocker": "The single most important thing blocking us from #1 right now"
+  "ranking_forecast_30d": "Specific forecast: which keywords will move from X to Y position",
+  "biggest_blocker": "The single most important thing blocking #1 rankings right now"
 }`);
 
+  if (!discussion) {
+    const fallback = { error: 'Claude unavailable', date: today };
+    await redis(['SET', 'seo:chief:latest', JSON.stringify(fallback), 'EX', 604800]);
+    return fallback;
+  }
+
+  // ── PHASE 3: Write instructions to Redis for each agent ───────────────────────
+  const instructions = discussion.agent_instructions || {};
+  const instructionWrites = Object.entries(instructions).map(([agent, instruction]) => [
+    'SET',
+    `seo:chief:instructions:${agent}`,
+    JSON.stringify({ instruction, date: today, from: 'chief_strategist' }),
+    'EX', '604800',
+  ]);
+
+  if (instructionWrites.length > 0) {
+    await upstashPipeline(instructionWrites);
+  }
+
+  // ── PHASE 4: Auto-trigger agents that can implement immediately ───────────────
+  const autoImplement = discussion.top3_this_week?.filter(a => a.auto_implement) || [];
+  const triggered = [];
+
+  for (const action of autoImplement) {
+    const agentName = (action.agent || '').toLowerCase().replace(/[^a-z]/g, '-');
+    const agentMap = { 'aeo-agent': 'seo-aeo', 'geo-agent': 'seo-geo', 'content-agent': 'seo-content', 'aeo': 'seo-aeo', 'geo': 'seo-geo', 'content': 'seo-content' };
+    const apiPath = agentMap[agentName];
+    if (apiPath && host) {
+      const ok = await triggerAgent(apiPath, host);
+      triggered.push({ agent: action.agent, apiPath, ok });
+    }
+  }
+
+  // ── PHASE 5: Save full results + send email ───────────────────────────────────
   const payload = {
     date: today,
-    strategy: strategy || {
-      overall_ranking_assessment: 'Data collection complete. Run SEO Orchestrator first to populate all agent data.',
-      agent_instructions: {},
-      this_week_top3_actions: [],
-      biggest_ranking_blocker: 'No SEO agent data found in Redis yet.',
-    },
-    agentsAnalyzed: [gsc, keywords, technical, content, auditor, analytics, competitive, links, aeo].filter(Boolean).length,
+    discussion: discussion.discussion || [],
+    consensus_decisions: discussion.consensus_decisions || [],
+    agent_instructions: instructions,
+    top3_this_week: discussion.top3_this_week || [],
+    ranking_forecast_30d: discussion.ranking_forecast_30d || '',
+    biggest_blocker: discussion.biggest_blocker || '',
+    agentsAnalyzed: Object.values(agentReports).filter(r => !r.includes('not')).length,
+    autoTriggered: triggered,
     generatedAt: Date.now(),
   };
 
   await redis(['SET', 'seo:chief:latest', JSON.stringify(payload), 'EX', 604800]);
 
-  // Send email
+  // Email report
   const adminEmail = process.env.ADMIN_EMAIL?.trim();
-  if (adminEmail && strategy) {
-    const html = buildStrategyEmail(strategy, today, payload.agentsAnalyzed);
-    await sendEmail(adminEmail, `🎯 Chief SEO Strategist — Weekly Battle Plan — ${today}`, html);
+  if (adminEmail) {
+    const html = buildEmail(payload, agentReports);
+    await sendEmail(adminEmail, `🎯 SEO Chief — Agent Discussion & Battle Plan — ${today}`, html);
   }
 
   return payload;
 }
 
-function buildStrategyEmail(s, date, agentsAnalyzed) {
-  const top3 = (s.this_week_top3_actions || []).map(a => `
-    <div style="background:#f0fdf4;border-left:4px solid #16a34a;padding:12px 16px;border-radius:4px;margin-bottom:8px">
-      <div style="font:700 13px/1 var(--sans,sans-serif);color:#15803d">${a.action}</div>
-      <div style="font:400 11px/1.5 sans-serif;color:#166534;margin-top:6px">📈 ${a.expected_impact} · 🤖 ${a.agent}</div>
+function buildEmail(p, agentReports) {
+  const discussionHtml = (p.discussion || []).map(msg => {
+    const isChief = msg.agent.includes('Chief') || msg.agent.includes('Consensus');
+    const colors = { GSC_Agent:'#6366f1', Keyword_Agent:'#0891b2', Technical_Agent:'#7c3aed', Content_Agent:'#dc2626', AEO_Agent:'#059669', GEO_Agent:'#d97706', Competitive_Agent:'#2563eb', Links_Agent:'#9333ea', Auditor_Agent:'#374151', Chief_Consensus:'#1a1a2e' };
+    const color = colors[msg.agent] || '#6366f1';
+    return `<div style="display:flex;gap:10px;margin-bottom:12px;${isChief?'background:#f0fdf4;padding:12px;border-radius:8px;':''}">
+      <div style="flex-shrink:0;background:${color};color:#fff;border-radius:20px;padding:4px 10px;font:700 10px/1 sans-serif;height:fit-content;margin-top:2px">${msg.agent.replace(/_/g,' ')}</div>
+      <div style="font:400 12px/1.6 sans-serif;color:#374151">${msg.says}</div>
+    </div>`;
+  }).join('');
+
+  const top3Html = (p.top3_this_week || []).map((a, i) => `
+    <div style="background:${i===0?'#f0fdf4':i===1?'#f0f9ff':'#fafafa'};border:1px solid ${i===0?'#16a34a':i===1?'#0891b2':'#e5e7eb'};border-radius:8px;padding:12px;margin-bottom:8px">
+      <div style="font:700 13px/1 sans-serif;color:#1a1a2e">🎯 ${a.action}</div>
+      <div style="font:400 11px/1.5 sans-serif;color:#6b7280;margin-top:6px">📈 ${a.impact} · 🤖 ${a.agent} ${a.auto_implement?'· <span style="color:#16a34a">⚡ Auto-implemented</span>':''}</div>
     </div>`).join('');
 
-  const targets = (s['#1_target_keywords'] || []).map(k => `
-    <tr style="border-bottom:1px solid #e5e7eb">
-      <td style="padding:8px;font-weight:600">${k.keyword}</td>
-      <td style="padding:8px;text-align:center;color:#6366f1">${k.current_position}</td>
-      <td style="padding:8px;color:#374151">${k.why_we_can_win}</td>
-      <td style="padding:8px;color:#059669">${k.what_to_do}</td>
-    </tr>`).join('');
-
-  const agentInstructions = Object.entries(s.agent_instructions || {}).map(([agent, instruction]) => `
+  const instructionsHtml = Object.entries(p.agent_instructions || {}).map(([agent, instruction]) => `
     <div style="padding:10px 0;border-bottom:1px solid #e5e7eb">
-      <div style="font:700 11px/1 sans-serif;text-transform:uppercase;letter-spacing:.06em;color:#6366f1;margin-bottom:4px">${agent.replace(/_/g,' ')}</div>
+      <div style="font:700 10px/1 sans-serif;text-transform:uppercase;letter-spacing:.06em;color:#6366f1;margin-bottom:4px">${agent} agent</div>
       <div style="font:400 12px/1.5 sans-serif;color:#374151">${instruction}</div>
     </div>`).join('');
 
   return `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:700px;margin:0 auto;background:#f9fafb">
     <div style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);padding:28px;border-radius:12px 12px 0 0">
-      <h1 style="color:#fff;margin:0;font-size:22px">🎯 Chief SEO Strategist — Weekly Battle Plan</h1>
-      <p style="color:#94a3b8;margin:8px 0 0;font-size:14px">${date} · ${agentsAnalyzed} agents analyzed · Target: #1 on Google</p>
+      <h1 style="color:#fff;margin:0;font-size:22px">🎯 Chief SEO Strategist — Agent Discussion</h1>
+      <p style="color:#94a3b8;margin:8px 0 0;font-size:13px">${p.date} · ${p.agentsAnalyzed} agents analyzed · ${p.autoTriggered?.length||0} agents auto-triggered for implementation</p>
     </div>
     <div style="padding:24px">
 
       <div style="background:#fef3c7;border:1px solid #f59e0b;border-radius:10px;padding:16px;margin-bottom:20px">
-        <div style="font:700 12px/1 sans-serif;color:#92400e;margin-bottom:8px">🚨 BIGGEST RANKING BLOCKER</div>
-        <div style="font:400 13px/1.6 sans-serif;color:#78350f">${s.biggest_ranking_blocker || 'Analysis complete'}</div>
+        <div style="font:700 12px/1 sans-serif;color:#92400e;margin-bottom:6px">🚨 BIGGEST RANKING BLOCKER</div>
+        <div style="font:400 13px/1.6 sans-serif;color:#78350f">${p.biggest_blocker}</div>
+      </div>
+
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:20px;margin-bottom:20px">
+        <div style="font:700 14px/1 sans-serif;color:#1a1a2e;margin-bottom:16px">💬 Agent Discussion — How We Reach #1</div>
+        ${discussionHtml}
       </div>
 
       <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px;margin-bottom:20px">
-        <div style="font:700 13px/1 sans-serif;color:#1a1a2e;margin-bottom:10px">📊 Overall Ranking Assessment</div>
-        <div style="font:400 13px/1.6 sans-serif;color:#374151">${s.overall_ranking_assessment}</div>
-        ${s['30_day_ranking_forecast'] ? `<div style="margin-top:10px;padding:10px;background:#f0f9ff;border-radius:6px;font:400 12px/1.5 sans-serif;color:#0369a1">📅 30-Day Forecast: ${s['30_day_ranking_forecast']}</div>` : ''}
+        <div style="font:700 13px/1 sans-serif;color:#1a1a2e;margin-bottom:12px">✅ Consensus Decisions</div>
+        <ul style="margin:0;padding:0 0 0 16px;font:400 12px/1.8 sans-serif;color:#374151">
+          ${(p.consensus_decisions||[]).map(d=>`<li>${d}</li>`).join('')}
+        </ul>
       </div>
 
       <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px;margin-bottom:20px">
-        <div style="font:700 13px/1 sans-serif;color:#1a1a2e;margin-bottom:12px">🏆 This Week's Top 3 Actions</div>
-        ${top3 || '<div style="color:#9ca3af">Run SEO Orchestrator first to generate actions</div>'}
+        <div style="font:700 13px/1 sans-serif;color:#1a1a2e;margin-bottom:12px">🏆 Top 3 Actions This Week</div>
+        ${top3Html}
       </div>
 
-      ${targets ? `<div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;overflow:hidden;margin-bottom:20px">
-        <div style="padding:14px 16px;border-bottom:1px solid #e5e7eb;font:700 13px/1 sans-serif;color:#1a1a2e">🎯 #1 Target Keywords</div>
-        <table style="width:100%;border-collapse:collapse;font-size:12px">
-          <thead><tr style="background:#f9fafb;border-bottom:1px solid #e5e7eb">
-            <th style="padding:8px;text-align:left;color:#6b7280;font-weight:600">Keyword</th>
-            <th style="padding:8px;text-align:center;color:#6b7280;font-weight:600">Position</th>
-            <th style="padding:8px;text-align:left;color:#6b7280;font-weight:600">Why We Win</th>
-            <th style="padding:8px;text-align:left;color:#6b7280;font-weight:600">Action</th>
-          </tr></thead>
-          <tbody>${targets}</tbody>
-        </table>
+      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px;margin-bottom:20px">
+        <div style="font:700 13px/1 sans-serif;color:#1a1a2e;margin-bottom:12px">📋 Instructions to Each Agent</div>
+        ${instructionsHtml}
+      </div>
+
+      ${p.ranking_forecast_30d ? `<div style="background:#f0f9ff;border:1px solid #0891b2;border-radius:10px;padding:16px;margin-bottom:20px">
+        <div style="font:700 12px/1 sans-serif;color:#0369a1;margin-bottom:6px">📅 30-DAY RANKING FORECAST</div>
+        <div style="font:400 12px/1.5 sans-serif;color:#1e40af">${p.ranking_forecast_30d}</div>
       </div>` : ''}
-
-      <div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:16px;margin-bottom:20px">
-        <div style="font:700 13px/1 sans-serif;color:#1a1a2e;margin-bottom:12px">🤖 Instructions to Each Agent</div>
-        ${agentInstructions || '<div style="color:#9ca3af">Run SEO Orchestrator first</div>'}
-      </div>
 
       <div style="text-align:center;padding:20px">
         <a href="https://www.orreryx.io/admin" style="background:#6366f1;color:#fff;padding:14px 32px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px">Open SEO Dashboard →</a>
@@ -241,7 +314,8 @@ export default async function handler(req, res) {
   if (cronSecret && auth !== `Bearer ${cronSecret}` && qs !== cronSecret) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
-  const result = await run();
+  const host = req.headers.host || 'www.orreryx.io';
+  const result = await run(host);
   return res.status(200).json({ ok: true, ...result });
 }
 export const config = { api: { bodyParser: false } };

@@ -409,6 +409,24 @@ p.desc{font:400 12px/1.75 var(--sans);color:var(--txt3);margin-bottom:18px}
         </div>
       </div>
 
+      <!-- GEO + Agent Discussion -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px">
+        <div class="section" style="margin:0">
+          <div class="sec-title">🤖 GEO — AI Search Presence</div>
+          <div id="seo-geo-panel"><div class="loading-txt"><span class="spinner"></span></div></div>
+        </div>
+        <div class="section" style="margin:0">
+          <div class="sec-title">🎯 Chief Strategist — Biggest Blocker</div>
+          <div id="seo-chief-panel"><div class="loading-txt"><span class="spinner"></span></div></div>
+        </div>
+      </div>
+
+      <!-- Agent Discussion -->
+      <div class="section" style="margin-bottom:14px">
+        <div class="sec-title">💬 Agent Discussion — Latest Battle Plan</div>
+        <div id="seo-discussion-panel"><div class="loading-txt"><span class="spinner"></span></div></div>
+      </div>
+
       <!-- Top Pages -->
       <div class="section">
         <div class="sec-title">📄 Top Pages by Clicks</div>
@@ -1539,6 +1557,27 @@ const AGENT_DEFS = [
     hasForce: true,
   },
   {
+    id: 'seo-chief',
+    icon: '🎯',
+    name: 'Chief SEO Strategist',
+    role: 'Multi-Agent Discussion Engine',
+    schedule: 'Monday 2:30 PM IST',
+    desc: 'Reads all 11 agent reports → simulates agent-to-agent discussion → reaches consensus → writes instructions to each agent → auto-triggers AEO + GEO + Content to re-run with new strategy.',
+    statusKey: 'seo_chief',
+    lastKey:   'generatedAt',
+    hasForce: true,
+  },
+  {
+    id: 'seo-geo',
+    icon: '🤖',
+    name: 'GEO Agent',
+    role: 'AI Search Optimization',
+    schedule: 'Monday (via Orchestrator)',
+    desc: 'Optimizes OrreryX for ChatGPT, Perplexity, Google AI Overviews, Claude, Gemini. Tracks AI citation presence, injects entity signals, generates AI-bait content blocks.',
+    statusKey: 'seo_geo',
+    lastKey:   'generatedAt',
+  },
+  {
     id: 'seo-gsc',
     icon: '📊',
     name: 'GSC Rankings Agent',
@@ -1955,6 +1994,61 @@ function renderSeoDashboard(d) {
       </tr>`).join('')}</tbody>
     </table>
   ` : noData('GSC country data not available yet.');
+
+  // ── GEO Panel ──
+  const geo = d.geo;
+  document.getElementById('seo-geo-panel').innerHTML = geo ? `
+    <div style="margin-bottom:12px">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <span style="font:700 18px/1 var(--mono);color:${geo.citationCheck?.citesOrreryX?'#16a34a':'#ef4444'}">${geo.citationCheck?.citesOrreryX?'✅ CITED':'❌ NOT CITED'}</span>
+        <span style="font:400 11px/1 var(--sans);color:var(--txt4)">by AI search engines</span>
+      </div>
+      ${geo.citationCheck?.available===false?`<div style="font:400 11px/1.5 var(--sans);color:var(--amb);margin-bottom:10px">⚠️ ${esc(geo.citationCheck.reason)} — add PERPLEXITY_API_KEY to Vercel to track AI citations</div>`:''}
+      <div style="font:600 11px/1 var(--sans);color:var(--txt);margin-bottom:6px">🎯 GEO Content Blocks Injected</div>
+      ${(geo.contentResults||[]).map(r=>`<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--brd);font-size:11px">
+        <span style="color:var(--txt3)">${esc(r.file)}</span>
+        <span style="color:${r.committed?'#16a34a':'#d97706'}">${r.committed?'✅':'⏳'}</span>
+      </div>`).join('')}
+    </div>
+    <div style="font:600 11px/1 var(--sans);color:var(--txt);margin:10px 0 6px">💡 Top GEO Actions</div>
+    <ul style="margin:0;padding:0 0 0 14px;font:400 11px/1.8 var(--sans);color:var(--txt3)">
+      ${(geo.geoStrategy?.immediateActions||[]).slice(0,4).map(a=>`<li>${esc(a)}</li>`).join('')}
+    </ul>
+  ` : noData('Run GEO Agent or SEO Orchestrator to get AI search data.');
+
+  // ── Chief Panel ──
+  const chief = d.chief;
+  document.getElementById('seo-chief-panel').innerHTML = chief ? `
+    ${chief.biggest_blocker?`<div style="background:var(--bg3);border-left:3px solid #f59e0b;padding:10px 12px;border-radius:4px;font:400 12px/1.6 var(--sans);color:var(--txt3);margin-bottom:12px">🚨 ${esc(chief.biggest_blocker)}</div>`:''}
+    ${chief.ranking_forecast_30d?`<div style="background:var(--bg3);border-left:3px solid var(--ind);padding:10px 12px;border-radius:4px;font:400 11px/1.6 var(--sans);color:var(--txt3);margin-bottom:12px">📅 ${esc(chief.ranking_forecast_30d)}</div>`:''}
+    <div style="font:600 11px/1 var(--sans);color:var(--txt);margin-bottom:8px">✅ Consensus Decisions</div>
+    <ul style="margin:0;padding:0 0 0 14px;font:400 11px/1.8 var(--sans);color:var(--txt3)">
+      ${(chief.consensus_decisions||[]).slice(0,4).map(d=>`<li>${esc(d)}</li>`).join('')}
+    </ul>
+    ${chief.autoTriggered?.length?`<div style="margin-top:10px;font:400 11px/1 var(--sans);color:#16a34a">⚡ Auto-triggered: ${chief.autoTriggered.map(t=>t.agent).join(', ')}</div>`:''}
+  ` : noData('Run Chief SEO Strategist to get battle plan. Run after SEO Orchestrator.');
+
+  // ── Agent Discussion ──
+  const agentColors = {'GSC Agent':'#6366f1','Keyword Agent':'#0891b2','Technical Agent':'#7c3aed','Content Agent':'#dc2626','AEO Agent':'#059669','GEO Agent':'#d97706','Competitive Agent':'#2563eb','Links Agent':'#9333ea','Auditor Agent':'#374151','Chief Consensus':'#1a1a2e'};
+  document.getElementById('seo-discussion-panel').innerHTML = (chief?.discussion||[]).length ? `
+    <div style="font:400 11px/1.5 var(--sans);color:var(--txt4);margin-bottom:12px">Agents analyzed all SEO data and discussed the best path to #1 rankings. This discussion auto-generates implementation instructions for each agent.</div>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      ${(chief.discussion||[]).map(msg=>{
+        const isChief = msg.agent.includes('Chief') || msg.agent.includes('Consensus');
+        const col = agentColors[msg.agent] || '#6366f1';
+        return `<div style="display:flex;gap:10px;${isChief?'background:var(--bg3);padding:10px;border-radius:8px;border:1px solid var(--brd);':''}">
+          <div style="flex-shrink:0;background:${col};color:#fff;border-radius:12px;padding:3px 8px;font:700 9px/1.4 var(--mono);height:fit-content;margin-top:2px;white-space:nowrap">${esc(msg.agent)}</div>
+          <div style="font:400 12px/1.6 var(--sans);color:var(--txt3)">${esc(msg.says)}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    ${(chief.top3_this_week||[]).length?`
+    <div style="font:600 11px/1 var(--sans);color:var(--txt);margin:16px 0 8px">🏆 Top 3 Actions Decided</div>
+    ${(chief.top3_this_week||[]).map((a,i)=>`<div style="background:var(--bg3);border-left:3px solid ${i===0?'#16a34a':i===1?'#0891b2':'#6366f1'};padding:8px 12px;border-radius:4px;margin-bottom:6px;font-size:11px">
+      <strong>${esc(a.action)}</strong> — ${esc(a.agent)}<br>
+      <span style="color:var(--txt4)">${esc(a.impact)}${a.auto_implement?' · ⚡ Auto-implemented':''}</span>
+    </div>`).join('')}` : ''}
+  ` : noData('Run Chief SEO Strategist to see agent discussion. It reads all SEO agent data and simulates a strategy meeting.');
 
   // ── Top Pages ──
   const pages = (gsc?.pages || []).slice(0,12);
