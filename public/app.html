@@ -619,29 +619,6 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
 .vp-spinner{width:14px;height:14px;border:2px solid var(--brd2);border-top-color:var(--red);border-radius:50%;animation:spin .6s linear infinite;flex-shrink:0}
 @keyframes spin{to{transform:rotate(360deg)}}
 .vp-empty{padding:16px 4px;text-align:center;color:var(--txt3);font:400 12px/1 var(--sans)}
-/* ── MOBILE (Capacitor / narrow viewport) ── */
-@media (max-width: 768px) {
-  :root { --sb: 0px; }
-  .sidebar { display: none !important; }
-  .app {
-    grid-template-columns: 1fr !important;
-    grid-template-rows: var(--tb) var(--tk) auto 1fr 56px !important;
-    padding-bottom: 56px;
-  }
-  #orx-bottom-tabs {
-    display: flex !important;
-    position: fixed;
-    bottom: 0; left: 0; right: 0;
-    height: 56px;
-    background: #111116;
-    border-top: 1px solid rgba(255,255,255,.07);
-    z-index: 1000;
-    align-items: stretch;
-  }
-}
-@media (min-width: 769px) {
-  #orx-bottom-tabs { display: none !important; }
-}
 </style>
 </head>
 <body>
@@ -2763,12 +2740,12 @@ function handleEvStockClick(el) {
 }
 
 // ── MOBILE NAV ──
-const MOB_TABS = ['intel','map','stocks','crypto'];
+const MOB_TABS = ['intel','map','markets','watchlist','account'];
 function updateMobNav(page) {
   document.querySelectorAll('.mob-tab').forEach(t => t.classList.remove('active'));
   const tab = document.getElementById('mobt-' + page);
   if (tab) tab.classList.add('active');
-  else document.getElementById('mobt-more').classList.add('active');
+  // no fallback needed — all main pages are represented
 }
 function openMobMenu() { document.getElementById('mob-menu').classList.add('open'); }
 function closeMobMenu() { document.getElementById('mob-menu').classList.remove('open'); }
@@ -5131,12 +5108,12 @@ const vidPopup = (() => {
 </script>
 
 <!-- ── MOBILE NAV ── -->
-<nav class="mobile-nav" id="mobile-nav">
+<nav class="mobile-nav" id="mobile-nav" style="height:calc(56px + env(safe-area-inset-bottom))">
   <button class="mob-tab active" id="mobt-intel" onclick="goPage('intel')"><span class="mob-tab-icon">📡</span><span class="mob-tab-lbl">Feed</span></button>
   <button class="mob-tab" id="mobt-map" onclick="goPage('map')"><span class="mob-tab-icon">🌍</span><span class="mob-tab-lbl">Map</span></button>
-  <button class="mob-tab" id="mobt-stocks" onclick="goPage('stocks')"><span class="mob-tab-icon">⚔️</span><span class="mob-tab-lbl">Stocks</span></button>
-  <button class="mob-tab" id="mobt-crypto" onclick="goPage('crypto')"><span class="mob-tab-icon">₿</span><span class="mob-tab-lbl">Crypto</span></button>
-  <button class="mob-tab" id="mobt-more" onclick="openMobMenu()"><span class="mob-tab-icon">☰</span><span class="mob-tab-lbl">More</span></button>
+  <button class="mob-tab" id="mobt-markets" onclick="(PLAN==='a'||PLAN==='c')?goPage('markets'):(window.__orxShowUpgrade?window.__orxShowUpgrade('analyst'):showPlanModal())"><span class="mob-tab-icon">📊</span><span class="mob-tab-lbl">Markets</span></button>
+  <button class="mob-tab" id="mobt-watchlist" onclick="(PLAN==='a'||PLAN==='c')?window.open('/watchlist.html','_blank'):(window.__orxShowUpgrade?window.__orxShowUpgrade('analyst'):showPlanModal())"><span class="mob-tab-icon">⭐</span><span class="mob-tab-lbl">Watchlist</span></button>
+  <button class="mob-tab" id="mobt-account" onclick="goPage('account')"><span class="mob-tab-icon">👤</span><span class="mob-tab-lbl">Profile</span></button>
 </nav>
 <!-- ── MOBILE MENU SHEET ── -->
 <div class="mob-menu" id="mob-menu" onclick="if(event.target===this)closeMobMenu()">
@@ -5189,65 +5166,6 @@ const vidPopup = (() => {
   </div>
 </div>
 
-<!-- Mobile bottom tab bar — hidden on desktop via CSS -->
-<nav id="orx-bottom-tabs" style="display:none">
-  <a href="/app" class="orx-tab" data-tab="feed">
-    <span class="orx-tab-icon">🌍</span>
-    <span class="orx-tab-label">Feed</span>
-  </a>
-  <a href="/map" class="orx-tab" data-tab="map">
-    <span class="orx-tab-icon">🗺️</span>
-    <span class="orx-tab-label">Map</span>
-  </a>
-  <a href="/market-impact" class="orx-tab" data-tab="markets" data-tier="analyst">
-    <span class="orx-tab-icon">📈</span>
-    <span class="orx-tab-label">Markets</span>
-  </a>
-  <a href="/watchlist" class="orx-tab" data-tab="watchlist" data-tier="analyst">
-    <span class="orx-tab-icon">⭐</span>
-    <span class="orx-tab-label">Watchlist</span>
-  </a>
-  <a href="/app#profile" class="orx-tab" data-tab="profile">
-    <span class="orx-tab-icon">👤</span>
-    <span class="orx-tab-label">Profile</span>
-  </a>
-</nav>
-<style>
-.orx-tab {
-  flex: 1; display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  text-decoration: none; color: #555; font-size: 10px;
-  padding: 4px 0; transition: color .15s;
-  -webkit-tap-highlight-color: transparent;
-}
-.orx-tab.active, .orx-tab:hover { color: #6366f1; }
-.orx-tab-icon { font-size: 20px; line-height: 1; margin-bottom: 2px; }
-.orx-tab-label { font-size: 9px; font-weight: 600; letter-spacing: .02em; }
-</style>
-<script>
-(function() {
-  // Highlight active tab based on current path
-  const path = window.location.pathname;
-  document.querySelectorAll('.orx-tab').forEach(function(tab) {
-    const href = tab.getAttribute('href').split('#')[0];
-    if (path === href || (path === '/app' && href === '/app')) {
-      tab.classList.add('active');
-    }
-  });
-  // Gate paid tabs — show upgrade prompt for free users
-  document.querySelectorAll('.orx-tab[data-tier]').forEach(function(tab) {
-    tab.addEventListener('click', function(e) {
-      const tier = window.__orxUserTier || 'free';
-      const required = tab.dataset.tier;
-      const tierOrder = { free: 0, starter: 1, analyst: 2, command: 3 };
-      if (tierOrder[tier] < tierOrder[required]) {
-        e.preventDefault();
-        window.__orxShowUpgrade && window.__orxShowUpgrade(required);
-      }
-    });
-  });
-})();
-</script>
 
 </body>
 </html>
