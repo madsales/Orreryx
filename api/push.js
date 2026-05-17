@@ -61,6 +61,35 @@ async function removeSubscription(endpoint) {
   await redis(['DEL', `push:sub:${hash}`]);
 }
 
+// ── FCM helpers ───────────────────────────────────────────────────────────────
+async function registerFCMToken(userId, token) {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const tok = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !tok || !token) return false;
+  await fetch(url, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${tok}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(['SET', `push:fcm:${userId || token.slice(-16)}`, token, 'EX', 7776000]),
+  }).catch(() => {});
+  return true;
+}
+
+export async function sendFCMNotification(token, title, body, data = {}) {
+  const fcmKey = process.env.FIREBASE_SERVER_KEY;
+  if (!fcmKey || !token) return false;
+  const r = await fetch('https://fcm.googleapis.com/fcm/send', {
+    method: 'POST',
+    headers: { Authorization: `key=${fcmKey}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      to: token,
+      priority: 'high',
+      notification: { title, body, icon: 'ic_notification', color: '#e03836' },
+      data,
+    }),
+  }).catch(() => null);
+  return r?.ok || false;
+}
+
 // ── Auth helper ───────────────────────────────────────────────────────────────
 function isAuthed(req) {
   const token = (req.headers.authorization || '').replace('Bearer ', '').trim();
@@ -73,6 +102,15 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
   if (req.method === 'OPTIONS') return res.status(200).end();
+
+  // FCM token registration from mobile app
+  if (req.method === 'POST') {
+    const body = await req.json().catch(() => ({}));
+    if (body.platform === 'android' && body.token) {
+      await registerFCMToken(body.userId, body.token);
+      return Response.json({ ok: true, registered: true });
+    }
+  }
 
   const action = req.query.action || 'send';
 

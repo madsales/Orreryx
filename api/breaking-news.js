@@ -313,6 +313,25 @@ async function broadcastPush(article, country) {
   return { sent, failed, expired, total: subs.length };
 }
 
+// ── FCM token helpers ─────────────────────────────────────────────────────────
+
+async function getAllFCMTokens() {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const tok = process.env.UPSTASH_REDIS_REST_TOKEN;
+  if (!url || !tok) return [];
+  const r = await fetch(`${url}/keys/push:fcm:*`, {
+    headers: { Authorization: `Bearer ${tok}` },
+  }).catch(() => null);
+  const keys = (await r?.json().catch(() => null))?.result || [];
+  const tokens = await Promise.all(keys.map(async k => {
+    const rv = await fetch(`${url}/get/${encodeURIComponent(k)}`, {
+      headers: { Authorization: `Bearer ${tok}` },
+    }).catch(() => null);
+    return (await rv?.json().catch(() => null))?.result || null;
+  }));
+  return tokens.filter(Boolean);
+}
+
 // ── Handler ───────────────────────────────────────────────────────────────────
 
 export default async function handler(req, res) {
@@ -419,6 +438,18 @@ export default async function handler(req, res) {
   } catch (e) {
     results.errors.push({ platform: 'push', error: e.message });
   }
+
+  // ── Send FCM to registered Android tokens ─────────────────────────────────────
+  try {
+    const { sendFCMNotification } = await import('./push.js');
+    const fcmTokens = await getAllFCMTokens();
+    for (const token of fcmTokens) {
+      await sendFCMNotification(token, article.title || 'Breaking News', article.description || country.impact || '', {
+        url: 'https://www.orreryx.io/app',
+        type: 'breaking',
+      });
+    }
+  } catch (_) {}
 
   // Mark as posted + update cooldown if at least one platform succeeded
   if (results.twitter || results.linkedin || results.push?.sent > 0) {
