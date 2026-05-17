@@ -105,10 +105,10 @@ export default async function handler(req, res) {
 
   // FCM token registration from mobile app
   if (req.method === 'POST') {
-    const body = await req.json().catch(() => ({}));
-    if (body.platform === 'android' && body.token) {
+    const body = req.body;
+    if (body?.platform === 'android' && body?.token) {
       await registerFCMToken(body.userId, body.token);
-      return Response.json({ ok: true, registered: true });
+      return res.status(200).json({ ok: true, registered: true });
     }
   }
 
