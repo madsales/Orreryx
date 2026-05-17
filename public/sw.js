@@ -33,7 +33,9 @@ self.addEventListener('activate', event => {
 // Fetch: network-first for API, navigation fallback to /app, cache-first for static
 self.addEventListener('fetch', event => {
   if (event.request.url.includes('/api/')) {
-    // Network first for API calls
+    // Network first for API calls.
+    // Note: In the Capacitor native app, API calls use the monkey-patched window.fetch
+    // in offline.ts (Filesystem cache fallback) — this SW branch handles web/PWA context only.
     event.respondWith(
       fetch(event.request).catch(() => new Response(JSON.stringify({ error: 'offline' }), { headers: { 'Content-Type': 'application/json' } }))
     );
@@ -42,7 +44,12 @@ self.addEventListener('fetch', event => {
   // Navigation requests — network first, fall back to /app shell when offline
   if (event.request.mode === 'navigate') {
     event.respondWith(
-      fetch(event.request).catch(() => caches.match('/app'))
+      fetch(event.request).catch(() =>
+        caches.match('/app').then(r => r || new Response('Offline — please reconnect', {
+          status: 503,
+          headers: { 'Content-Type': 'text/plain' },
+        }))
+      )
     );
     return;
   }
