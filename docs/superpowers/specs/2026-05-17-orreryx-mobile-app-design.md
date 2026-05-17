@@ -72,6 +72,13 @@ On free tier, tapping a locked tab shows the upgrade bottom sheet instead of nav
 - Breaking news push notifications (up to 3/day)
 - Basic profile (login, push notification preferences)
 
+### 🔑 Starter — $0.99/mo (Google Play Billing)
+- Everything in Free
+- Full conflict feed (72h history)
+- Top 10 country risk scores
+- Up to 10 push notifications/day
+- 1 custom watchlist country
+
 ### 🔒 Analyst — $14.99/mo (Google Play Billing)
 - Full conflict feed (all history, all 35+ countries)
 - All country risk scores + drill-down detail pages
@@ -184,7 +191,8 @@ On free tier, tapping a locked tab shows the upgrade bottom sheet instead of nav
 ### 5. Google Play Billing
 
 **Library:** Google Play Billing Library 6.x (Kotlin, in the Capacitor Android project)  
-**Products:** Two recurring subscriptions defined in Play Console:
+**Products:** Three recurring subscriptions defined in Play Console:
+- `orreryx_starter_monthly` — $0.99/month, 3-day free trial
 - `orreryx_analyst_monthly` — $14.99/month, 3-day free trial
 - `orreryx_command_monthly` — $34.99/month, 3-day free trial
 
