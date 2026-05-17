@@ -30,7 +30,7 @@ self.addEventListener('activate', event => {
   self.clients.claim();
 });
 
-// Fetch: network-first for API, cache-first for static
+// Fetch: network-first for API, navigation fallback to /app, cache-first for static
 self.addEventListener('fetch', event => {
   if (event.request.url.includes('/api/')) {
     // Network first for API calls
@@ -39,7 +39,14 @@ self.addEventListener('fetch', event => {
     );
     return;
   }
-  // Cache first for static
+  // Navigation requests — network first, fall back to /app shell when offline
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request).catch(() => caches.match('/app'))
+    );
+    return;
+  }
+  // Cache first for static assets
   event.respondWith(
     caches.match(event.request).then(cached => cached || fetch(event.request).then(response => {
       if (response.ok) {
@@ -47,7 +54,7 @@ self.addEventListener('fetch', event => {
         caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
       }
       return response;
-    }).catch(() => caches.match('/')))
+    }).catch(() => caches.match('/app')))
   );
 });
 
