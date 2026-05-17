@@ -2138,6 +2138,15 @@ function boot() {
   applyPlan();
   startPlatform();
   checkShowAIKeyBtn();
+
+  // Notify Capacitor biometric module after successful login
+  if (window.Capacitor?.isNativePlatform && window.Capacitor.isNativePlatform()) {
+    if (SESSION_TOKEN) {
+      window.dispatchEvent(new CustomEvent('orx:login', {
+        detail: { token: SESSION_TOKEN, userId: window.__orxUserId || undefined }
+      }));
+    }
+  }
 }
 
 // ── PAYWALL ──
