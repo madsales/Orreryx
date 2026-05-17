@@ -547,7 +547,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
   .scr-filters{grid-template-columns:1fr 1fr}
   .logo-sub,.sep,.hstat,.crisis-txt,.clk,.live-btn,.plan-btn{display:none!important}
   .mobile-nav{display:flex}
-  .main{padding-bottom:68px}
+  .main{padding-bottom:calc(68px + env(safe-area-inset-bottom))}
   .ph{padding:10px 14px 8px}
   .ph-title{font-size:15px}
   .ph-sub{display:none}
@@ -2740,13 +2740,16 @@ function handleEvStockClick(el) {
 }
 
 // ── MOBILE NAV ──
-const MOB_TABS = ['intel','map','markets','watchlist','account'];
+let _mobNavPage = 'intel';
 function updateMobNav(page) {
+  _mobNavPage = page;
   document.querySelectorAll('.mob-tab').forEach(t => t.classList.remove('active'));
   const tab = document.getElementById('mobt-' + page);
   if (tab) tab.classList.add('active');
-  // no fallback needed — all main pages are represented
 }
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden) updateMobNav(_mobNavPage);
+});
 function openMobMenu() { document.getElementById('mob-menu').classList.add('open'); }
 function closeMobMenu() { document.getElementById('mob-menu').classList.remove('open'); }
 
@@ -5111,8 +5114,8 @@ const vidPopup = (() => {
 <nav class="mobile-nav" id="mobile-nav" style="height:calc(56px + env(safe-area-inset-bottom))">
   <button class="mob-tab active" id="mobt-intel" onclick="goPage('intel')"><span class="mob-tab-icon">📡</span><span class="mob-tab-lbl">Feed</span></button>
   <button class="mob-tab" id="mobt-map" onclick="goPage('map')"><span class="mob-tab-icon">🌍</span><span class="mob-tab-lbl">Map</span></button>
-  <button class="mob-tab" id="mobt-markets" onclick="(PLAN==='a'||PLAN==='c')?goPage('markets'):(window.__orxShowUpgrade?window.__orxShowUpgrade('analyst'):showPlanModal())"><span class="mob-tab-icon">📊</span><span class="mob-tab-lbl">Markets</span></button>
-  <button class="mob-tab" id="mobt-watchlist" onclick="(PLAN==='a'||PLAN==='c')?window.open('/watchlist.html','_blank'):(window.__orxShowUpgrade?window.__orxShowUpgrade('analyst'):showPlanModal())"><span class="mob-tab-icon">⭐</span><span class="mob-tab-lbl">Watchlist</span></button>
+  <button class="mob-tab" id="mobt-markets" onclick="(PLAN==='a'||PLAN==='c')?goPage('markets'):showPlanModal()"><span class="mob-tab-icon">📊</span><span class="mob-tab-lbl">Markets</span></button>
+  <button class="mob-tab" id="mobt-watchlist" onclick="(PLAN==='a'||PLAN==='c')?window.open('/watchlist.html','_blank'):showPlanModal()"><span class="mob-tab-icon">⭐</span><span class="mob-tab-lbl">Watchlist</span></button>
   <button class="mob-tab" id="mobt-account" onclick="goPage('account')"><span class="mob-tab-icon">👤</span><span class="mob-tab-lbl">Profile</span></button>
 </nav>
 <!-- ── MOBILE MENU SHEET ── -->
