@@ -2122,6 +2122,7 @@ function boot() {
   if (auth.paid) {
     PLAN = auth.plan || 's';
     SESSION_TOKEN = auth.token || null;
+    window.__orxUserId = auth.email || null;
     if (auth.freeTrialExpires) {
       window.__freeTrialExpires = auth.freeTrialExpires;
     }
@@ -2146,6 +2147,8 @@ function boot() {
         detail: { token: SESSION_TOKEN, userId: window.__orxUserId || undefined }
       }));
     }
+    // Signal that boot is complete so biometric unlock can proceed safely
+    window.dispatchEvent(new CustomEvent('orx:ready'));
   }
 }
 
@@ -2300,6 +2303,10 @@ function applyPlan() {
       updateLiveBtnBehavior();
     }
   }
+
+  // Expose tier for Capacitor native plugins
+  const _tierMap = { f: 'free', s: 'starter', a: 'analyst', c: 'command' };
+  window.__orxUserTier = _tierMap[PLAN] || 'free';
 }
 
 function updateLiveBtnBehavior() {
