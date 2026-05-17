@@ -319,17 +319,22 @@ async function getAllFCMTokens() {
   const url = process.env.UPSTASH_REDIS_REST_URL;
   const tok = process.env.UPSTASH_REDIS_REST_TOKEN;
   if (!url || !tok) return [];
-  const r = await fetch(`${url}/keys/push:fcm:*`, {
-    headers: { Authorization: `Bearer ${tok}` },
+  // Get all FCM token keys
+  const r1 = await fetch(`${url}/pipeline`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${tok}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify([['KEYS', 'push:fcm:*']]),
   }).catch(() => null);
-  const keys = (await r?.json().catch(() => null))?.result || [];
-  const tokens = await Promise.all(keys.map(async k => {
-    const rv = await fetch(`${url}/get/${encodeURIComponent(k)}`, {
-      headers: { Authorization: `Bearer ${tok}` },
-    }).catch(() => null);
-    return (await rv?.json().catch(() => null))?.result || null;
-  }));
-  return tokens.filter(Boolean);
+  const keys = (await r1?.json().catch(() => null))?.[0]?.result || [];
+  if (!keys.length) return [];
+  // Fetch all token values in one pipeline
+  const r2 = await fetch(`${url}/pipeline`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${tok}`, 'Content-Type': 'application/json' },
+    body: JSON.stringify(keys.map(k => ['GET', k])),
+  }).catch(() => null);
+  const vals = (await r2?.json().catch(() => null)) || [];
+  return vals.map(v => v?.result || null).filter(Boolean);
 }
 
 // ── Handler ───────────────────────────────────────────────────────────────────

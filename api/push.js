@@ -74,19 +74,82 @@ async function registerFCMToken(userId, token) {
   return true;
 }
 
-export async function sendFCMNotification(token, title, body, data = {}) {
-  const fcmKey = process.env.FIREBASE_SERVER_KEY;
-  if (!fcmKey || !token) return false;
-  const r = await fetch('https://fcm.googleapis.com/fcm/send', {
+// Get short-lived OAuth2 access token from service account credentials
+async function getFCMAccessToken() {
+  const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
+  if (!serviceAccountJson) return null;
+  let sa;
+  try { sa = JSON.parse(serviceAccountJson); } catch { return null; }
+
+  const now = Math.floor(Date.now() / 1000);
+  const header = { alg: 'RS256', typ: 'JWT' };
+  const payload = {
+    iss: sa.client_email,
+    scope: 'https://www.googleapis.com/auth/firebase.messaging',
+    aud: 'https://oauth2.googleapis.com/token',
+    iat: now,
+    exp: now + 3600,
+  };
+
+  const b64 = (obj) => Buffer.from(JSON.stringify(obj)).toString('base64url');
+  const signingInput = `${b64(header)}.${b64(payload)}`;
+
+  // Sign with RS256 using the service account private key
+  const { createSign } = await import('crypto');
+  const sign = createSign('SHA256');
+  sign.update(signingInput);
+  const signature = sign.sign(sa.private_key, 'base64url');
+  const jwt = `${signingInput}.${signature}`;
+
+  const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
-    headers: { Authorization: `key=${fcmKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      to: token,
-      priority: 'high',
-      notification: { title, body, icon: 'ic_notification', color: '#e03836' },
-      data,
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({
+      grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+      assertion: jwt,
     }),
   }).catch(() => null);
+
+  if (!tokenRes?.ok) return null;
+  const data = await tokenRes.json().catch(() => null);
+  return data?.access_token || null;
+}
+
+export async function sendFCMNotification(token, title, body, data = {}) {
+  const serviceAccountJson = process.env.FIREBASE_SERVICE_ACCOUNT;
+  if (!serviceAccountJson || !token) return false;
+  let sa;
+  try { sa = JSON.parse(serviceAccountJson); } catch { return false; }
+
+  const projectId = sa.project_id;
+  if (!projectId) return false;
+
+  const accessToken = await getFCMAccessToken();
+  if (!accessToken) return false;
+
+  const r = await fetch(
+    `https://fcm.googleapis.com/v1/projects/${projectId}/messages:send`,
+    {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message: {
+          token,
+          notification: { title, body },
+          data: Object.fromEntries(
+            Object.entries(data).map(([k, v]) => [k, String(v)])
+          ),
+          android: {
+            priority: 'HIGH',
+            notification: { icon: 'ic_notification', color: '#e03836' },
+          },
+        },
+      }),
+    }
+  ).catch(() => null);
   return r?.ok || false;
 }
 
@@ -107,6 +170,11 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     const body = req.body;
     if (body?.platform === 'android' && body?.token) {
+      const mobileKey = process.env.MOBILE_API_KEY;
+      const provided = (req.headers['x-orx-api-key'] || '').trim();
+      if (mobileKey && provided !== mobileKey) {
+        return res.status(401).json({ error: 'Unauthorized' });
+      }
       await registerFCMToken(body.userId, body.token);
       return res.status(200).json({ ok: true, registered: true });
     }
