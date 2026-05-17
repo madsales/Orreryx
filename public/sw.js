@@ -3,10 +3,13 @@ const CACHE_NAME = 'orreryx-v2';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
+  '/app',
+  '/map',
   '/risk-dashboard',
   '/gold-price',
   '/oil-price',
-  '/geopolitics-news'
+  '/geopolitics-news',
+  '/capacitor-init.iife.js',
 ];
 
 // Install: cache static assets
