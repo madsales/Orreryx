@@ -1872,7 +1872,9 @@ function renderSeoDashboard(d) {
         <td style="padding:7px 4px;text-align:center;color:var(--txt3)">${k.impressions?.toLocaleString?.()??k.impressions}</td>
         <td style="padding:7px 4px;text-align:center;color:var(--txt3)">${k.ctr}</td>
       </tr>`).join('')}</tbody>
-    </table>` : noData(gsc?.available === false ? '⚠️ ' + (gsc?.reason || 'GSC not connected. Add GSC_CLIENT_ID, GSC_CLIENT_SECRET, GSC_REFRESH_TOKEN to Vercel.') : 'Run SEO Orchestrator to fetch rankings.');
+    </table>` : noData(gsc?.available === false
+      ? '⚠️ ' + (gsc?.reason || gsc?.error || 'GSC query failed — check agent log for details.')
+      : 'Run SEO Orchestrator to fetch rankings.');
 
   // ── Near-Miss Table ──
   const nmRows = (gsc?.nearMissKeywords || []).slice(0, 12);

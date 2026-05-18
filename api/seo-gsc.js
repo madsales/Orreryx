@@ -185,6 +185,7 @@ export default async function handler(req, res) {
     return res.status(401).json({ error: 'Unauthorized' });
   }
   const result = await run();
-  return res.status(200).json({ ok: true, ...result });
+  // ok: false when available===false so admin panel shows ⚠ rather than ✓
+  return res.status(200).json({ ok: result.available !== false, ...result });
 }
 export const config = { api: { bodyParser: false } };
