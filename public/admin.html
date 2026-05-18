@@ -1193,9 +1193,22 @@ async function runApiChecks() {
 let pvChart, plansChart, signupsChart, devicesChart;
 
 async function loadStats() {
+  const grid = document.getElementById('stats-grid');
   try {
     const r = await fetch('/api/admin?action=stats', { headers: { Authorization: 'Bearer ' + token } });
-    if (!r.ok) return;
+    if (r.status === 401) {
+      // Token expired — clear and show login again
+      localStorage.removeItem(TOKEN_KEY); sessionStorage.removeItem(TOKEN_KEY); token = '';
+      document.getElementById('shell').classList.remove('visible');
+      document.getElementById('login-wrap').style.display = 'flex';
+      document.getElementById('login-err').textContent = 'Session expired — please sign in again.';
+      document.getElementById('login-err').style.display = 'block';
+      return;
+    }
+    if (!r.ok) {
+      if (grid) grid.innerHTML = `<div style="grid-column:1/-1;color:var(--red);padding:12px;font-size:13px">⚠ Stats error (HTTP ${r.status}) — check Vercel function logs.</div>`;
+      return;
+    }
     const d = await r.json();
     statsCache = d;
     renderStatsCards(d);
@@ -1208,6 +1221,7 @@ async function loadStats() {
     renderRevenue(d);
   } catch(e) {
     console.error('Stats load failed:', e);
+    if (grid) grid.innerHTML = `<div style="grid-column:1/-1;color:var(--red);padding:12px;font-size:13px">⚠ Failed to load stats: ${esc(e.message)}</div>`;
   }
 }
 
@@ -1452,7 +1466,16 @@ async function loadFeedStats() {
 async function loadHealth() {
   try {
     const r = await fetch('/api/admin?action=health', { headers: { Authorization: 'Bearer ' + token } });
-    if (!r.ok) return;
+    if (r.status === 401) {
+      document.getElementById('redis-dot').style.background = 'var(--red)';
+      document.getElementById('redis-status').textContent = 'Session expired — sign in again';
+      return;
+    }
+    if (!r.ok) {
+      document.getElementById('redis-dot').style.background = 'var(--red)';
+      document.getElementById('redis-status').textContent = 'Health check error (HTTP ' + r.status + ')';
+      return;
+    }
     const d = await r.json();
 
     const grid = document.getElementById('health-grid');
