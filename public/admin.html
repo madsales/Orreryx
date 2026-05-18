@@ -2017,7 +2017,6 @@ function renderSeoDashboard(d) {
   ` : noData('Run GEO Agent or SEO Orchestrator to get AI search data.');
 
   // ── Chief Panel ──
-  const chief = d.chief;
   document.getElementById('seo-chief-panel').innerHTML = chief ? `
     ${chief.biggest_blocker?`<div style="background:var(--bg3);border-left:3px solid #f59e0b;padding:10px 12px;border-radius:4px;font:400 12px/1.6 var(--sans);color:var(--txt3);margin-bottom:12px">🚨 ${esc(chief.biggest_blocker)}</div>`:''}
     ${chief.ranking_forecast_30d?`<div style="background:var(--bg3);border-left:3px solid var(--ind);padding:10px 12px;border-radius:4px;font:400 11px/1.6 var(--sans);color:var(--txt3);margin-bottom:12px">📅 ${esc(chief.ranking_forecast_30d)}</div>`:''}
