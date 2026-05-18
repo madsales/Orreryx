@@ -54,6 +54,47 @@ async function ppToken() {
   return _tok;
 }
 
+async function getPlayAccessToken() {
+  const saJson = process.env.GOOGLE_PLAY_SERVICE_ACCOUNT || process.env.FIREBASE_SERVICE_ACCOUNT;
+  if (!saJson) return null;
+  let sa;
+  try { sa = JSON.parse(saJson); } catch { return null; }
+  const now = Math.floor(Date.now() / 1000);
+  const header = { alg: 'RS256', typ: 'JWT' };
+  const payload = {
+    iss: sa.client_email,
+    scope: 'https://www.googleapis.com/auth/androidpublisher',
+    aud: 'https://oauth2.googleapis.com/token',
+    iat: now,
+    exp: now + 3600,
+  };
+  const b64 = (obj) => Buffer.from(JSON.stringify(obj)).toString('base64url');
+  const signingInput = `${b64(header)}.${b64(payload)}`;
+  const { createSign } = await import('crypto');
+  const sign = createSign('SHA256');
+  sign.update(signingInput);
+  const signature = sign.sign(sa.private_key, 'base64url');
+  const jwt = `${signingInput}.${signature}`;
+  const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ grant_type: 'urn:ietf:params:oauth:grant-type:jwt-bearer', assertion: jwt }),
+  }).catch(() => null);
+  if (!tokenRes?.ok) return null;
+  const data = await tokenRes.json().catch(() => null);
+  return data?.access_token || null;
+}
+
+async function verifyPlayPurchase(productId, purchaseToken) {
+  const accessToken = await getPlayAccessToken();
+  if (!accessToken) return null; // can't verify — treat as fail
+  const pkg = 'io.orreryx.app';
+  const url = `https://androidpublisher.googleapis.com/androidpublisher/v3/applications/${pkg}/purchases/subscriptions/${productId}/tokens/${purchaseToken}`;
+  const r = await fetch(url, { headers: { Authorization: `Bearer ${accessToken}` } }).catch(() => null);
+  if (!r?.ok) return null;
+  return r.json().catch(() => null);
+}
+
 function normPlan(p) {
   p = String(p || '').toLowerCase().trim();
   if (p === 'c' || p === 'command') return 'c';
@@ -72,6 +113,45 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'PAYPAL_CLIENT_ID / PAYPAL_CLIENT_SECRET not set' });
 
   const action = String(req.query.action || '').trim();
+
+  // ── MOBILE-GRANT (Google Play Billing receipt validation) ──────────────────
+  // Handled before PayPal auth to avoid an unnecessary PayPal OAuth call.
+  if (action === 'mobile-grant') {
+    const { purchaseToken, productId, userId } = req.body || {};
+    if (!purchaseToken || !productId) {
+      return res.status(400).json({ error: 'Missing purchaseToken or productId' });
+    }
+
+    const tierMap = {
+      'orreryx_starter_monthly': 'starter',
+      'orreryx_analyst_monthly': 'analyst',
+      'orreryx_command_monthly': 'command',
+    };
+    const tier = tierMap[productId];
+    if (!tier) return res.status(400).json({ error: 'Unknown productId' });
+
+    // Verify purchase with Google Play Developer API
+    const purchase = await verifyPlayPurchase(productId, purchaseToken);
+    if (!purchase) return res.status(402).json({ error: 'Purchase verification failed' });
+    // paymentState: 1 = payment received, 2 = free trial
+    if (purchase.paymentState !== 1 && purchase.paymentState !== 2) {
+      return res.status(402).json({ error: 'Purchase not active', paymentState: purchase.paymentState });
+    }
+
+    const effectiveUserId = userId || purchaseToken.slice(-16);
+    const rUrl = process.env.UPSTASH_REDIS_REST_URL;
+    const rTok = process.env.UPSTASH_REDIS_REST_TOKEN;
+    if (rUrl && rTok) {
+      await fetch(`${rUrl}/pipeline`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${rTok}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify([
+          ['SET', `user:tier:${effectiveUserId}`, tier, 'EX', 2592000],  // 30 days
+        ]),
+      }).catch(() => {});
+    }
+    return res.status(200).json({ ok: true, tier, userId: effectiveUserId });
+  }
 
   try {
     const tok = await ppToken();
@@ -241,40 +321,6 @@ export default async function handler(req, res) {
         expires: expires ? parseInt(expires) : null,
       });
     }
-
-  // ── MOBILE-GRANT (Google Play Billing receipt validation) ──────────────────
-  if (action === 'mobile-grant') {
-    const { purchaseToken, productId } = req.body || {};
-    if (!purchaseToken || !productId) {
-      return res.status(400).json({ error: 'Missing purchaseToken or productId' });
-    }
-
-    const tierMap = {
-      'orreryx_starter_monthly': 'starter',
-      'orreryx_analyst_monthly': 'analyst',
-      'orreryx_command_monthly': 'command',
-    };
-    const tier = tierMap[productId];
-    if (!tier) return res.status(400).json({ error: 'Unknown productId' });
-
-    // TODO: verify purchaseToken with Google Play Developer API
-    // (androidpublisher.purchases.subscriptions.get) — requires GOOGLE_PLAY_SERVICE_ACCOUNT_JSON env var
-    // For v1, grant on valid token presence; add full Play API verification in v2
-
-    const userId = req.headers['x-user-id'] || purchaseToken.slice(-16);
-    const rUrl = process.env.UPSTASH_REDIS_REST_URL;
-    const rTok = process.env.UPSTASH_REDIS_REST_TOKEN;
-    if (rUrl && rTok) {
-      await fetch(`${rUrl}/pipeline`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${rTok}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify([
-          ['SET', `user:tier:${userId}`, tier, 'EX', 2592000],  // 30 days
-        ]),
-      }).catch(() => {});
-    }
-    return res.status(200).json({ ok: true, tier, userId });
-  }
 
     return res.status(400).json({ error: 'Unknown action. Valid: setup, subscribe, activate, cancel, status' });
 
