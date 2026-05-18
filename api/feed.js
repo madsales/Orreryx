@@ -341,8 +341,9 @@ async function handleOgImage(req, res) {
   }
 }
 
-// ─────────── QUOTES (Yahoo Finance + CoinGecko) ───────────────────────────────
-const CACHE_TTL = 30 * 1000;
+// ─────────── QUOTES (Twelve Data + Binance + metals.live fallback) ────────────
+const CACHE_TTL     = 5 * 60 * 1000; // 5 min — conserves Twelve Data free quota
+const CACHE_TTL_ERR = 30 * 1000;     // 30 s on error so we retry quickly
 const qCache = new Map();
 
 // Symbol sets — used to route each symbol to the right data source
@@ -387,8 +388,35 @@ async function fetchMetalsLive() {
   } catch { return _metalsCache; }
 }
 
-async function fetchOneStock(sym) {
-  // query1 is more reliable than query2 from server-side; try both
+// Twelve Data batch quote — primary stock source, free tier: 800 calls/day
+// One batch call for all symbols, cached 5 min = ~288 calls/day max
+async function fetchStocksTwelveData(syms) {
+  const apiKey = process.env.TWELVE_DATA_KEY;
+  if (!apiKey || !syms.length) return [];
+  try {
+    // Twelve Data supports up to 120 symbols per batch on all tiers
+    const r = await fetch(
+      `https://api.twelvedata.com/quote?symbol=${syms.join(',')}&apikey=${apiKey}&format=JSON`,
+      { signal: AbortSignal.timeout(10000) }
+    );
+    if (!r.ok) return [];
+    const data = await r.json();
+    // Single symbol → object directly; multiple → { SYM: {...}, ... }
+    const map = syms.length === 1 ? { [syms[0]]: data } : data;
+    const results = [];
+    for (const [sym, q] of Object.entries(map)) {
+      if (!q || q.status === 'error' || !q.close) continue;
+      const price  = parseFloat(q.close);
+      const change = parseFloat(q.percent_change || 0);
+      if (!price || isNaN(price)) continue;
+      results.push({ symbol: sym, price, change });
+    }
+    return results;
+  } catch { return []; }
+}
+
+// Yahoo Finance fallback (may be rate-limited on Vercel IPs)
+async function fetchOneStockYahoo(sym) {
   for (const host of ['query1', 'query2']) {
     try {
       const r = await fetch(
@@ -403,39 +431,44 @@ async function fetchOneStock(sym) {
       return { symbol: sym, price: p, change: prev ? ((p - prev) / prev) * 100 : 0 };
     } catch { continue; }
   }
-  // Fallback to metals.live for gold/silver futures and spot symbols
+  // metals.live fallback for precious metals symbols
   const s = sym.toUpperCase();
-  if (s === 'GC=F' || s === 'XAU' || s === 'GLD' || s === 'XAUUSD') {
+  if (['GC=F','XAU','GLD','XAUUSD'].includes(s)) {
     const m = await fetchMetalsLive();
     if (m?.gold) return { symbol: sym, price: parseFloat(m.gold), change: 0 };
   }
-  if (s === 'SI=F' || s === 'XAG' || s === 'SLV' || s === 'XAGUSD') {
+  if (['SI=F','XAG','SLV','XAGUSD'].includes(s)) {
     const m = await fetchMetalsLive();
     if (m?.silver) return { symbol: sym, price: parseFloat(m.silver), change: 0 };
   }
   return null;
 }
 
-// Binance 24hr ticker — no auth, accurate real-time prices, high rate limit
+// Binance 24hr ticker — no auth, accurate real-time crypto prices
 async function fetchCrypto(syms) {
   if (!syms.length) return [];
   const pairs = syms.map(s => BINANCE_MAP[s]).filter(Boolean);
   if (!pairs.length) return [];
-  try {
-    const symbolsJson = JSON.stringify(pairs);
-    const r = await fetch(
-      `https://api.binance.com/api/v3/ticker/24hr?symbols=${encodeURIComponent(symbolsJson)}`,
-      { signal: AbortSignal.timeout(6000) }
-    );
-    if (!r.ok) return [];
-    const data = await r.json();
-    const pairToSym = Object.fromEntries(
-      Object.entries(BINANCE_MAP).map(([s, p]) => [p, s])
-    );
-    return data
-      .map(d => ({ symbol: pairToSym[d.symbol], price: parseFloat(d.lastPrice), change: parseFloat(d.priceChangePercent) }))
-      .filter(d => d.symbol && !isNaN(d.price));
-  } catch { return []; }
+  // Try api.binance.com then api1 as fallback (regional availability)
+  for (const host of ['api.binance.com', 'api1.binance.com']) {
+    try {
+      const symbolsJson = JSON.stringify(pairs);
+      const r = await fetch(
+        `https://${host}/api/v3/ticker/24hr?symbols=${encodeURIComponent(symbolsJson)}`,
+        { signal: AbortSignal.timeout(6000) }
+      );
+      if (!r.ok) continue;
+      const data = await r.json();
+      if (!Array.isArray(data)) continue;
+      const pairToSym = Object.fromEntries(
+        Object.entries(BINANCE_MAP).map(([s, p]) => [p, s])
+      );
+      return data
+        .map(d => ({ symbol: pairToSym[d.symbol], price: parseFloat(d.lastPrice), change: parseFloat(d.priceChangePercent) }))
+        .filter(d => d.symbol && !isNaN(d.price));
+    } catch { continue; }
+  }
+  return [];
 }
 
 async function handleQuotes(req, res) {
@@ -444,16 +477,30 @@ async function handleQuotes(req, res) {
   if (!requested.length) return res.status(400).json({ error:'symbols param required' });
   const key = requested.slice().sort().join(',');
   const hit = qCache.get(key);
-  if (hit && Date.now()-hit.ts < CACHE_TTL) return res.status(200).json(hit.data);
-  const [stocks, crypto] = await Promise.allSettled([
-    Promise.all(requested.filter(s=>!CRYPTO_SET.has(s)).map(fetchOneStock)),
-    fetchCrypto(requested.filter(s=>CRYPTO_SET.has(s))),
-  ]);
-  const data = [...(stocks.status==='fulfilled'?stocks.value.filter(Boolean):[]),
-                ...(crypto.status==='fulfilled'?crypto.value:[])];
-  qCache.set(key,{data,ts:Date.now()});
+  if (hit && Date.now()-hit.ts < (hit.ttl||CACHE_TTL)) return res.status(200).json(hit.data);
+
+  const stockSyms = requested.filter(s=>!CRYPTO_SET.has(s));
+  const cryptoSyms = requested.filter(s=>CRYPTO_SET.has(s));
+
+  // Stocks: Twelve Data (primary) → Yahoo Finance (fallback)
+  let stockResults = await fetchStocksTwelveData(stockSyms);
+  if (stockResults.length < stockSyms.length) {
+    // Fill any gaps with Yahoo Finance
+    const covered = new Set(stockResults.map(r=>r.symbol));
+    const missing = stockSyms.filter(s=>!covered.has(s));
+    if (missing.length) {
+      const yf = (await Promise.all(missing.map(fetchOneStockYahoo))).filter(Boolean);
+      stockResults = [...stockResults, ...yf];
+    }
+  }
+
+  const [cryptoRes] = await Promise.allSettled([fetchCrypto(cryptoSyms)]);
+  const data = [...stockResults, ...(cryptoRes.status==='fulfilled'?cryptoRes.value:[])];
+
+  const ttl = data.length > 0 ? CACHE_TTL : CACHE_TTL_ERR;
+  qCache.set(key,{data,ts:Date.now(),ttl});
   if(qCache.size>200) qCache.delete(qCache.keys().next().value);
-  res.setHeader('Cache-Control','public, max-age=30');
+  res.setHeader('Cache-Control', data.length > 0 ? 'public, max-age=300' : 'no-store');
   return res.status(200).json(data);
 }
 
