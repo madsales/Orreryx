@@ -35,6 +35,22 @@ async function redisPipe(cmds) {
   return (await r.json()).map(x => x.result);
 }
 
+// Like redisPipe but throws on network/HTTP failure (errors must not be swallowed).
+async function redisBatch(cmds) {
+  const r = await fetch(`${R_URL}/pipeline`, {
+    method:  'POST',
+    headers: { Authorization: `Bearer ${R_TOKEN}`, 'Content-Type': 'application/json' },
+    body:    JSON.stringify(cmds),
+  });
+  if (!r.ok) throw new Error(`Redis pipeline HTTP ${r.status}`);
+  return (await r.json()).map(x => x.result);
+}
+
+// Single Redis command helper.
+async function redisCmd(cmd) {
+  return redis(...cmd);
+}
+
 // ── PayPal token cache ────────────────────────────────────────────────────────
 let _tok = null, _tokExp = 0;
 async function ppToken() {
@@ -139,18 +155,28 @@ export default async function handler(req, res) {
     }
 
     const effectiveUserId = userId || purchaseToken.slice(-16);
-    const rUrl = process.env.UPSTASH_REDIS_REST_URL;
-    const rTok = process.env.UPSTASH_REDIS_REST_TOKEN;
-    if (rUrl && rTok) {
-      await fetch(`${rUrl}/pipeline`, {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${rTok}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify([
-          ['SET', `user:tier:${effectiveUserId}`, tier, 'EX', 2592000],  // 30 days
-        ]),
-      }).catch(() => {});
+
+    // Sanitise userId — only allow safe characters for Redis key segments
+    const safeUserId = String(effectiveUserId).replace(/[^a-zA-Z0-9@._\-]/g, '').slice(0, 64);
+    if (!safeUserId) return res.status(400).json({ error: 'Invalid userId' });
+
+    // Dedup: check if token was already processed
+    const dedupKey = `purchase:used:${purchaseToken.slice(-32)}`;
+    const already = await redisCmd(['GET', dedupKey]);
+    if (already) {
+      return res.status(200).json({ ok: true, tier: already, alreadyGranted: true });
     }
-    return res.status(200).json({ ok: true, tier, userId: effectiveUserId });
+
+    try {
+      await redisBatch([
+        ['SET', `user:tier:${safeUserId}`, tier, 'EX', 2592000],   // 30 days
+        ['SET', dedupKey, tier, 'EX', 7776000],                     // 90 days — match subscription lifetime
+      ]);
+    } catch (e) {
+      console.error('[OrreryX] mobile-grant Redis write failed:', e);
+      return res.status(500).json({ error: 'Failed to grant tier — please retry' });
+    }
+    return res.status(200).json({ ok: true, tier, userId: safeUserId });
   }
 
   try {
