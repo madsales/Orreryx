@@ -140,7 +140,7 @@ ${scoringList}`;
     // ── Pass 2: Generate full brief for each top story individually ───────
     const briefs = [];
     for (const story of top3) {
-      const briefPrompt = `You are the CMO of OrreryX — a live geopolitical intelligence platform.
+      const briefPrompt = `You are the CMO of OrreryX — a live geopolitical intelligence platform that translates global conflict events into market signals. OrreryX voice: direct, intelligent, calm. Not hype-heavy. Factual observation → why it matters → what moves.
 
 Generate a complete social media content brief for this story. Return a single JSON object (no markdown, no code fences):
 {
@@ -155,13 +155,13 @@ Generate a complete social media content brief for this story. Return a single J
   "imageBrief": "Detailed visual description for a designer",
   "keywords": ["kw1","kw2","kw3","kw4","kw5"],
   "hashtags": ["#Tag1","#Tag2","#Tag3","#Tag4","#Tag5","#Tag6"],
-  "twitter": "Ready-to-post tweet max 240 chars. Sharp angle. Include source name. Link: orreryx.io/app. 2-3 hashtags inline.",
-  "linkedin": "Full LinkedIn post 200-300 words. Professional analysis. What it means for investors. Cite source naturally. orreryx.io/app link. Hashtags at end.",
-  "instagram": "Instagram caption. Punchy opener. Emojis. Geopolitical context. Source: [name] one line above hashtags. CTA: Link in bio → orreryx.io/app. 6-7 hashtags at end.",
+  "twitter": "HOOK-FIRST tweet. Open with a sharp single-line insight that stops the scroll — a surprising number, a consequence, or a contrarian angle. NOT just a headline recap. Max 240 chars. Market impact in second line. orreryx.io/app link. 2 hashtags only. Example format: 'Iran closed the Strait of Hormuz for 6 hours today.\\n\\n📊 Oil +4.2%. Gold up. Here is what else moves → orreryx.io/app\\n\\n#Oil #Geopolitics'",
+  "linkedin": "HOOK-FIRST LinkedIn post. Start with a bold insight or counterintuitive fact (not the headline). 3-4 short paragraphs. First paragraph: the surprising angle. Second: context for investors. Third: specific assets affected and why. Fourth: one clear CTA. Professional but human — no corporate speak. End with 4-5 focused hashtags. orreryx.io/app link in the post. 200-280 words total.",
+  "instagram": "SCROLL-STOPPING Instagram caption. First line must make someone stop mid-scroll — use a dramatic number, a consequence, or a question. Then 3-4 short punchy paragraphs with emojis. Source credit one line before hashtags. CTA: 'Track live → link in bio'. 6-7 hashtags at end — mix broad (#investing) and specific (#Iran #OilPrice).",
   "redditTitle": "Reddit title max 15 words, factual, no clickbait, suits r/geopolitics",
-  "redditBody": "Reddit body 150-250 words. Analytical. Source URL at top. No promo. Mention orreryx.io/app naturally at end. Suggest subreddits.",
+  "redditBody": "Reddit body 150-250 words. Analytical. Lead with source URL. No promotional language. Explain the geopolitical context, then the market implications. Mention orreryx.io/app once naturally at the end as a resource. Suggest 2-3 subreddits.",
   "redditSubreddits": ["r/geopolitics","r/worldnews","r/investing"],
-  "discord": "Discord message 3-5 lines. Bold headline with **text**. Market impact. via [Source]. Link orreryx.io/app. 2-3 emojis. No hashtags."
+  "discord": "Discord message 3-5 lines. Bold headline with **text**. One line market impact. One line source credit. orreryx.io/app link. 2-3 relevant emojis. No hashtags."
 }
 
 Story:
