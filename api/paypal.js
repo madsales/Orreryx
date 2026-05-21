@@ -325,7 +325,12 @@ export default async function handler(req, res) {
       }
 
       await redis('SET', `user:${email}:sub_status`, 'cancelled');
-      return res.status(200).json({ ok: true });
+
+      // Return save-offer URL so frontend can redirect to churn save flow
+      return res.status(200).json({
+        ok:        true,
+        saveOffer: `/api/churn-agent?action=save-offer&email=${encodeURIComponent(email)}`,
+      });
     }
 
     // ── STATUS ────────────────────────────────────────────────────────────────

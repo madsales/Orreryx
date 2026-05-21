@@ -2,7 +2,16 @@
 // Runs all 11 SEO agents, collects results, sends one comprehensive weekly report
 // Schedule: Every Monday 5:00 AM UTC (10:30 AM IST)
 // Required env vars: ANTHROPIC_API_KEY, RESEND_API_KEY, ADMIN_EMAIL, CRON_SECRET
-// Optional: GITHUB_TOKEN (for auto-commits), GSC_REFRESH_TOKEN (for real rankings), PERPLEXITY_API_KEY (for GEO)
+// Optional: GITHUB_TOKEN (for auto-commits), GSC_REFRESH_TOKEN (for real rankings),
+//           PERPLEXITY_API_KEY (for GEO), PAGESPEED_API_KEY (for Core Web Vitals)
+//
+// ── 5-Role SEO System ─────────────────────────────────────────────────────────
+// Role 1: AI Technical SEO Lead    → seo-technical.js   (18 pages, schema injection, CWV)
+// Role 2: Keyword Research Spec    → seo-keyword.js     (top-5 targets, programmatic gaps)
+// Role 3: Content Optimization Mgr → seo-content.js     (6 pages/run, FAQ schema, freshness)
+// Role 4: Link Building Specialist → seo-links.js       (20 targets, tracked acquisition)
+// Role 5: SEO Auditor              → seo-auditor.js     (all pages, week-over-week regression)
+// ─────────────────────────────────────────────────────────────────────────────
 
 import { run as runKeyword }     from './seo-keyword.js';
 import { run as runContent }     from './seo-content.js';
@@ -76,23 +85,29 @@ function buildReport(results, date) {
 
   // ── Keyword Research Section ──────────────────────────────────────────────────
   const kwHtml = `<strong>${keyword?.summary || 'Keyword research complete'}</strong><br><br>
-    <strong>🔥 High Priority Keywords:</strong><br>
-    ${(keyword?.high_priority || []).slice(0, 3).map(k =>
-      `• <strong>${k.keyword}</strong> — ${k.difficulty} difficulty → ${k.target_page} (${k.monthly_volume_est} searches/mo)`
+    <strong>🎯 Top-5 Winnable Keywords:</strong><br>
+    ${(keyword?.top5_targets || keyword?.high_priority || []).slice(0, 3).map(k =>
+      `• <strong>${k.keyword}</strong> — ${k.difficulty || 'medium'} difficulty → ${k.target_page} (${k.monthly_volume || k.monthly_volume_est}/mo) — ${k.expected_weeks_to_rank || '8-16'} wks`
     ).join('<br>')}<br><br>
     <strong>⚡ Quick Wins this week:</strong><br>
     ${(keyword?.quick_wins || []).slice(0, 2).map(k =>
-      `• <strong>${k.keyword}</strong>: ${k.action}`
+      `• <strong>${k.keyword}</strong>: ${k.exact_action || k.action}`
+    ).join('<br>')}<br><br>
+    <strong>📄 New pages to create:</strong><br>
+    ${(keyword?.new_pages_needed || []).slice(0, 2).map(k =>
+      `• <strong>${k.url}</strong> — "${k.keyword}"`
     ).join('<br>')}`;
 
   // ── Technical SEO Section ─────────────────────────────────────────────────────
   const techScore = technical?.score || 0;
   const techColor = techScore >= 80 ? '#16a34a' : techScore >= 60 ? '#d97706' : '#dc2626';
-  const techHtml = `Score: <strong style="color:${techColor}">${techScore}/100</strong> &nbsp;|&nbsp; Avg TTFB: <strong>${technical?.avgTtfb || 0}ms</strong><br><br>
-    <strong>🚨 Issues Found:</strong><br>
-    ${(technical?.allIssues || []).slice(0, 5).map(i => `• ${i}`).join('<br>') || '✅ No critical issues'}<br><br>
-    <strong>💡 Recommendations:</strong><br>
-    ${(technical?.recommendations || []).map(r => `• ${r}`).join('<br>') || '• All good!'}`;
+  const techHtml = `Score: <strong style="color:${techColor}">${techScore}/100</strong> &nbsp;|&nbsp; Avg TTFB: <strong>${technical?.avgTtfb || 0}ms</strong> &nbsp;|&nbsp; Pages OK: <strong>${technical?.pagesOk || 0}/${technical?.pagesTotal || 0}</strong><br>
+    Missing schema: <strong style="color:${(technical?.pagesNoSchema||0)>0?'#dc2626':'#16a34a'}">${technical?.pagesNoSchema || 0} pages</strong>${technical?.cwv ? ` &nbsp;|&nbsp; PageSpeed: <strong>${technical.cwv.performanceScore}/100</strong>` : ''}<br><br>
+    <strong>🚨 CRITICAL (fix immediately):</strong><br>
+    ${(technical?.criticalIssues || []).slice(0, 4).map(i => `• ${i}`).join('<br>') || '✅ No critical issues'}<br><br>
+    <strong>💡 Top Actions:</strong><br>
+    ${(technical?.recommendations || []).map(r => `• ${r}`).join('<br>') || '• All good!'}
+    ${(technical?.schemaInjections || []).filter(s => s.injected).length > 0 ? `<br>✅ Auto-injected schema into: ${technical.schemaInjections.filter(s => s.injected).map(s => s.page).join(', ')}` : ''}`;
 
   // ── AEO Section ───────────────────────────────────────────────────────────────
   const aeoHtml = `<strong>Answer Engine Optimization (AEO)</strong><br>
@@ -139,11 +154,15 @@ function buildReport(results, date) {
     ).join('<br>')}`;
 
   // ── Content Audit Section ─────────────────────────────────────────────────────
-  const auditHtml = `Average Content Score: <strong>${auditor?.avgScore || 0}/100</strong><br><br>
+  const auditHtml = `Average Content Score: <strong>${auditor?.avgScore || 0}/100</strong> &nbsp;|&nbsp;
+    Pages audited: <strong>${auditor?.summary?.total || 0}</strong> &nbsp;|&nbsp;
+    Thin content: <strong style="color:${(auditor?.summary?.thinContent||0)>0?'#dc2626':'#16a34a'}">${auditor?.summary?.thinContent || 0}</strong> &nbsp;|&nbsp;
+    Missing schema: <strong>${auditor?.summary?.noSchema || 0}</strong><br><br>
+    ${(auditor?.regressions || []).length > 0 ? `<strong>📉 Ranking Regressions This Week:</strong><br>${(auditor.regressions || []).slice(0,3).map(r => `• <strong>${r.path}</strong>: score dropped ${r.drop} points — ${r.reason}`).join('<br>')}<br><br>` : ''}
     <strong>🚨 Critical Issues:</strong><br>
-    ${(auditor?.criticalIssues || []).slice(0, 4).map(i => `• ${i}`).join('<br>') || '✅ No critical content issues'}<br><br>
+    ${(auditor?.criticalIssues || []).slice(0, 5).map(i => `• ${i}`).join('<br>') || '✅ No critical content issues'}<br><br>
     ${(auditor?.auditResults || []).slice(0, 2).map(r =>
-      r.aiAudit ? `• <strong>${r.path}</strong>: AI risk <strong>${r.aiAudit.ai_content_risk || 'unknown'}</strong> — ${(r.aiAudit.top_3_improvements || [])[0] || ''}` : ''
+      r.aiAudit ? `• <strong>${r.path}</strong>: AI risk <strong>${r.aiAudit.ai_content_risk || 'unknown'}</strong> — ${(r.aiAudit.top_3_fixes || r.aiAudit.top_3_improvements || [])[0] || ''}` : ''
     ).filter(Boolean).join('<br>')}`;
 
   const autoCommits = (content?.results || []).filter(r => r.committed).length +

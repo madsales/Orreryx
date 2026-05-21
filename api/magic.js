@@ -59,16 +59,35 @@ async function handleSend(req, res) {
       from:    FROM_ADDRESS,
       to:      [email],
       subject,
-      html: `<div style="background:#09090b;color:#f0f0ec;padding:40px;max-width:480px;margin:0 auto;border:1px solid rgba(255,255,255,.1);border-radius:8px;font-family:'Helvetica Neue',sans-serif">
-        <div style="margin-bottom:32px">
-          <strong style="font-size:16px;letter-spacing:.04em">⊕ OrreryX</strong>
-          ${plan === 'f' ? '<span style="margin-left:10px;background:rgba(56,188,120,.15);border:1px solid rgba(56,188,120,.3);border-radius:3px;padding:2px 8px;font-size:10px;color:#38bc78;font-weight:700">FREE TRIAL</span>' : ''}
+      html: `<div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;max-width:540px;margin:0 auto;color:#111;background:#fff">
+        <div style="background:#0f172a;padding:28px 32px">
+          <p style="margin:0;font-size:11px;letter-spacing:2px;color:#94a3b8;text-transform:uppercase">OrreryX</p>
         </div>
-        <div style="font-size:22px;font-weight:700;margin-bottom:10px;letter-spacing:-.01em">${plan === 'f' ? 'Start your free 3-day trial' : 'Access your platform'}</div>
-        <div style="font-size:13px;color:#a0a09a;margin-bottom:28px;line-height:1.6">${plan === 'f' ? 'Your free trial starts the moment you click the link below. No credit card required.' : 'Your sign-in link expires in'} <strong style="color:#f0f0ec">${plan === 'f' ? '' : '15 minutes'}</strong>${plan === 'f' ? '' : ' and can only be used once.'}</div>
-        <a href="${magicLink}" style="display:block;background:${plan === 'f' ? '#38bc78' : '#f0f0ec'};color:${plan === 'f' ? '#000' : '#09090b'};text-decoration:none;text-align:center;padding:14px;border-radius:4px;font-weight:700;letter-spacing:.04em;font-size:13px">${plan === 'f' ? 'ACTIVATE FREE TRIAL →' : 'OPEN ORRERY →'}</a>
-        ${plan === 'f' ? '<div style="margin-top:16px;font-size:12px;color:#a0a09a;text-align:center">3 days free · No card required · Upgrade anytime</div>' : ''}
-        <div style="margin-top:24px;font-size:11px;color:#484844;line-height:1.6">If you didn\'t request this, you can safely ignore this email.</div>
+        <div style="padding:28px 32px 32px">
+          <p style="margin:0 0 20px;font-size:15px;line-height:1.6">Hey,</p>
+          <p style="margin:0 0 20px;font-size:15px;line-height:1.6">
+            ${plan === 'f' ? 'Your free trial is ready — click below to open OrreryX.' : 'Your sign-in link is ready — click below to access OrreryX.'}
+          </p>
+          <p style="margin:0 0 28px">
+            <a href="${magicLink}" style="display:inline-block;background:${plan === 'f' ? '#16a34a' : '#0f172a'};color:white;padding:13px 28px;border-radius:6px;text-decoration:none;font-weight:600;font-size:14px;letter-spacing:.01em">
+              ${plan === 'f' ? 'Activate Free Trial →' : 'Open OrreryX →'}
+            </a>
+          </p>
+          <p style="margin:0 0 16px;font-size:14px;line-height:1.6;color:#374151">
+            Once you're in, check the <strong>live events feed</strong> — that's where the signal is. You'll see a breaking conflict event and which assets are moving because of it.
+          </p>
+          <p style="margin:0 0 24px;font-size:14px;line-height:1.6;color:#374151">
+            If you have questions, reply here. I read them.
+          </p>
+          ${plan === 'f' ? '<p style="margin:0 0 0;font-size:12px;color:#9ca3af">3 days free · No credit card required · Upgrade anytime</p>' : ''}
+          ${plan !== 'f' ? '<p style="margin:0;font-size:12px;color:#9ca3af">This link expires in 15 minutes and can only be used once.</p>' : ''}
+        </div>
+        <div style="border-top:1px solid #f3f4f6;padding:16px 32px;text-align:center">
+          <p style="margin:0;font-size:11px;color:#d1d5db">
+            You signed up at orreryx.io ·
+            <a href="https://orreryx.io/unsubscribe?email=${encodeURIComponent(email)}" style="color:#d1d5db">Unsubscribe</a>
+          </p>
+        </div>
       </div>`,
     }),
   });
@@ -106,6 +125,29 @@ async function handleVerify(req, res) {
     const isFree    = planCode === 'f';
     const sessionToken = crypto.randomBytes(32).toString('hex');
     const SESSION_TTL  = isFree ? 3 * 24 * 60 * 60 * 1000 : 365 * 24 * 60 * 60 * 1000;
+
+    // Store/update subscriber record in Redis
+    try {
+      const subKey    = `sub:${data.email}`;
+      const existing  = await redisCmd('GET', subKey);
+      let sub = {};
+      try { sub = JSON.parse(existing || '{}'); } catch {}
+      if (!sub.email) {
+        sub.email      = data.email;
+        sub.signedUpAt = new Date().toISOString();
+        sub.plan       = planCode;
+        sub.source     = 'magic';
+        await redisCmd('SET', subKey, JSON.stringify(sub));
+        // Increment daily signup counter
+        const day = new Date().toISOString().slice(0, 10);
+        await redisCmd('INCR', `analytics:signups:${day}`);
+      }
+      // Always update login counter
+      const day = new Date().toISOString().slice(0, 10);
+      await redisCmd('INCR', `analytics:logins:${day}`);
+    } catch (e) {
+      console.error('[Magic verify] sub record error:', e.message);
+    }
 
     const session = {
       email:     data.email,
