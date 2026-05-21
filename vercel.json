@@ -125,6 +125,7 @@
     { "src": "/api/directory-agent(.*)",   "dest": "/api/directory-agent.js" },
     { "src": "/api/cro-agent(.*)",         "dest": "/api/cro-agent.js" },
     { "src": "/api/lead-magnet-agent(.*)", "dest": "/api/lead-magnet-agent.js" },
+    { "src": "/api/seo-sprint(.*)",       "dest": "/api/seo-sprint.js" },
     { "src": "/api/buffer-post",      "dest": "/api/buffer-post.js" },
     { "src": "/api/social-post",      "dest": "/api/social-post.js" },
     { "src": "/api/news-post",        "dest": "/api/news-post.js" },
