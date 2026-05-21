@@ -201,16 +201,7 @@ async function checkSocialPosting(today, utcHour) {
   // By end of day UTC (21:00+) expect at least 3 briefs; by 12:00 expect at least 1
   const expected  = utcHour >= 21 ? 3 : utcHour >= 12 ? 1 : 0;
 
-  // CEO approval gate
-  const approved  = await redisGet(`ceo:approved:${today}`);
-  if (!approved && utcHour >= 7) {
-    issues.push({ agent: 'social-post', problem: `CEO approval missing after ${utcHour}:00 UTC — posts blocked all day`, fixed: false });
-    const ok = await redisSet(`ceo:approved:${today}`, 'ops-auto', 90000);
-    fixes.push({ action: `Auto-set ceo:approved:${today} = ops-auto`, ok });
-    if (ok) issues[issues.length - 1].fixed = true;
-  }
-
-  // Posts behind schedule
+  // Posts behind schedule (approval gate removed — posting is fully automatic)
   if (utcHour >= 9 && count < expected) {
     issues.push({ agent: 'social-post', problem: `Only ${count}/${expected} expected briefs sent by ${utcHour}:00 UTC`, fixed: false });
     // Trigger social-post now (uses ?admin=1 to skip approval check since ops already handled it)

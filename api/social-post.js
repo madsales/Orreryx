@@ -359,22 +359,12 @@ export default async function handler(req, res) {
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const adminEmail   = process.env.ADMIN_EMAIL;
 
-  // ── CEO Approval check (soft gate — auto-approves after 7 AM UTC) ────────────
-  // Hard block only if explicitly disabled via ops:social:paused flag
+  // ── Gate: only manual pause (set via ops-agent) can block posting ─────────────
+  // CEO approval is fully automatic — no manual sign-off required
   if (req.query.admin !== '1') {
     const paused = await redisGet('ops:social:paused');
     if (paused === '1') {
       return res.status(200).json({ ok: false, reason: 'Social posting paused by ops agent' });
-    }
-    const utcHour = new Date().getUTCHours();
-    const approved = await redisGet(`ceo:approved:${today}`);
-    if (!approved) {
-      if (utcHour < 7) {
-        // Before 7 AM UTC — wait for CEO agent
-        return res.status(200).json({ ok: false, reason: `Pre-7AM UTC — awaiting CEO approval for ${today}` });
-      }
-      // 7 AM+ and CEO agent hasn't run — auto-approve so posts aren't missed all day
-      await redisSet(`ceo:approved:${today}`, 'auto', 90000);
     }
   }
 
