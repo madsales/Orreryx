@@ -1,21 +1,34 @@
-// api/ops-agent.js — OrreryX Master Ops Agent
+﻿// api/ops-agent.js — OrreryX Master Ops Agent
 // "100 years of experience" — monitors every agent, detects failures, auto-fixes.
 //
 // Runs every hour via Vercel cron.
 //
 // What it watches:
 //   ┌──────────────────────────────────────────────────────────────────┐
-//   │  Agent           │ Expected cadence │ Redis health key           │
-//   ├──────────────────┼──────────────────┼────────────────────────────┤
-//   │  social-post     │ 4× / day         │ cmo:count:{date}           │
-//   │  breaking-news   │ 1× / day min     │ breaking:last_post_time    │
-//   │  ceo-agent       │ daily @ 8 UTC    │ ceo:last_run               │
-//   │  health-agent    │ daily @ 7 UTC    │ health:last_run            │
-//   │  sales-agent     │ daily @ 9 UTC    │ sales:last_run             │
-//   │  legal-agent     │ weekly Monday    │ legal:last_run             │
-//   │  seo-agent       │ weekly Monday    │ seo:last_run               │
-//   │  finance-agent   │ weekly Monday    │ finance:last_run           │
-//   └──────────────────┴──────────────────┴────────────────────────────┘
+//   │  Agent              │ Expected cadence │ Redis health key        │
+//   ├─────────────────────┼──────────────────┼─────────────────────────┤
+//   │  social-post        │ 4× / day         │ cmo:count:{date}        │
+//   │  breaking-news      │ 1× / day min     │ breaking:last_post_time │
+//   │  ceo-agent          │ daily @ 8 UTC    │ ceo:last_run            │
+//   │  health-agent       │ daily @ 7 UTC    │ health:last_run         │
+//   │  sales-agent        │ daily @ 9 UTC    │ sales:last_run          │
+//   │  churn-agent        │ daily @ 2 UTC    │ churn:last_run          │
+//   │  community-agent    │ daily @ 5 UTC    │ community:last_run      │
+//   │  legal-agent        │ weekly Monday    │ legal:last_run          │
+//   │  seo-agent          │ weekly Monday    │ seo:last_run            │
+//   │  finance-agent      │ weekly Monday    │ finance:last_run        │
+//   │  ads-agent          │ weekly Monday    │ ads:last_run            │
+//   │  referral-agent     │ weekly Monday    │ referral:last_run       │
+//   │  ab-agent           │ weekly Monday    │ ab:last_run             │
+//   │  directory-agent    │ weekly Monday    │ directory:last_run      │
+//   │  cro-agent          │ weekly Monday    │ cro:last_report         │
+//   │  lead-magnet-agent  │ weekly Monday    │ lm:last_run             │
+//   │  seo-technical      │ weekly Monday    │ seo:technical:latest    │
+//   │  seo-keyword        │ weekly Monday    │ seo:keywords:latest     │
+//   │  seo-content        │ weekly Monday    │ seo:content:latest      │
+//   │  seo-links          │ weekly Monday    │ seo:links:latest        │
+//   │  seo-auditor        │ weekly Monday    │ seo:auditor:latest      │
+//   └─────────────────────┴──────────────────┴─────────────────────────┘
 //
 // Auto-fixes applied:
 //   • CEO approval missing after 7 AM UTC → auto-approve so social posts aren't blocked
@@ -244,9 +257,12 @@ async function checkDailyAgents(today, utcHour) {
 
   // Agents expected to have run today, keyed by their Redis health key
   const dailyAgents = [
-    { name: 'ceo-agent',    key: 'ceo:last_run',    path: '/api/ceo-agent',    expectedHour: 8  },
-    { name: 'health-agent', key: 'health:last_run', path: '/api/health-agent', expectedHour: 7  },
-    { name: 'sales-agent',  key: 'sales:last_run',  path: '/api/sales-agent',  expectedHour: 9  },
+    { name: 'ceo-agent',       key: 'ceo:last_run',       path: '/api/ceo-agent',       expectedHour: 8  },
+    { name: 'health-agent',    key: 'health:last_run',    path: '/api/health-agent',    expectedHour: 7  },
+    { name: 'sales-agent',     key: 'sales:last_run',     path: '/api/sales-agent',     expectedHour: 9  },
+    { name: 'churn-agent',     key: 'churn:last_run',       path: '/api/churn-agent',     expectedHour: 3  },
+    { name: 'community-agent', key: 'community:last_run',  path: '/api/community-agent', expectedHour: 6  },
+    { name: 'seo-sprint',      key: 'seo:sprint:latest',   path: '/api/seo-sprint',      expectedHour: 7  },
   ];
 
   for (const agent of dailyAgents) {
@@ -266,11 +282,21 @@ async function checkDailyAgents(today, utcHour) {
       try {
         const runData = JSON.parse(lastRunRaw);
         const runDate = runData?.date || runData?.today;
+        // If explicit date field exists, compare it
         if (runDate && runDate !== today) {
           issues.push({ agent: agent.name, problem: `Last run was ${runDate}, expected ${today}`, fixed: false });
           const result = await triggerAgent(agent.path);
           fixes.push({ action: `Triggered ${agent.path}`, ok: result.ok, error: result.error });
           if (result.ok) issues[issues.length - 1].fixed = true;
+        // No date field — fall back to ts timestamp
+        } else if (!runDate && runData?.ts) {
+          const runDay = new Date(runData.ts).toISOString().split('T')[0];
+          if (runDay !== today) {
+            issues.push({ agent: agent.name, problem: `Last run was ${runDay} (ts), expected ${today}`, fixed: false });
+            const result = await triggerAgent(agent.path);
+            fixes.push({ action: `Triggered ${agent.path}`, ok: result.ok, error: result.error });
+            if (result.ok) issues[issues.length - 1].fixed = true;
+          }
         }
       } catch (_) {}
     }
@@ -287,9 +313,20 @@ async function checkWeeklyAgents(today) {
   if (dayOfWeek !== 1) return { issues, fixes }; // Only check on Mondays
 
   const weeklyAgents = [
-    { name: 'legal-agent',   key: 'legal:last_run',   path: '/api/legal-agent'   },
-    { name: 'seo-agent',     key: 'seo:last_run',     path: '/api/seo-agent'     },
-    { name: 'finance-agent', key: 'finance:last_run', path: '/api/finance-agent' },
+    { name: 'legal-agent',       key: 'legal:last_run',        path: '/api/legal-agent'       },
+    { name: 'seo-agent',         key: 'seo:last_run',          path: '/api/seo-agent'         },
+    { name: 'finance-agent',     key: 'finance:last_run',      path: '/api/finance-agent'     },
+    { name: 'ads-agent',         key: 'ads:last_run',          path: '/api/ads-agent'         },
+    { name: 'referral-agent',    key: 'referral:last_run',     path: '/api/referral-agent'    },
+    { name: 'ab-agent',          key: 'ab:last_run',           path: '/api/ab-agent'          },
+    { name: 'directory-agent',   key: 'directory:last_run',    path: '/api/directory-agent'   },
+    { name: 'cro-agent',         key: 'cro:last_report',       path: '/api/cro-agent'         },
+    { name: 'lead-magnet-agent', key: 'lm:last_run',           path: '/api/lead-magnet-agent' },
+    { name: 'seo-technical',     key: 'seo:technical:latest',  path: '/api/seo-technical'     },
+    { name: 'seo-keyword',       key: 'seo:keywords:latest',   path: '/api/seo-keyword'       },
+    { name: 'seo-content',       key: 'seo:content:latest',    path: '/api/seo-content'       },
+    { name: 'seo-links',         key: 'seo:links:latest',      path: '/api/seo-links'         },
+    { name: 'seo-auditor',       key: 'seo:auditor:latest',    path: '/api/seo-auditor'       },
   ];
 
   const utcHour = new Date().getUTCHours();
@@ -301,7 +338,19 @@ async function checkWeeklyAgents(today) {
     if (lastRunRaw) {
       try {
         const d = JSON.parse(lastRunRaw);
-        if ((d?.date || d?.today) === today) ranToday = true;
+        // Check explicit date field
+        if ((d?.date || d?.today) === today) {
+          ranToday = true;
+        // Fall back to ts (numeric ms) timestamp
+        } else if (d?.ts && new Date(d.ts).toISOString().split('T')[0] === today) {
+          ranToday = true;
+        // Fall back to generatedAt (numeric ms) timestamp
+        } else if (d?.generatedAt && new Date(d.generatedAt).toISOString().split('T')[0] === today) {
+          ranToday = true;
+        // Fall back to runAt (ISO string) — used by referral/ab/directory agents
+        } else if (d?.runAt && d.runAt.slice(0, 10) === today) {
+          ranToday = true;
+        }
       } catch (_) {}
     }
     if (!ranToday) {
@@ -350,15 +399,31 @@ async function handleComplaint(body, adminEmail) {
   if (severity === 'critical' || severity === 'high') {
     // Attempt to restart the offending agent
     const agentPathMap = {
-      'social-post':     '/api/social-post',
-      'breaking-news':   '/api/breaking-news',
-      'ceo-agent':       '/api/ceo-agent',
-      'health-agent':    '/api/health-agent',
-      'sales-agent':     '/api/sales-agent',
-      'legal-agent':     '/api/legal-agent',
-      'seo-agent':       '/api/seo-agent',
-      'finance-agent':   '/api/finance-agent',
-      'ideas-agent':     '/api/ideas-agent',
+      'social-post':       '/api/social-post',
+      'breaking-news':     '/api/breaking-news',
+      'ceo-agent':         '/api/ceo-agent',
+      'health-agent':      '/api/health-agent',
+      'sales-agent':       '/api/sales-agent',
+      'legal-agent':       '/api/legal-agent',
+      'seo-agent':         '/api/seo-agent',
+      'finance-agent':     '/api/finance-agent',
+      'ideas-agent':       '/api/ideas-agent',
+      // Marketing agents
+      'churn-agent':       '/api/churn-agent',
+      'community-agent':   '/api/community-agent',
+      'ads-agent':         '/api/ads-agent',
+      'referral-agent':    '/api/referral-agent',
+      'ab-agent':          '/api/ab-agent',
+      'directory-agent':   '/api/directory-agent',
+      'cro-agent':         '/api/cro-agent',
+      'lead-magnet-agent': '/api/lead-magnet-agent',
+      // SEO agents
+      'seo-sprint':        '/api/seo-sprint',
+      'seo-technical':     '/api/seo-technical',
+      'seo-keyword':       '/api/seo-keyword',
+      'seo-content':       '/api/seo-content',
+      'seo-links':         '/api/seo-links',
+      'seo-auditor':       '/api/seo-auditor',
     };
     const path = agentPathMap[agent];
     if (path) {
