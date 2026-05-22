@@ -690,7 +690,8 @@ function parseRss(xml, feed) {
   while ((m = itemRe.exec(xml)) !== null && i < 30) {
     const b = m[1];
     const rawTitle = (b.match(/<title>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/title>/) || [])[1] || '';
-    const rawLink  = (b.match(/<link>([\s\S]*?)<\/link>/) || b.match(/<guid[^>]*>([\s\S]*?)<\/guid>/) || [])[1] || '';
+    const rawLinkRaw = (b.match(/<link>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/link>/) || b.match(/<guid[^>]*>(?:<!\[CDATA\[)?([\s\S]*?)(?:\]\]>)?<\/guid>/) || [])[1] || '';
+    const rawLink = rawLinkRaw.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1').trim();
     const rawDate  = (b.match(/<pubDate>([\s\S]*?)<\/pubDate>/) || [])[1] || '';
     const rawSrc   = (b.match(/<source[^>]*>([\s\S]*?)<\/source>/) || [])[1] || fallbackSource;
 
