@@ -8,11 +8,21 @@
       "destination": "https://www.orreryx.io/$1",
       "permanent": true
     },
-    { "source": "/north-korea-nuclear", "destination": "/north-korea",           "permanent": true },
-    { "source": "/iran-israel",          "destination": "/iran-nuclear",          "permanent": true },
-    { "source": "/africa-conflict",      "destination": "/sudan-war",             "permanent": true },
-    { "source": "/global-conflicts-2025","destination": "/global-conflicts-2026", "permanent": true },
-    { "source": "/:file.html",           "destination": "/:file",                "permanent": true }
+    { "source": "/north-korea-nuclear",  "destination": "/north-korea",           "permanent": true },
+    { "source": "/iran-israel",           "destination": "/iran-nuclear",          "permanent": true },
+    { "source": "/africa-conflict",       "destination": "/sudan-war",             "permanent": true },
+    { "source": "/global-conflicts-2025", "destination": "/global-conflicts-2026", "permanent": true },
+    { "source": "/ukraine-risk",          "destination": "/country/ukraine",       "permanent": true },
+    { "source": "/russia-risk",           "destination": "/country/russia",        "permanent": true },
+    { "source": "/china-risk",            "destination": "/country/china",         "permanent": true },
+    { "source": "/iran-risk",             "destination": "/country/iran",          "permanent": true },
+    { "source": "/israel-risk",           "destination": "/country/israel",        "permanent": true },
+    { "source": "/india-risk",            "destination": "/country/india",         "permanent": true },
+    { "source": "/pakistan-risk",         "destination": "/country/pakistan",      "permanent": true },
+    { "source": "/north-korea-risk",      "destination": "/country/north-korea",   "permanent": true },
+    { "source": "/taiwan-risk",           "destination": "/country/taiwan",        "permanent": true },
+    { "source": "/saudi-arabia-risk",     "destination": "/country/saudi-arabia",  "permanent": true },
+    { "source": "/:file.html",            "destination": "/:file",                 "permanent": true }
   ],
   "headers": [
     {
