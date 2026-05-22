@@ -1721,7 +1721,8 @@ async function runSeoTeam(btn) {
     const r = await fetch('/api/admin?action=run-agent&agent=seo-orchestrator&force=1', {
       headers: { Authorization: 'Bearer ' + token },
     });
-    const d = await r.json();
+    let d;
+    try { d = await r.json(); } catch { throw new Error('Orchestrator timed out (>5 min). Try running individual agents instead.'); }
     clearInterval(timerInterval);
 
     if (d.ok) {

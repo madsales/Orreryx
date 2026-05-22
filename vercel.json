@@ -78,7 +78,7 @@
     "api/push.js":         { "maxDuration": 30 },
     "api/feed.js":          { "maxDuration": 60, "includeFiles": "api/fonts/**" },
     "api/magic.js":         { "maxDuration": 30 },
-    "api/admin.js":         { "maxDuration": 60 },
+    "api/admin.js":         { "maxDuration": 300 },
     "api/webhook.js":       { "maxDuration": 30 },
     "api/newsletter.js":    { "maxDuration": 30 },
     "api/buffer-post.js":   { "maxDuration": 30 },
