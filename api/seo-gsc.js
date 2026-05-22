@@ -58,7 +58,7 @@ async function queryGSC(accessToken, siteUrl, query) {
 
 export async function run() {
   const today   = new Date().toISOString().split('T')[0];
-  const siteUrl = process.env.GSC_SITE_URL || 'https://www.orreryx.io/';
+  const siteUrl = process.env.GSC_SITE_URL || 'sc-domain:orreryx.io';
 
   const hasCredentials =
     process.env.GSC_REFRESH_TOKEN &&
