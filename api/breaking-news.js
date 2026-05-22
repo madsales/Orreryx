@@ -118,7 +118,8 @@ async function fetchBreakingEvents() {
 // ── Score an article for breaking news importance ─────────────────────────────
 
 function scoreArticle(article) {
-  const text  = ((article.title || '') + ' ' + (article.description || '')).toLowerCase();
+  // gnews returns 'txt', other sources use 'title'/'description'/'content'
+  const text  = ((article.title || article.txt || '') + ' ' + (article.description || article.content || '')).toLowerCase();
   let score   = 0;
 
   // High-signal keywords
@@ -146,7 +147,7 @@ function scoreArticle(article) {
 // ── Detect country from article text ─────────────────────────────────────────
 
 function detectCountry(article) {
-  const text = ((article.title || '') + ' ' + (article.description || '')).toLowerCase();
+  const text = ((article.title || article.txt || '') + ' ' + (article.description || article.content || '')).toLowerCase();
   for (const [code, meta] of Object.entries(COUNTRY_META)) {
     if (text.includes(meta.name.toLowerCase())) return { code, ...meta };
   }
@@ -156,7 +157,7 @@ function detectCountry(article) {
 // ── Build captions ────────────────────────────────────────────────────────────
 
 function buildTwitterCaption(article, country) {
-  const title  = article.title?.slice(0, 160) || 'Breaking geopolitical event';
+  const title  = (article.title || article.txt || '').slice(0, 160) || 'Breaking geopolitical event';
   const impact = country.impact;
   // Hook-first: lead with market consequence, not just the headline
   return `${country.flag} ${title}
@@ -169,8 +170,8 @@ Track live → https://orreryx.io/app
 }
 
 function buildLinkedInCaption(article, country) {
-  const title   = article.title || 'Breaking geopolitical event';
-  const desc    = article.description?.slice(0, 250) || '';
+  const title   = article.title || article.txt || 'Breaking geopolitical event';
+  const desc    = (article.description || article.content || '').slice(0, 250);
   const impact  = country.impact;
   const source  = article.source?.name || article.source || 'Global news';
 
