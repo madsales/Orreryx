@@ -234,11 +234,11 @@ async function checkBreakingNews() {
   const lastPost    = lastPostRaw ? parseInt(lastPostRaw) : 0;
   const ageHours    = (Date.now() - lastPost) / 3600000;
 
-  // If no breaking news for 8+ hours, nudge it
-  if (ageHours > 8) {
+  // Only alert if breaking-news hasn't run at all in 24h (not just no post)
+  if (ageHours > 24) {
     issues.push({
       agent: 'breaking-news',
-      problem: `No breaking news post in ${Math.round(ageHours)}h — last post: ${lastPost ? new Date(lastPost).toUTCString() : 'never'}`,
+      problem: `Breaking-news agent hasn't run in ${Math.round(ageHours)}h — triggering now`,
       fixed: false,
     });
     const result = await triggerAgent('/api/breaking-news', '?force=1');

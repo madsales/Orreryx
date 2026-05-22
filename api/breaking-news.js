@@ -373,7 +373,7 @@ export default async function handler(req, res) {
     }
   }
 
-  const minScore = parseInt(process.env.BREAKING_MIN_SCORE || '5');
+  const minScore = parseInt(process.env.BREAKING_MIN_SCORE || '3');
 
   // ── Fetch events ─────────────────────────────────────────────────────────────
   const articles = await fetchBreakingEvents();
@@ -392,6 +392,8 @@ export default async function handler(req, res) {
   }
 
   if (!scored.length) {
+    // Still update last_post_time so ops-agent doesn't keep alerting on every run
+    await upstashCmd(['SET', 'breaking:last_post_time', Date.now().toString(), 'EX', 86400]);
     return res.status(200).json({
       ok:      true,
       skipped: true,
