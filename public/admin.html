@@ -211,6 +211,11 @@ p.desc{font:400 12px/1.75 var(--sans);color:var(--txt3);margin-bottom:18px}
 
 /* ── AGENTS ── */
 .agents-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:20px}
+.dept-section{margin-bottom:28px}
+.dept-header{display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--bg2);border:1px solid var(--brd2);border-radius:8px;margin-bottom:14px}
+.dept-header-icon{font-size:18px}
+.dept-header-name{font:700 13px/1 var(--mono);color:var(--txt);letter-spacing:.06em;text-transform:uppercase}
+.dept-header-count{font:400 11px/1 var(--mono);color:var(--txt3);margin-left:auto}
 .agent-card{background:var(--bg2);border:1px solid var(--brd);border-radius:var(--radius);padding:20px;display:flex;flex-direction:column;gap:12px;transition:border-color .15s}
 .agent-card:hover{border-color:var(--brd2)}
 .agent-card.running{border-color:rgba(212,168,67,.5);animation:pulse-border 1.5s ease-in-out infinite}
@@ -1498,6 +1503,7 @@ async function loadHealth() {
 const AGENT_DEFS = [
   {
     id: 'health',
+    dept: 'operations',
     icon: '🏥',
     name: 'COO — Health Agent',
     role: 'System Watchdog',
@@ -1508,6 +1514,7 @@ const AGENT_DEFS = [
   },
   {
     id: 'finance',
+    dept: 'finance',
     icon: '💰',
     name: 'CFO — Finance Agent',
     role: 'Weekly P&L Report',
@@ -1518,6 +1525,7 @@ const AGENT_DEFS = [
   },
   {
     id: 'sales',
+    dept: 'sales',
     icon: '📧',
     name: 'Sales — Nurture Agent',
     role: 'Email Nurture Sequences',
@@ -1528,6 +1536,7 @@ const AGENT_DEFS = [
   },
   {
     id: 'ceo',
+    dept: 'executive',
     icon: '🤖',
     name: 'CEO — Digest Agent',
     role: 'AI Executive Summary',
@@ -1538,6 +1547,7 @@ const AGENT_DEFS = [
   },
   {
     id: 'breaking-news',
+    dept: 'content',
     icon: '📡',
     name: 'Breaking News Agent',
     role: 'Live Social Posting',
@@ -1549,6 +1559,7 @@ const AGENT_DEFS = [
   },
   {
     id: 'ideas',
+    dept: 'content',
     icon: '💡',
     name: 'Ideas Agent',
     role: 'Daily Creative Intelligence',
@@ -1559,6 +1570,7 @@ const AGENT_DEFS = [
   },
   {
     id: 'seo-orchestrator',
+    dept: 'seo',
     icon: '🤖',
     name: 'SEO Orchestrator',
     role: 'Runs All 10 SEO Agents',
@@ -1570,6 +1582,7 @@ const AGENT_DEFS = [
   },
   {
     id: 'seo-chief',
+    dept: 'seo',
     icon: '🎯',
     name: 'Chief SEO Strategist',
     role: 'Multi-Agent Discussion Engine',
@@ -1581,6 +1594,7 @@ const AGENT_DEFS = [
   },
   {
     id: 'seo-geo',
+    dept: 'seo',
     icon: '🤖',
     name: 'GEO Agent',
     role: 'AI Search Optimization',
@@ -1591,6 +1605,7 @@ const AGENT_DEFS = [
   },
   {
     id: 'seo-gsc',
+    dept: 'seo',
     icon: '📊',
     name: 'GSC Rankings Agent',
     role: 'Google Search Console',
@@ -1601,6 +1616,7 @@ const AGENT_DEFS = [
   },
   {
     id: 'seo-keyword',
+    dept: 'seo',
     icon: '🔍',
     name: 'Keyword Research Agent',
     role: 'SEO Keyword Intelligence',
@@ -1611,6 +1627,7 @@ const AGENT_DEFS = [
   },
   {
     id: 'seo-technical',
+    dept: 'seo',
     icon: '⚙️',
     name: 'Technical SEO Agent',
     role: 'Site Health & Speed',
@@ -1621,6 +1638,7 @@ const AGENT_DEFS = [
   },
   {
     id: 'seo-content',
+    dept: 'seo',
     icon: '✍️',
     name: 'Content Optimizer Agent',
     role: 'Auto-Optimize Meta Tags',
@@ -1631,6 +1649,7 @@ const AGENT_DEFS = [
   },
   {
     id: 'seo-auditor',
+    dept: 'seo',
     icon: '🔬',
     name: 'Content Audit Agent',
     role: 'E-E-A-T & Quality Check',
@@ -2090,20 +2109,59 @@ function renderSeoDashboard(d) {
 
 let agentLogs = {};
 
+const DEPT_META = {
+  executive: { label: 'Executive',      icon: '👔', order: 0 },
+  operations: { label: 'Operations',    icon: '⚙️', order: 1 },
+  finance:   { label: 'Finance',        icon: '💰', order: 2 },
+  sales:     { label: 'Sales',          icon: '📧', order: 3 },
+  content:   { label: 'Content & News', icon: '📡', order: 4 },
+  seo:       { label: 'SEO Department', icon: '🔍', order: 5 },
+};
+
+function renderDeptSection(deptKey, agents, statusMap) {
+  const meta = DEPT_META[deptKey] || { label: deptKey, icon: '🤖', order: 99 };
+  const cards = agents.map(a => renderAgentCard(a, statusMap ? statusMap[a.statusKey] : null)).join('');
+  return `
+    <div class="dept-section">
+      <div class="dept-header">
+        <span class="dept-header-icon">${meta.icon}</span>
+        <span class="dept-header-name">${meta.label}</span>
+        <span class="dept-header-count">${agents.length} agent${agents.length !== 1 ? 's' : ''}</span>
+      </div>
+      <div class="agents-grid">${cards}</div>
+    </div>`;
+}
+
+function groupByDept(statusMap) {
+  const groups = {};
+  for (const a of AGENT_DEFS) {
+    const d = a.dept || 'other';
+    if (!groups[d]) groups[d] = [];
+    groups[d].push(a);
+  }
+  // Sort departments by order
+  return Object.entries(groups).sort((x, y) => {
+    const ox = (DEPT_META[x[0]] || { order: 99 }).order;
+    const oy = (DEPT_META[y[0]] || { order: 99 }).order;
+    return ox - oy;
+  });
+}
+
 async function loadAgentStatus() {
   const grid = document.getElementById('agents-grid');
   if (!grid) return;
 
-  // Render skeleton cards immediately
-  grid.innerHTML = AGENT_DEFS.map(a => renderAgentCard(a, null)).join('');
+  // Render skeleton sections immediately
+  grid.style.display = 'block'; // override grid layout on outer element — sections have their own grids
+  grid.innerHTML = groupByDept(null).map(([dept, agents]) => renderDeptSection(dept, agents, null)).join('');
 
   try {
     const r = await fetch('/api/admin?action=agent-status', { headers: { Authorization: 'Bearer ' + token } });
     if (!r.ok) return;
     const d = await r.json();
 
-    // Render agent cards
-    grid.innerHTML = AGENT_DEFS.map(a => renderAgentCard(a, d[a.statusKey])).join('');
+    // Render grouped department sections
+    grid.innerHTML = groupByDept(d).map(([dept, agents]) => renderDeptSection(dept, agents, d)).join('');
 
     // Render approval banner
     renderApprovalBanner(d.approved, d.today);
