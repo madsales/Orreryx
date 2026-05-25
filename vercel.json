@@ -82,7 +82,7 @@
   "functions": {
     "api/anthropic.js":     { "maxDuration": 30 },
     "api/paypal.js":        { "maxDuration": 30 },
-    "api/events.js":        { "maxDuration": 30 },
+    "api/events.js":        { "maxDuration": 60 },
     "api/gnews.js":         { "maxDuration": 30 },
     "api/coindesk.js":     { "maxDuration": 30 },
     "api/push.js":         { "maxDuration": 30 },

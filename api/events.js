@@ -680,11 +680,11 @@ export default async function handler(req, res) {
   // Map UI lang code → GDELT sourcelang param value. 'all' = omit (multilingual).
   const sourcelang = lang === 'all' ? null : (GDELT_LANG[lang] || 'english');
 
-  // Batch fetches in groups of 2 with 1.2 s delays to avoid GDELT rate limiting
-  // (GDELT enforces ~1 req/s per IP; firing 11 at once triggers throttling → 0 events)
+  // Batch fetches in groups of 4 with 500 ms delays to avoid GDELT rate limiting
+  // (11 streams → 3 batches → max ~15s total, well within 60s maxDuration)
   const gdeltFetch = async (timespan) => {
-    const BATCH  = 2;
-    const DELAY  = 800; // ms between batches
+    const BATCH  = 4;
+    const DELAY  = 500; // ms between batches
     const out    = [];
     for (let i = 0; i < STREAMS.length; i += BATCH) {
       const slice = STREAMS.slice(i, i + BATCH);
@@ -692,7 +692,7 @@ export default async function handler(req, res) {
         slice.map(s =>
           fetch(gdeltUrl(s.query, s.max, sourcelang, country !== 'ALL' ? country : null, timespan), {
             headers: { 'User-Agent': 'OrreryXIntelligence/1.0 (https://www.orreryx.io)' },
-            signal:  AbortSignal.timeout(9000),
+            signal:  AbortSignal.timeout(4500), // fail fast — don't burn time on slow GDELT
           })
             .then(r => r.ok ? r.json() : Promise.reject(new Error('HTTP ' + r.status)))
             .then(j => parseArticles(j.articles).map(e => ({ ...e, lang: lang === 'all' ? 'en' : lang })))
@@ -707,6 +707,37 @@ export default async function handler(req, res) {
     return out;
   };
 
+  // Redis helpers for fallback cache
+  const redisUrl   = process.env.UPSTASH_REDIS_REST_URL;
+  const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+  const redisCacheKey = `gdelt:cache:${cacheKey}`;
+
+  const saveToRedis = async (data) => {
+    if (!redisUrl || !redisToken) return;
+    try {
+      await fetch(redisUrl, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${redisToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(['SET', redisCacheKey, JSON.stringify(data), 'EX', 3600]), // 1h TTL
+        signal: AbortSignal.timeout(3000),
+      });
+    } catch {}
+  };
+
+  const loadFromRedis = async () => {
+    if (!redisUrl || !redisToken) return null;
+    try {
+      const r = await fetch(redisUrl, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${redisToken}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(['GET', redisCacheKey]),
+        signal: AbortSignal.timeout(3000),
+      });
+      const j = await r.json();
+      return j?.result ? JSON.parse(j.result) : null;
+    } catch { return null; }
+  };
+
   try {
     // Try 24h first; if GDELT returns nothing (outage or too narrow), retry with 48h
     let results = await gdeltFetch('24h');
@@ -718,6 +749,16 @@ export default async function handler(req, res) {
       results = await gdeltFetch('48h');
       all = [];
       results.forEach(r => { if (r.status === 'fulfilled') all = all.concat(r.value); });
+    }
+
+    // If still empty, try Redis fallback cache
+    if (all.length === 0) {
+      console.log('[Events] GDELT both timespans empty — trying Redis fallback cache');
+      const fallback = await loadFromRedis();
+      if (fallback && fallback.events && fallback.events.length > 0) {
+        console.log('[Events] Serving Redis fallback cache (' + fallback.events.length + ' events)');
+        return res.status(200).json({ ...fallback, source: 'gdelt-cache', stale: true });
+      }
     }
 
     // Filter by country code if requested
@@ -740,12 +781,19 @@ export default async function handler(req, res) {
       country, lang,
     };
     cacheMap.set(cacheKey, { data, time: Date.now() });
+    saveToRedis(data); // persist for fallback — don't await, fire-and-forget
 
     console.log('[Events] GDELT: ' + final.length + ' events [' + cacheKey + '], newest: ' + (final[0] && final[0].time || 'n/a'));
     return res.status(200).json(data);
 
   } catch (err) {
     console.error('[Events] Fatal:', err.message);
+    // Try Redis fallback before returning empty
+    const fallback = await loadFromRedis().catch(() => null);
+    if (fallback && fallback.events && fallback.events.length > 0) {
+      console.log('[Events] Fatal error — serving Redis fallback (' + fallback.events.length + ' events)');
+      return res.status(200).json({ ...fallback, source: 'gdelt-cache', stale: true, error: err.message });
+    }
     return res.status(200).json({ events: [], error: err.message, source: 'fallback', fetched: Date.now() });
   }
 }
