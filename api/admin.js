@@ -334,19 +334,28 @@ export default async function handler(req, res) {
     try {
       const today = new Date().toISOString().split('T')[0];
       const results = await upstashPipeline([
-        ['GET', 'coo:last_check'],
-        ['GET', 'cfo:last_week'],
-        ['GET', 'sales:last_scan'],
-        ['GET', 'ceo:last_report'],
-        ['GET', 'breaking:last_post_time'],
-        ['GET', `ceo:approved:${today}`],
-        ['GET', 'ideas:latest'],
-        ['GET', 'seo:orchestrator:latest'],
-        ['GET', 'seo:gsc:latest'],
-        ['GET', 'seo:keywords:latest'],
-        ['GET', 'seo:technical:latest'],
-        ['GET', 'seo:content:latest'],
-        ['GET', 'seo:auditor:latest'],
+        ['GET', 'coo:last_check'],           // 0
+        ['GET', 'cfo:last_week'],            // 1
+        ['GET', 'sales:last_scan'],          // 2
+        ['GET', 'ceo:last_report'],          // 3
+        ['GET', 'breaking:last_post_time'],  // 4
+        ['GET', `ceo:approved:${today}`],    // 5
+        ['GET', 'ideas:latest'],             // 6
+        ['GET', 'seo:orchestrator:latest'],  // 7
+        ['GET', 'seo:gsc:latest'],           // 8
+        ['GET', 'seo:keywords:latest'],      // 9
+        ['GET', 'seo:technical:latest'],     // 10
+        ['GET', 'seo:content:latest'],       // 11
+        ['GET', 'seo:auditor:latest'],       // 12
+        ['GET', 'ops:last_run'],             // 13
+        ['GET', 'churn:last_run'],           // 14
+        ['GET', 'ads:last_run'],             // 15
+        ['GET', 'ab:last_run'],              // 16
+        ['GET', 'referral:last_run'],        // 17
+        ['GET', 'cro:last_report'],          // 18
+        ['GET', 'lm:last_run'],              // 19
+        ['GET', 'community:last_run'],       // 20
+        ['GET', 'directory:last_run'],       // 21
       ]);
       const parse = (v) => { try { return v ? JSON.parse(v) : null; } catch { return v ? { ts: v } : null; } };
       return res.status(200).json({
@@ -363,6 +372,15 @@ export default async function handler(req, res) {
         seo_technical:   parse(results?.[10]),
         seo_content:     parse(results?.[11]),
         seo_auditor:     parse(results?.[12]),
+        ops:             parse(results?.[13]),
+        churn:           parse(results?.[14]),
+        ads:             parse(results?.[15]),
+        ab:              parse(results?.[16]),
+        referral:        parse(results?.[17]),
+        cro:             parse(results?.[18]),
+        lead_magnet:     parse(results?.[19]),
+        community:       parse(results?.[20]),
+        directory:       parse(results?.[21]),
         today,
       });
     } catch(e) {
