@@ -83,7 +83,8 @@ async function getLastPostTime() {
 }
 
 async function setLastPostTime() {
-  await upstashCmd(['SET', 'breaking:last_post_time', Date.now().toString(), 'EX', 86400]);
+  // 7-day TTL — long enough that ops-agent never sees a false "never ran" from key expiry
+  await upstashCmd(['SET', 'breaking:last_post_time', Date.now().toString(), 'EX', 604800]);
 }
 
 // ── Fetch breaking events from OrreryX's own feed ──────────────────────────────

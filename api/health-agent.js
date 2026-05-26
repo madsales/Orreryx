@@ -6,10 +6,13 @@
 const CHECKS = [
   {
     name: 'News Coverage (GDELT)',
-    url: 'https://orreryx.io/api/events',
-    timeout: 28000, // GDELT batches requests with delays — needs more time
-    validate: j => j && j.count > 0,
-    detail: j => `${j?.count || 0} events`,
+    // Use ?ping=1 — returns in-memory cached data instantly without re-hitting GDELT.
+    // Full /api/events batches 11 GDELT queries and can take 10-30s, causing this
+    // health check to time out and leaving health:last_run unwritten.
+    url: 'https://orreryx.io/api/events?ping=1',
+    timeout: 6000,
+    validate: j => j && j.ok,
+    detail: j => j?.cached ? `${j.count || 0} events cached (${j.age || 'unknown age'})` : 'no cache yet — GDELT warming up',
   },
   {
     name: 'Market Prices (Binance/Yahoo)',
@@ -90,6 +93,11 @@ export default async function handler(req, res) {
   const adminEmail = process.env.ADMIN_EMAIL;
   const results    = [];
   let allOk        = true;
+
+  // Write a "started" record immediately — ops-agent checks this key to confirm the
+  // health agent ran today. Without this, a timeout mid-check leaves no trace.
+  const startedAt = new Date().toISOString();
+  await upstashSet('coo:last_check', { results: [], allOk: null, time: startedAt, running: true });
 
   for (const check of CHECKS) {
     const start = Date.now();
