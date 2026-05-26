@@ -352,6 +352,11 @@ export default async function handler(req, res) {
 
   const forcePost = req.query.force === '1'; // bypass cooldown for testing
 
+  // ── Record run immediately — ops-agent checks this to confirm agent is alive ──
+  // Write at the START so even if the function crashes/times out, ops-agent
+  // knows the agent ran and stops the "494375h" false alert.
+  await setLastPostTime();
+
   // CEO approval is fully automatic — no manual gate required
 
   // ── Credential check ──────────────────────────────────────────────────────────
@@ -380,6 +385,8 @@ export default async function handler(req, res) {
   // ── Fetch events ─────────────────────────────────────────────────────────────
   const articles = await fetchBreakingEvents();
   if (!articles.length) {
+    // Still write timestamp — agent ran, just found nothing
+    await setLastPostTime();
     return res.status(200).json({ ok: false, reason: 'No articles returned from feed' });
   }
 
@@ -394,8 +401,7 @@ export default async function handler(req, res) {
   }
 
   if (!scored.length) {
-    // Still update last_post_time so ops-agent doesn't keep alerting on every run
-    await upstashCmd(['SET', 'breaking:last_post_time', Date.now().toString(), 'EX', 86400]);
+    await setLastPostTime(); // uses 7-day TTL — ops-agent won't alert
     return res.status(200).json({
       ok:      true,
       skipped: true,
@@ -454,10 +460,12 @@ export default async function handler(req, res) {
     }
   } catch (_) {}
 
-  // Mark as posted + update cooldown if at least one platform succeeded
+  // Always update timestamp — agent ran and attempted to post
+  await setLastPostTime();
+
+  // Mark URL as posted only if at least one platform succeeded (dedup guard)
   if (results.twitter || results.linkedin || results.push?.sent > 0) {
     await markPosted(url);
-    await setLastPostTime();
     // Write last story to Redis for family intelligence (CEO, Ideas agents read this)
     await upstashCmd(['SET', 'breaking:last_story', JSON.stringify({
       ts:           Date.now(),
