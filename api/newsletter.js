@@ -106,21 +106,39 @@ function emailTemplates(email) {
       `)
     },
 
-    // Day 7 — Deep value + upgrade push
+    // Day 7 — Deep value + Command upgrade push with FOMO
     day7: {
-      subject: 'One week of OrreryX Intel — here\'s what you\'ve been missing',
+      subject: 'One week of OrreryX Intel — what Command members saw (you didn\'t)',
       html: wrap(`
-        <div style="font-size:20px;font-weight:800;margin-bottom:12px">A Week of Intelligence You Could Have Had</div>
-        <div style="font-size:13px;color:#a0a09a;margin-bottom:20px">It's been 7 days since you joined OrreryX Intel. Here's what paid subscribers tracked this week:</div>
+        <div style="font-size:20px;font-weight:800;margin-bottom:12px">You've Been Here a Week. Here's What You Missed.</div>
+        <div style="font-size:13px;color:#a0a09a;margin-bottom:20px">You joined OrreryX Intel 7 days ago. Here's what Command subscribers tracked — and acted on — this week.</div>
+
+        <div style="font-size:10px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px">📡 This Week on the Risk Map</div>
         <div style="margin-bottom:20px">
-          ${['India-Pakistan LoC escalation → GOLD +2.3%, NIFTY -1.8%','South China Sea incident → TSMC -3.1%, EWT hedge fund outflows','EU energy storage below 5-year average → TTF gas spike (+18%)','North Korea ICBM test → JPY surge (safe-haven flow)','DRC copper mine shutdown → LME copper +4.2%'].map(item=>`<div style="display:flex;gap:10px;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.06)"><span style="color:#e03836;font-size:11px;margin-top:2px">▶</span><span style="font-size:13px;color:#c0c0b8">${item}</span></div>`).join('')}
+          ${[
+            ['94','🔴','Russia–Ukraine War','Spring offensive active in Kharkiv. NATO logistics crossing Poland. Gold +1.4%, Rheinmetall +3.1%.'],
+            ['88','🔴','India–Pakistan Tensions','LoC incidents at 2-year high. Nuclear-armed standoff. Gold surged on nuclear-state risk premium, NIFTY -1.8%.'],
+            ['76','🟠','South China Sea Standoff','China-Philippines confrontation at Second Thomas Shoal. TSMC -2.1%, semiconductor ETF outflows accelerated.']
+          ].map(([score,emoji,name,detail])=>`<div style="display:flex;gap:10px;padding:12px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:6px;margin-bottom:8px"><div style="width:34px;height:34px;border-radius:6px;background:rgba(224,56,54,.15);border:1px solid rgba(224,56,54,.3);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;color:#e03836;flex-shrink:0">${score}</div><div><div style="font-size:12px;font-weight:700;color:#f0f0ec;margin-bottom:3px">${emoji} ${name}</div><div style="font-size:11px;color:#9e9e9e;line-height:1.6">${detail}</div></div></div>`).join('')}
         </div>
-        <div style="background:rgba(56,188,120,.08);border:1px solid rgba(56,188,120,.2);border-radius:8px;padding:20px;margin-bottom:20px;text-align:center">
-          <div style="font-size:14px;font-weight:700;color:#38bc78;margin-bottom:8px">🎁 Special offer — expires in 48 hours</div>
-          <div style="font-size:13px;color:#a0a09a;margin-bottom:16px">Start your free 3-day trial. No card required. Access everything.</div>
-          <a href="${HOST}/login?plan=f" style="display:inline-block;background:#38bc78;color:#000;text-decoration:none;padding:14px 32px;border-radius:4px;font-weight:700;font-size:14px">CLAIM FREE TRIAL →</a>
+
+        <div style="background:rgba(58,184,96,.06);border:1px solid rgba(58,184,96,.2);border-radius:8px;padding:16px;margin-bottom:20px">
+          <div style="font-size:10px;font-weight:700;color:#3ab860;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:10px">🔒 What Command Members Saw This Week</div>
+          <div style="font-size:12px;color:#c0c0b8;line-height:1.75;margin-bottom:12px">
+            <strong style="color:#f0f0ec">Interactive Risk Map alert:</strong> India-Pakistan risk score jumped 8 points in 18 hours — flagged on the map before it hit Reuters. Command subscribers saw the oil and gold exposure signals immediately.<br><br>
+            <strong style="color:#f0f0ec">Market impact calculator:</strong> A 5-point South China Sea escalation scenario modelled a $3.2B semiconductor sector drawdown. Command members positioned ahead of the TSMC move.
+          </div>
+          <a href="${HOST}/login?plan=c" style="display:block;background:#3ab860;color:#000;text-decoration:none;text-align:center;padding:11px;border-radius:4px;font-weight:800;font-size:12px">🗺️ Unlock the Risk Map — $34.99/mo →</a>
         </div>
-        <div style="font-size:12px;color:#484844;text-align:center">3 days free · Full access · Cancel anytime · No card needed</div>
+
+        <div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:8px;padding:14px 16px;margin-bottom:20px;text-align:center">
+          <div style="font-size:12px;font-weight:700;color:#d4a843;margin-bottom:4px">⏰ Introductory pricing — lock in before the increase</div>
+          <div style="font-size:12px;color:#a0a09a">Command is $34.99/mo now. Price increases to $44.99 next month for new subscribers. Lock in the current rate today.</div>
+        </div>
+
+        <a href="${HOST}/login?plan=c" style="display:block;background:#3ab860;color:#000;text-decoration:none;text-align:center;padding:14px;border-radius:4px;font-weight:700;font-size:14px;margin-bottom:10px">Upgrade to Command — $34.99/mo →</a>
+        <a href="${HOST}/login?plan=f" style="display:block;background:rgba(255,255,255,.06);color:#f0f0ec;text-decoration:none;text-align:center;padding:12px;border-radius:4px;font-size:13px;border:1px solid rgba(255,255,255,.1)">Or start with the free 3-day trial first →</a>
+        <div style="font-size:11px;color:#484844;text-align:center;margin-top:12px">340+ analysts already on Command · Cancel anytime</div>
       `)
     },
 

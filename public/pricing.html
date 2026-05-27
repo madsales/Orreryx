@@ -547,14 +547,19 @@ td:first-child{text-align:left;font-weight:500;color:var(--txt);font-size:12px}
 </div>
 
 <script>
-// Urgency countdown — ends April 29, 2026
+// Urgency countdown — rolling 14-day window per visitor (never expires for new visitors)
 (function() {
-  const end = new Date('2026-04-29T23:59:59');
+  const STORAGE_KEY = 'orrx_pricing_intro_end';
+  let endTs = parseInt(localStorage.getItem(STORAGE_KEY) || '0');
+  if (!endTs || endTs < Date.now()) {
+    endTs = Date.now() + 14 * 864e5;
+    try { localStorage.setItem(STORAGE_KEY, String(endTs)); } catch(_) {}
+  }
   const el = document.getElementById('urgencyCountdown');
   const strip = document.getElementById('urgencyStrip');
   if (!el) return;
   function tick() {
-    const diff = end - new Date();
+    const diff = endTs - Date.now();
     if (diff <= 0) { strip.style.display = 'none'; return; }
     const d = Math.floor(diff / 864e5);
     const h = Math.floor((diff % 864e5) / 36e5);
