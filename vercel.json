@@ -250,6 +250,8 @@
     { "src": "/north-korea-sanctions", "dest": "/north-korea-sanctions.html" },
     { "src": "/middle-east-oil-risk",  "dest": "/middle-east-oil-risk.html" },
     { "src": "/black-swan-events-2026","dest": "/black-swan-events-2026.html" },
+    { "src": "/trump-tariffs-2026",          "dest": "/trump-tariffs-2026.html" },
+    { "src": "/monthly-geopolitical-risk-report", "dest": "/monthly-geopolitical-risk-report.html" },
     { "src": "/",                    "dest": "/index.html" }
   ]
 }
