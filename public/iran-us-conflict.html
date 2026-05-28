@@ -144,6 +144,12 @@ article strong{color:var(--txt)}
 .cta-box p{font-size:13px;color:var(--txt2);margin-bottom:20px}
 .cta-btn{display:inline-block;background:var(--red);color:#fff;text-decoration:none;padding:13px 28px;border-radius:6px;font-size:13px;font-weight:700;letter-spacing:.04em;transition:all .15s}
 .cta-btn:hover{background:#c42e2c;transform:translateY(-1px)}
+.breaking-alert{display:flex;align-items:center;gap:10px;background:rgba(228,68,68,.08);border:1px solid rgba(228,68,68,.3);border-radius:8px;padding:12px 16px;margin-bottom:24px;font-size:13px;line-height:1.5}
+.breaking-dot{width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0;animation:blink 1.4s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.breaking-label{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--red);letter-spacing:.1em;margin-right:4px}
+.inline-cta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:24px 0 32px}
+.inline-cta-note{font-size:12px;color:var(--txt3)}
 footer{border-top:1px solid var(--brd);padding:32px 24px;text-align:center;font-size:12px;color:var(--txt3)}
 footer a{color:var(--txt3);text-decoration:none;margin:0 10px}
 footer a:hover{color:var(--txt2)}
@@ -159,14 +165,22 @@ footer a:hover{color:var(--txt2)}
   <div class="nav-right">
     <a href="/iran-nuclear" class="nav-a">Iran Nuclear</a>
     <a href="/oil-price" class="nav-a">Oil Price</a>
-    <a href="/login?plan=f" class="nav-cta nav-a">FREE TRIAL →</a>
+    <a href="/app" class="nav-cta nav-a">FREE TRIAL →</a>
   </div>
 </nav>
 
 <main>
+  <div class="breaking-alert">
+    <div class="breaking-dot"></div>
+    <span><span class="breaking-label">BREAKING</span> Iran enrichment at 84% — one step from weapons-grade. US carrier group in Gulf, nuclear talks suspended. <strong>Strike risk index: 61/100.</strong></span>
+  </div>
   <div class="eyebrow"><div class="dot"></div>Nuclear Risk — Live Tracker</div>
   <h1>🇮🇷 <em>Iran US Conflict 2026</em> — Nuclear Talks, Strike Risk &amp; Oil Impact</h1>
   <p class="lead">The Iran-US conflict in 2026 centres on Iran's advanced nuclear programme, which has reached near-weapons-grade enrichment levels. Nuclear negotiations remain stalled while military strike scenarios are actively war-gamed in both Washington and Tel Aviv. The Strait of Hormuz — through which 20% of the world's oil flows — is the most critical geopolitical choke point on earth. OrreryX tracks every development in real time.</p>
+  <div class="inline-cta">
+    <a href="/app" class="cta-btn">🛢️ Track Iran Strike Risk & Oil Impact — Free →</a>
+    <span class="inline-cta-note">No signup · Updates every 5 min · Live Hormuz alerts</span>
+  </div>
 
   <div class="stats-grid">
     <div class="stat-card">
@@ -265,9 +279,9 @@ footer a:hover{color:var(--txt2)}
   </div>
 
   <div class="cta-box">
-    <h2>Track Iran-US Conflict &amp; Oil Market Impact Live</h2>
+    <h2>🇮🇷 Iran enrichment rising — how close to a strike?</h2>
     <p>Every Iran nuclear development, Hormuz threat, and US-Iran diplomatic signal — tracked in real time with live oil and gold price impact analysis. Free, no account needed.</p>
-    <a href="/login?plan=f" class="cta-btn">TRACK LIVE — FREE →</a>
+    <a href="/app" class="cta-btn">OPEN LIVE DASHBOARD — FREE →</a>
   </div>
 
   <div class="related">
@@ -305,7 +319,7 @@ footer a:hover{color:var(--txt2)}
     <a href="/oil-price">Oil Price</a>
     <a href="/middle-east-war">Middle East War</a>
     <a href="/doomsday-clock">Risk Index</a>
-    <a href="/login?plan=f">Free Trial</a>
+    <a href="/app">Free Trial</a>
   </p>
   <p>© 2026 OrreryX Intelligence. Real-time geopolitical market risk analysis. Not financial advice.</p>
 </footer>

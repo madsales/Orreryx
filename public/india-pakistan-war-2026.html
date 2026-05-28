@@ -144,6 +144,12 @@ article strong{color:var(--txt)}
 .cta-box p{font-size:13px;color:var(--txt2);margin-bottom:20px}
 .cta-btn{display:inline-block;background:var(--red);color:#fff;text-decoration:none;padding:13px 28px;border-radius:6px;font-size:13px;font-weight:700;letter-spacing:.04em;transition:all .15s}
 .cta-btn:hover{background:#c42e2c;transform:translateY(-1px)}
+.breaking-alert{display:flex;align-items:center;gap:10px;background:rgba(224,56,54,.1);border:1px solid rgba(224,56,54,.3);border-radius:8px;padding:12px 16px;margin-bottom:24px;font-size:13px;line-height:1.5}
+.breaking-dot{width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0;animation:blink 1.4s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.breaking-label{font-family:var(--mono);font-size:10px;font-weight:700;color:var(--red);letter-spacing:.1em;margin-right:4px}
+.inline-cta{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin:24px 0 32px}
+.inline-cta-note{font-size:12px;color:var(--txt3)}
 footer{border-top:1px solid var(--brd);padding:32px 24px;text-align:center;font-size:12px;color:var(--txt3)}
 footer a{color:var(--txt3);text-decoration:none;margin:0 10px}
 footer a:hover{color:var(--txt2)}
@@ -164,9 +170,17 @@ footer a:hover{color:var(--txt2)}
 </nav>
 
 <main>
+  <div class="breaking-alert">
+    <div class="breaking-dot"></div>
+    <span><span class="breaking-label">BREAKING</span> Ceasefire declared after cross-border strikes — LoC status, nuclear alert level and Nifty 50 impact updating live. <strong>Escalation risk: 72/100.</strong></span>
+  </div>
   <div class="eyebrow"><div class="dot"></div>Live Conflict — 2026</div>
   <h1><em>India Pakistan War 2026</em> — Live Updates &amp; Market Impact</h1>
   <p class="lead">The 2026 India-Pakistan military confrontation is the most serious between the two nuclear-armed states since the 1999 Kargil War. Following cross-border strikes and retaliatory exchanges, global markets have responded with a flight to safe-haven assets. Track ceasefire status, nuclear risk levels, and real-time market impact — live on OrreryX.</p>
+  <div class="inline-cta">
+    <a href="/app" class="cta-btn">📊 Track Ceasefire Status Live — Free →</a>
+    <span class="inline-cta-note">No signup · Updates every 5 min · 180+ countries</span>
+  </div>
 
   <div class="stats-grid">
     <div class="stat-card">
@@ -278,9 +292,9 @@ footer a:hover{color:var(--txt2)}
   </div>
 
   <div class="cta-box">
-    <h2>Track the India-Pakistan War Live</h2>
-    <p>Real-time LoC incident feed, ceasefire status, nuclear risk indicators, Nifty 50 correlation, gold and oil impact — all in one platform. Free, no login required.</p>
-    <a href="/login?plan=f" class="cta-btn">TRACK LIVE — FREE →</a>
+    <h2>🇮🇳🇵🇰 Ceasefire holding — but for how long?</h2>
+    <p>OrreryX tracks every LoC incident, nuclear alert signal, and Nifty 50 move in real time. See the live escalation score, gold safe-haven flow, and oil impact — before it's on Bloomberg.</p>
+    <a href="/app" class="cta-btn">OPEN LIVE DASHBOARD — FREE →</a>
   </div>
 
   <div class="related">
