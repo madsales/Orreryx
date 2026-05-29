@@ -442,12 +442,14 @@ export default async function handler(req, res) {
     const agentPath = agentMap[rawAgent] || (VALID_AGENTS.includes(rawAgent) ? rawAgent : null);
     if (!agentPath) return res.status(400).json({ error: 'Unknown agent: ' + rawAgent });
 
-    const force = req.query.force === '1';
+    const force    = req.query.force    === '1';
+    const diagnose = req.query.diagnose === '1';
     const host  = req.headers.host || 'www.orreryx.io';
     const proto = host.includes('localhost') ? 'http' : 'https';
     // admin=1 bypasses CEO approval check — admin panel runs are always allowed
     const params = new URLSearchParams({ admin: '1' });
-    if (force) params.set('force', '1');
+    if (force)    params.set('force', '1');
+    if (diagnose) params.set('diagnose', '1');
     const url = `${proto}://${host}/api/${agentPath}?${params.toString()}`;
 
     try {

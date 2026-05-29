@@ -352,6 +352,92 @@ export default async function handler(req, res) {
 
   const forcePost = req.query.force === '1'; // bypass cooldown for testing
 
+  // ── DIAGNOSE MODE: show what's configured and test each component ─────────────
+  if (req.query.diagnose === '1') {
+    const hasTwitter  = !!(process.env.TWITTER_API_KEY && process.env.TWITTER_API_SECRET && process.env.TWITTER_ACCESS_TOKEN && process.env.TWITTER_ACCESS_TOKEN_SECRET);
+    const hasLinkedIn = !!(process.env.LINKEDIN_ACCESS_TOKEN && process.env.LINKEDIN_PERSON_URN);
+    const hasGnews    = !!process.env.GNEWS_API_KEY;
+    const hasRedis    = !!(process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN);
+
+    // Test GNews feed
+    let feedStatus = 'not tested';
+    let feedArticles = 0;
+    try {
+      const r = await fetch('https://orreryx.io/api/gnews', { signal: AbortSignal.timeout(10000) }).catch(() => null);
+      if (r?.ok) {
+        const j = await r.json().catch(() => null);
+        feedArticles = j?.articles?.length || (Array.isArray(j) ? j.length : 0);
+        feedStatus = feedArticles > 0 ? `✓ OK — ${feedArticles} articles` : '⚠ Returned 0 articles';
+      } else {
+        feedStatus = `✗ HTTP ${r?.status || 'timeout'}`;
+      }
+    } catch (e) { feedStatus = `✗ Error: ${e.message}`; }
+
+    // Test LinkedIn token validity
+    let linkedinStatus = 'not configured';
+    if (hasLinkedIn) {
+      try {
+        const r = await fetch('https://api.linkedin.com/v2/me', {
+          headers: { Authorization: `Bearer ${process.env.LINKEDIN_ACCESS_TOKEN}` },
+          signal: AbortSignal.timeout(8000),
+        }).catch(() => null);
+        linkedinStatus = r?.status === 200 ? '✓ Token valid' :
+          r?.status === 401 ? '✗ Token EXPIRED — needs refresh' :
+          `⚠ HTTP ${r?.status}`;
+      } catch (e) { linkedinStatus = `✗ Error: ${e.message}`; }
+    }
+
+    // Test Twitter credentials (dry run — just check if client initializes, don't post)
+    let twitterStatus = 'not configured';
+    if (hasTwitter) {
+      try {
+        const { TwitterApi } = await import('twitter-api-v2');
+        const client = new TwitterApi({
+          appKey:       process.env.TWITTER_API_KEY,
+          appSecret:    process.env.TWITTER_API_SECRET,
+          accessToken:  process.env.TWITTER_ACCESS_TOKEN,
+          accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
+        });
+        // Verify credentials with a read-only endpoint
+        const me = await client.v2.me().catch(e => ({ error: e.message || String(e) }));
+        if (me?.data?.id) {
+          twitterStatus = `✓ Authenticated as @${me.data.username}`;
+        } else if (me?.error) {
+          twitterStatus = me.error.includes('403') || me.error.includes('Forbidden')
+            ? '✗ API plan too low — Basic tier ($100/mo) required to post tweets'
+            : `✗ ${me.error}`;
+        } else {
+          twitterStatus = '⚠ Unexpected response';
+        }
+      } catch (e) { twitterStatus = `✗ ${e.message}`; }
+    }
+
+    // Get last post time from Redis
+    const lastPost = hasRedis ? await getLastPostTime() : 0;
+    const lastPostAgo = lastPost ? Math.round((Date.now() - lastPost) / 60000) + ' minutes ago' : 'never';
+    const lastError = hasRedis ? await upstashCmd(['GET', 'breaking:last_error']).catch(() => null) : null;
+
+    return res.status(200).json({
+      diagnose: true,
+      credentials: {
+        twitter:  hasTwitter  ? twitterStatus  : '✗ NOT SET — need TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET in Vercel',
+        linkedin: hasLinkedIn ? linkedinStatus : '✗ NOT SET — need LINKEDIN_ACCESS_TOKEN, LINKEDIN_PERSON_URN in Vercel',
+        gnews:    hasGnews    ? '✓ Key set'   : '✗ NOT SET — need GNEWS_API_KEY in Vercel',
+        redis:    hasRedis    ? '✓ Connected' : '✗ NOT SET — need UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN',
+      },
+      feed: { status: feedStatus, articleCount: feedArticles },
+      lastPost: lastPostAgo,
+      lastError: lastError || 'none recorded',
+      fix: [
+        !hasTwitter  && 'Go to Vercel → Settings → Environment Variables → add TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET',
+        !hasLinkedIn && 'Go to Vercel → Settings → Environment Variables → add LINKEDIN_ACCESS_TOKEN, LINKEDIN_PERSON_URN',
+        !hasGnews    && 'Go to Vercel → Settings → Environment Variables → add GNEWS_API_KEY',
+        hasTwitter && twitterStatus.includes('Basic tier') && 'Twitter requires $100/mo Basic API plan to post. Consider using only LinkedIn + Buffer.',
+        hasLinkedIn && linkedinStatus.includes('EXPIRED') && 'LinkedIn token expired — go to linkedin.com/developers to generate a new access token',
+      ].filter(Boolean),
+    });
+  }
+
   // ── Record run immediately — ops-agent checks this to confirm agent is alive ──
   // Write at the START so even if the function crashes/times out, ops-agent
   // knows the agent ran and stops the "494375h" false alert.
@@ -424,7 +510,10 @@ export default async function handler(req, res) {
     try {
       results.twitter = await postTweet(twitterCaption);
     } catch (e) {
-      results.errors.push({ platform: 'twitter', error: e.message });
+      const errMsg = e.message || String(e);
+      results.errors.push({ platform: 'twitter', error: errMsg });
+      // Save error to Redis so admin panel can show it
+      await upstashCmd(['SET', 'breaking:last_error', `Twitter: ${errMsg.slice(0, 200)}`, 'EX', 86400]).catch(() => {});
     }
   } else {
     results.errors.push({ platform: 'twitter', error: 'Credentials not configured' });
@@ -435,7 +524,10 @@ export default async function handler(req, res) {
     try {
       results.linkedin = await postLinkedIn(linkedInCaption);
     } catch (e) {
-      results.errors.push({ platform: 'linkedin', error: e.message });
+      const errMsg = e.message || String(e);
+      results.errors.push({ platform: 'linkedin', error: errMsg });
+      // Save error to Redis so admin panel can show it
+      await upstashCmd(['SET', 'breaking:last_error', `LinkedIn: ${errMsg.slice(0, 200)}`, 'EX', 86400]).catch(() => {});
     }
   } else {
     results.errors.push({ platform: 'linkedin', error: 'Credentials not configured' });

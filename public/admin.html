@@ -2431,6 +2431,7 @@ function renderAgentCard(a, statusData) {
       <div class="agent-footer">
         <button class="run-btn" id="runbtn-${a.id}" onclick="runAgent('${a.id}',false)">▶ RUN NOW</button>
         ${a.hasForce ? `<button class="run-btn" style="flex:0;padding:10px 14px;background:var(--amb);color:#000" id="forcebtn-${a.id}" onclick="runAgent('${a.id}',true)" title="Bypass 2.5h cooldown">⚡ FORCE</button>` : ''}
+        ${a.id === 'breaking-news' ? `<button class="run-btn" style="flex:0;padding:10px 14px;background:#1a2035;border:1px solid #3b82f6;color:#60a5fa" onclick="diagnoseBreakingNews()" title="Check credentials & feed status">🔍 DIAGNOSE</button>` : ''}
         <button class="log-toggle" onclick="toggleLog('${a.id}')">Log</button>
       </div>
     </div>`;
@@ -2482,6 +2483,44 @@ async function runAgent(id, force) {
   btn.classList.remove('running-state');
   btn.textContent = '▶ RUN NOW';
   card.classList.remove('running');
+}
+
+async function diagnoseBreakingNews() {
+  const logEl    = document.getElementById('log-breaking-news');
+  const statusEl = document.getElementById('status-breaking-news');
+  const dotEl    = document.getElementById('dot-breaking-news');
+  if (logEl) { logEl.textContent = '🔍 Running diagnostics…\n'; logEl.classList.add('visible'); }
+  if (statusEl) statusEl.textContent = 'Diagnosing…';
+  if (dotEl) dotEl.className = 'agent-dot warn';
+  try {
+    const raw = await r.json();
+    const d   = raw.result || raw;  // admin proxy wraps in { result: ... }
+    const lines = ['🔍 SOCIAL POST DIAGNOSTICS\n'];
+    lines.push('CREDENTIALS:');
+    lines.push('  Twitter : ' + (d.credentials?.twitter || 'unknown'));
+    lines.push('  LinkedIn: ' + (d.credentials?.linkedin || 'unknown'));
+    lines.push('  GNews   : ' + (d.credentials?.gnews || 'unknown'));
+    lines.push('  Redis   : ' + (d.credentials?.redis || 'unknown'));
+    lines.push('\nNEWS FEED: ' + (d.feed?.status || 'unknown'));
+    lines.push('LAST POST: ' + (d.lastPost || 'never'));
+    lines.push('LAST ERROR: ' + (d.lastError || 'none'));
+    if (d.fix?.length) {
+      lines.push('\n⚠ ACTION NEEDED:');
+      d.fix.forEach((f, i) => lines.push(`  ${i+1}. ${f}`));
+    } else {
+      lines.push('\n✓ All credentials look OK — if posts still fail, click FORCE to test');
+    }
+    const txt = lines.join('\n');
+    agentLogs['breaking-news'] = txt;
+    if (logEl) logEl.textContent = txt;
+    const allOk = !d.fix?.length;
+    if (dotEl) dotEl.className = 'agent-dot ' + (allOk ? 'ok' : 'err');
+    if (statusEl) statusEl.textContent = allOk ? '✓ Credentials OK' : '⚠ Issues found — see log';
+  } catch(e) {
+    if (logEl) logEl.textContent = 'Diagnose error: ' + e.message;
+    if (statusEl) statusEl.textContent = '❌ Diagnose failed';
+    if (dotEl) dotEl.className = 'agent-dot err';
+  }
 }
 
 function timeAgo(tsRaw) {
