@@ -387,27 +387,45 @@ export default async function handler(req, res) {
       } catch (e) { linkedinStatus = `✗ Error: ${e.message}`; }
     }
 
-    // Test Twitter credentials (dry run — just check if client initializes, don't post)
+    // Test Twitter credentials via direct OAuth 1.0a call (no library import needed)
     let twitterStatus = 'not configured';
     if (hasTwitter) {
       try {
-        const { TwitterApi } = await import('twitter-api-v2');
-        const client = new TwitterApi({
-          appKey:       process.env.TWITTER_API_KEY,
-          appSecret:    process.env.TWITTER_API_SECRET,
-          accessToken:  process.env.TWITTER_ACCESS_TOKEN,
-          accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
-        });
-        // Verify credentials with a read-only endpoint
-        const me = await client.v2.me().catch(e => ({ error: e.message || String(e) }));
-        if (me?.data?.id) {
-          twitterStatus = `✓ Authenticated as @${me.data.username}`;
-        } else if (me?.error) {
-          twitterStatus = me.error.includes('403') || me.error.includes('Forbidden')
-            ? '✗ API plan too low — Basic tier ($100/mo) required to post tweets'
-            : `✗ ${me.error}`;
+        // Build OAuth 1.0a signature for GET /2/users/me
+        const oauthTimestamp = Math.floor(Date.now() / 1000).toString();
+        const oauthNonce = crypto.randomBytes(16).toString('hex');
+        const twitterUrl = 'https://api.twitter.com/2/users/me';
+        const oauthParams = {
+          oauth_consumer_key:     process.env.TWITTER_API_KEY,
+          oauth_nonce:            oauthNonce,
+          oauth_signature_method: 'HMAC-SHA1',
+          oauth_timestamp:        oauthTimestamp,
+          oauth_token:            process.env.TWITTER_ACCESS_TOKEN,
+          oauth_version:          '1.0',
+        };
+        const paramStr = Object.keys(oauthParams).sort()
+          .map(k => `${encodeURIComponent(k)}=${encodeURIComponent(oauthParams[k])}`).join('&');
+        const sigBase = `GET&${encodeURIComponent(twitterUrl)}&${encodeURIComponent(paramStr)}`;
+        const sigKey  = `${encodeURIComponent(process.env.TWITTER_API_SECRET)}&${encodeURIComponent(process.env.TWITTER_ACCESS_TOKEN_SECRET)}`;
+        const sig = crypto.createHmac('sha1', sigKey).update(sigBase).digest('base64');
+        oauthParams.oauth_signature = sig;
+        const authHeader2 = 'OAuth ' + Object.keys(oauthParams).sort()
+          .map(k => `${encodeURIComponent(k)}="${encodeURIComponent(oauthParams[k])}"`).join(', ');
+        const tr = await fetch(twitterUrl, {
+          headers: { Authorization: authHeader2 },
+          signal:  AbortSignal.timeout(8000),
+        }).catch(() => null);
+        if (tr?.status === 200) {
+          const tj = await tr.json().catch(() => null);
+          twitterStatus = tj?.data?.username
+            ? `✓ Authenticated as @${tj.data.username}`
+            : '✓ Credentials valid (200 OK)';
+        } else if (tr?.status === 403) {
+          twitterStatus = '✗ 403 Forbidden — Twitter Basic API plan ($100/mo) required to post tweets';
+        } else if (tr?.status === 401) {
+          twitterStatus = '✗ 401 Unauthorized — Twitter credentials are invalid or revoked';
         } else {
-          twitterStatus = '⚠ Unexpected response';
+          twitterStatus = `⚠ HTTP ${tr?.status || 'timeout'} — check Vercel logs`;
         }
       } catch (e) { twitterStatus = `✗ ${e.message}`; }
     }

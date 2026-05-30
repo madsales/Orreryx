@@ -77,7 +77,9 @@
     { "path": "/api/directory-agent",   "schedule": "0 8 * * 1"   },
     { "path": "/api/cro-agent",         "schedule": "0 9 * * 1"   },
     { "path": "/api/lead-magnet-agent", "schedule": "0 11 * * 1"  },
-    { "path": "/api/seo-sprint",        "schedule": "0 6 * * *"   }
+    { "path": "/api/seo-sprint",        "schedule": "0 6 * * *"   },
+    { "path": "/api/report-agent",      "schedule": "30 18 * * *" },
+    { "path": "/api/ai-council",        "schedule": "30 1 * * 1"  }
   ],
   "functions": {
     "api/anthropic.js":     { "maxDuration": 30 },
@@ -123,7 +125,9 @@
     "api/directory-agent.js":     { "maxDuration": 30 },
     "api/cro-agent.js":           { "maxDuration": 60 },
     "api/lead-magnet-agent.js":   { "maxDuration": 60 },
-    "api/seo-sprint.js":          { "maxDuration": 120 }
+    "api/seo-sprint.js":          { "maxDuration": 120 },
+    "api/report-agent.js":        { "maxDuration": 60 },
+    "api/ai-council.js":          { "maxDuration": 300 }
   },
   "routes": [
     { "src": "/api/ops-agent(.*)",         "dest": "/api/ops-agent.js" },
@@ -136,6 +140,8 @@
     { "src": "/api/cro-agent(.*)",         "dest": "/api/cro-agent.js" },
     { "src": "/api/lead-magnet-agent(.*)", "dest": "/api/lead-magnet-agent.js" },
     { "src": "/api/seo-sprint(.*)",       "dest": "/api/seo-sprint.js" },
+    { "src": "/api/report-agent(.*)",     "dest": "/api/report-agent.js" },
+    { "src": "/api/ai-council(.*)",       "dest": "/api/ai-council.js" },
     { "src": "/api/buffer-post",      "dest": "/api/buffer-post.js" },
     { "src": "/api/social-post",      "dest": "/api/social-post.js" },
     { "src": "/api/news-post",        "dest": "/api/news-post.js" },

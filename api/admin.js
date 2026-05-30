@@ -428,7 +428,7 @@ export default async function handler(req, res) {
 
   // ── RUN AGENT ─────────────────────────────────────────────────────────────────
   if (action === 'run-agent') {
-    const VALID_AGENTS = ['health-agent', 'finance-agent', 'sales-agent', 'ceo-agent', 'breaking-news', 'ideas-agent', 'legal-agent', 'seo-orchestrator', 'seo-keyword', 'seo-content', 'seo-technical', 'seo-aeo', 'seo-links', 'seo-analytics', 'seo-competitive', 'seo-auditor', 'seo-gsc', 'seo-chief', 'seo-geo'];
+    const VALID_AGENTS = ['health-agent', 'finance-agent', 'sales-agent', 'ceo-agent', 'breaking-news', 'ideas-agent', 'legal-agent', 'seo-orchestrator', 'seo-keyword', 'seo-content', 'seo-technical', 'seo-aeo', 'seo-links', 'seo-analytics', 'seo-competitive', 'seo-auditor', 'seo-gsc', 'seo-chief', 'seo-geo', 'report-agent', 'ai-council'];
     // Accept short names (e.g. 'health') or full names (e.g. 'health-agent')
     const rawAgent = (req.query.agent || '').trim();
     const agentMap = {
@@ -438,6 +438,7 @@ export default async function handler(req, res) {
       'seo-content': 'seo-content', 'seo-technical': 'seo-technical',
       'seo-aeo': 'seo-aeo', 'seo-links': 'seo-links', 'seo-analytics': 'seo-analytics',
       'seo-competitive': 'seo-competitive', 'seo-auditor': 'seo-auditor', 'seo-gsc': 'seo-gsc', 'seo-chief': 'seo-chief', 'seo-geo': 'seo-geo',
+      'report-agent': 'report-agent', 'ai-council': 'ai-council',
     };
     const agentPath = agentMap[rawAgent] || (VALID_AGENTS.includes(rawAgent) ? rawAgent : null);
     if (!agentPath) return res.status(400).json({ error: 'Unknown agent: ' + rawAgent });
