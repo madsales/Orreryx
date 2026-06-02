@@ -428,12 +428,12 @@ export default async function handler(req, res) {
 
   // ── RUN AGENT ─────────────────────────────────────────────────────────────────
   if (action === 'run-agent') {
-    const VALID_AGENTS = ['health-agent', 'finance-agent', 'sales-agent', 'ceo-agent', 'breaking-news', 'ideas-agent', 'legal-agent', 'seo-orchestrator', 'seo-keyword', 'seo-content', 'seo-technical', 'seo-aeo', 'seo-links', 'seo-analytics', 'seo-competitive', 'seo-auditor', 'seo-gsc', 'seo-chief', 'seo-geo', 'report-agent', 'ai-council'];
+    const VALID_AGENTS = ['health-agent', 'finance-agent', 'sales-agent', 'ceo-agent', 'breaking-news', 'social-post', 'ideas-agent', 'legal-agent', 'seo-orchestrator', 'seo-keyword', 'seo-content', 'seo-technical', 'seo-aeo', 'seo-links', 'seo-analytics', 'seo-competitive', 'seo-auditor', 'seo-gsc', 'seo-chief', 'seo-geo', 'report-agent', 'ai-council'];
     // Accept short names (e.g. 'health') or full names (e.g. 'health-agent')
     const rawAgent = (req.query.agent || '').trim();
     const agentMap = {
       health: 'health-agent', finance: 'finance-agent', sales: 'sales-agent', ceo: 'ceo-agent',
-      'breaking-news': 'breaking-news', ideas: 'ideas-agent', legal: 'legal-agent',
+      'breaking-news': 'breaking-news', 'social-post': 'social-post', ideas: 'ideas-agent', legal: 'legal-agent',
       'seo-orchestrator': 'seo-orchestrator', 'seo-keyword': 'seo-keyword',
       'seo-content': 'seo-content', 'seo-technical': 'seo-technical',
       'seo-aeo': 'seo-aeo', 'seo-links': 'seo-links', 'seo-analytics': 'seo-analytics',

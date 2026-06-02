@@ -404,15 +404,16 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: true, today, count: briefs.length, briefs });
   }
 
-  // ── Daily limits ──────────────────────────────────────────────────────────────
-  const countRaw     = await redisGet(`cmo:count:${today}`);
-  const countToday   = parseInt(countRaw || '0', 10);
+  // ── Daily limits (skip when force=1 from admin panel) ────────────────────────
+  const forceRun   = req.query.admin === '1' && req.query.force === '1';
+  const countRaw   = await redisGet(`cmo:count:${today}`);
+  const countToday = parseInt(countRaw || '0', 10);
   const breakingUsed = !!(await redisGet(`cmo:breaking:${today}`));
-  const postedRaw    = await redisGet(`cmo:posted:${today}`);
-  const postedUrls   = JSON.parse(postedRaw || '[]');
+  const postedRaw  = await redisGet(`cmo:posted:${today}`);
+  const postedUrls = JSON.parse(typeof postedRaw === 'string' ? postedRaw : JSON.stringify(postedRaw || []));
 
-  if (countToday >= 5) {
-    return res.status(200).json({ ok: false, reason: `Daily limit reached — ${countToday}/5 briefs sent today`, today });
+  if (!forceRun && countToday >= 5) {
+    return res.status(200).json({ ok: false, reason: `Daily limit reached — ${countToday}/5 briefs sent today`, today, tip: 'Use FORCE button in admin to bypass limit' });
   }
 
   // ── Fetch & score stories ─────────────────────────────────────────────────────
@@ -435,9 +436,16 @@ export default async function handler(req, res) {
 
   // Pick best story — skip breaking if slot used
   let chosen = null;
+  let chosenStoryUrl = '';
   for (const s of scored) {
     if (s.type === 'breaking' && breakingUsed) continue;
     chosen = s;
+    // Find the original story URL by matching headline (brief was generated from freshStories)
+    const matched = freshStories.find(fs =>
+      (fs.title || '').toLowerCase().includes((s.headline || '').slice(0, 40).toLowerCase()) ||
+      (s.url && fs.url === s.url)
+    );
+    chosenStoryUrl = matched?.url || s.url || s.headline || '';
     break;
   }
 
@@ -445,18 +453,17 @@ export default async function handler(req, res) {
     return res.status(200).json({ ok: false, reason: 'Breaking slot used — no regular stories qualified', today });
   }
 
-  const story     = freshStories[chosen.index - 1];
   const isBreaking = chosen.type === 'breaking';
 
-  // Attach source URL from original story
-  chosen.url = story?.url || chosen.url || '';
+  // Ensure URL is set on chosen brief
+  chosen.url = chosenStoryUrl || chosen.url || '';
 
   // ── Save to Redis ─────────────────────────────────────────────────────────────
   const existingBriefs = JSON.parse((await redisGet(`cmo:briefs:${today}`)) || '[]');
   existingBriefs.push({ ...chosen, briefedAt: new Date().toISOString() });
   await redisSet(`cmo:briefs:${today}`,  JSON.stringify(existingBriefs),       90000);
   await redisSet(`cmo:count:${today}`,   String(countToday + 1),               90000);
-  await redisSet(`cmo:posted:${today}`,  JSON.stringify([...postedUrls, story?.url || chosen.headline]), 90000);
+  await redisSet(`cmo:posted:${today}`,  JSON.stringify([...postedUrls, chosenStoryUrl || chosen.headline]), 90000);
   if (isBreaking) await redisSet(`cmo:breaking:${today}`, '1', 90000);
 
   await redisSet('cmo:last_brief', {
@@ -487,19 +494,21 @@ export default async function handler(req, res) {
   }
 
   return res.status(200).json({
-    ok:          true,
+    ok:           emailSent,
     today,
-    type:        isBreaking ? '🔴 BREAKING' : '📰 Regular',
-    score:       chosen.score,
-    headline:    chosen.headline,
-    source:      chosen.source,
-    region:      chosen.region,
+    type:         isBreaking ? '🔴 BREAKING' : '📰 Regular',
+    score:        chosen.score,
+    headline:     chosen.headline,
+    source:       chosen.source,
+    region:       chosen.region,
     marketImpact: chosen.marketImpact,
-    briefsToday: countToday + 1,
-    remaining:   4 - countToday,
+    briefsToday:  countToday + 1,
+    remaining:    4 - countToday,
     emailSent,
+    emailTarget:  process.env.ADMIN_EMAIL || '(ADMIN_EMAIL not set)',
     discordSent,
-    brief:       chosen,
+    emailError:   !emailSent ? 'Email not sent — check RESEND_API_KEY or GMAIL_USER+GMAIL_APP_PASSWORD in Vercel env vars' : undefined,
+    brief:        chosen,
   });
 }
 

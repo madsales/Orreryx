@@ -590,10 +590,27 @@ export default async function handler(req, res) {
     }), 'EX', 86400]);
   }
 
+  // ── Determine real success ────────────────────────────────────────────────────
+  const twitterOk  = !!results.twitter;
+  const linkedinOk = !!results.linkedin;
+  const anyPosted  = twitterOk || linkedinOk || (results.push?.sent > 0);
+
+  const twitterErr  = results.errors.find(e => e.platform === 'twitter');
+  const linkedinErr = results.errors.find(e => e.platform === 'linkedin');
+
   return res.status(200).json({
-    ok:      true,
-    results,
-    time:    new Date().toISOString(),
+    ok:          anyPosted,
+    posted:      anyPosted,
+    twitter:     twitterOk  ? '✓ Posted' : `✗ Failed: ${twitterErr?.error  || 'not configured'}`,
+    linkedin:    linkedinOk ? '✓ Posted' : `✗ Failed: ${linkedinErr?.error || 'not configured'}`,
+    push:        results.push,
+    article:     results.article,
+    score,
+    country:     results.country,
+    marketImpact: country.impact,
+    errors:      results.errors,
+    time:        new Date().toISOString(),
+    help:        !anyPosted ? 'Check errors above. Common fixes: (1) Twitter free API cannot post — needs $100/mo Basic plan. (2) LinkedIn token expires every 60 days — refresh at linkedin.com/developers. (3) Run ?diagnose=1 for full credential check.' : undefined,
   });
 }
 
