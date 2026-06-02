@@ -356,6 +356,13 @@ export default async function handler(req, res) {
         ['GET', 'lm:last_run'],              // 19
         ['GET', 'community:last_run'],       // 20
         ['GET', 'directory:last_run'],       // 21
+        ['GET', 'cmo:last_brief'],           // 22 — CMO Brief Agent
+        ['GET', 'daily:report:latest'],      // 23 — Daily Report Agent
+        ['GET', 'council:last'],             // 24 — AI Council
+        ['GET', 'seo:chief:latest'],         // 25 — Chief SEO Strategist
+        ['GET', 'seo:geo:latest'],           // 26 — GEO Agent
+        ['GET', 'legal:last_run'],           // 27 — Legal Agent
+        ['GET', 'finance:last_report'],      // 28 — Finance Agent
       ]);
       const parse = (v) => { try { return v ? JSON.parse(v) : null; } catch { return v ? { ts: v } : null; } };
       return res.status(200).json({
@@ -381,6 +388,13 @@ export default async function handler(req, res) {
         lead_magnet:     parse(results?.[19]),
         community:       parse(results?.[20]),
         directory:       parse(results?.[21]),
+        'cmo:last_brief':      parse(results?.[22]),
+        'daily:report:latest': parse(results?.[23]),
+        'council:last':        parse(results?.[24]),
+        seo_chief:       parse(results?.[25]),
+        seo_geo:         parse(results?.[26]),
+        legal:           parse(results?.[27]),
+        finance:         parse(results?.[28]),
         today,
       });
     } catch(e) {
