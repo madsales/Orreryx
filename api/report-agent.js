@@ -1,4 +1,7 @@
 // api/report-agent.js — Daily Executive Report Agent
+
+import { opsError, opsSuccess } from './_ops-alert.js';
+
 // Runs every day at midnight IST (18:30 UTC)
 // Collects data from ALL agents via Redis, compiles a full-day summary,
 // emails it to CEO/admin as a beautiful HTML dashboard.
@@ -385,13 +388,21 @@ export default async function handler(req, res) {
     emailSent = await sendEmail(adminEmail, subject, html);
   }
 
+  if (emailSent) {
+    await opsSuccess('report-agent', `Daily report sent — ${activeCount}/${agentKeys.length} agents active`, { date: today });
+  } else if (adminEmail) {
+    await opsError('report-agent', 'Daily report email failed to send', { adminEmail, hasResend: !!process.env.RESEND_API_KEY });
+  }
+
   return res.status(200).json({
-    ok:          true,
+    ok:          emailSent || !adminEmail,
     date:        today,
     activeAgents: activeCount,
     totalAgents:  agentKeys.length,
     emailSent,
-    preview:     'Report compiled — check your inbox',
+    emailTarget: adminEmail || '(ADMIN_EMAIL not set)',
+    preview:     emailSent ? 'Report sent — check inbox' : 'Email failed — see emailError',
+    emailError:  !emailSent && adminEmail ? 'Check RESEND_API_KEY or GMAIL_USER+GMAIL_APP_PASSWORD' : undefined,
   });
 }
 

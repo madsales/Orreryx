@@ -1,4 +1,7 @@
 // api/social-post.js — CMO Content Brief Agent
+
+import { opsError, opsSuccess, opsWarn } from './_ops-alert.js';
+
 // Runs every 3 hours, finds top geopolitical stories, generates ready-to-use
 // social media content briefs and delivers them via email + saves to Redis.
 //
@@ -491,6 +494,21 @@ export default async function handler(req, res) {
       }).catch(() => null);
       discordSent = dr?.ok ?? false;
     } catch (_) {}
+  }
+
+  // ── Ops alert ─────────────────────────────────────────────────────────────────
+  if (emailSent) {
+    await opsSuccess('social-post', `Brief sent: ${chosen.headline?.slice(0, 80)}`, {
+      type: isBreaking ? 'breaking' : 'regular',
+      score: chosen.score, region: chosen.region,
+    });
+  } else {
+    await opsError('social-post', 'Brief email failed to send', {
+      headline: chosen.headline,
+      adminEmail: process.env.ADMIN_EMAIL || '(not set)',
+      hasResend: !!process.env.RESEND_API_KEY,
+      hasGmail:  !!(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD),
+    });
   }
 
   return res.status(200).json({

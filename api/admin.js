@@ -475,6 +475,20 @@ export default async function handler(req, res) {
     }
   }
 
+  // ── TEST OPS ALERT (Slack / Discord) ──────────────────────────────────────────
+  if (action === 'test-ops-alert') {
+    const { opsInfo } = await import('./_ops-alert.js');
+    await opsInfo('admin-test', 'Test ops alert from admin panel', { ts: new Date().toISOString() });
+    const hasSlack   = !!process.env.SLACK_WEBHOOK_URL;
+    const hasDiscord = !!(process.env.DISCORD_OPS_WEBHOOK_URL || process.env.DISCORD_WEBHOOK_URL);
+    return res.status(200).json({
+      ok: hasSlack || hasDiscord,
+      slack:   hasSlack   ? '✓ Sent to Slack'    : '✗ SLACK_WEBHOOK_URL not set',
+      discord: hasDiscord ? '✓ Sent to Discord'  : '✗ DISCORD_OPS_WEBHOOK_URL not set',
+      tip: !hasSlack && !hasDiscord ? 'Add SLACK_WEBHOOK_URL or DISCORD_OPS_WEBHOOK_URL in Vercel env vars' : 'Check the channel for the test message',
+    });
+  }
+
   // ── TEST EMAIL ────────────────────────────────────────────────────────────────
   if (action === 'test-email') {
     const to = process.env.ADMIN_EMAIL;

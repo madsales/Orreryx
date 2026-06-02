@@ -1,4 +1,7 @@
 // api/health-agent.js — COO Agent: Daily platform health monitor
+
+import { opsError, opsSuccess } from './_ops-alert.js';
+
 // Runs daily at 7:00 AM IST via cron-job.org
 // Checks all endpoints, logs to Redis, emails alert if anything fails
 // Required env vars: RESEND_API_KEY, ADMIN_EMAIL, UPSTASH_REDIS_REST_URL, CRON_SECRET
@@ -127,6 +130,12 @@ export default async function handler(req, res) {
 
   // Persist to Redis so CEO agent can read it
   await upstashSet('coo:last_check', { results, allOk, time: new Date().toISOString() });
+
+  // Ops alert — only fire on failures (success is the default state, no need to spam channel)
+  if (!allOk) {
+    const failures = results.filter(r => !r.ok).map(r => `${r.name}: ${r.info}`);
+    await opsError('health-agent', `${failures.length} health check(s) failed`, { failures });
+  }
 
   // Always send report if ?report=1 — otherwise only send on failure
   const forceReport = req.query.report === '1';

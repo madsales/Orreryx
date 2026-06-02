@@ -13,8 +13,10 @@
 //   BREAKING_MIN_SCORE (optional, default 5 — minimum event importance score)
 
 import crypto from 'crypto';
-import { TwitterApi } from 'twitter-api-v2';
 import webpush from 'web-push';
+import { opsError, opsSuccess, opsWarn } from './_ops-alert.js';
+// NOTE: Twitter posting removed — free tier API cannot post tweets (requires Basic plan $100/mo).
+// Diagnostics still test Twitter credentials but we no longer attempt to post.
 
 // ── Country → emoji + market impact map ──────────────────────────────────────
 
@@ -192,18 +194,9 @@ Source: ${source}
 #GeopoliticalRisk #${country.name.replace(/\s/g, '')} #Investing #MacroIntelligence`;
 }
 
-// ── Post to Twitter ───────────────────────────────────────────────────────────
-
-async function postTweet(text) {
-  const client = new TwitterApi({
-    appKey:       process.env.TWITTER_API_KEY,
-    appSecret:    process.env.TWITTER_API_SECRET,
-    accessToken:  process.env.TWITTER_ACCESS_TOKEN,
-    accessSecret: process.env.TWITTER_ACCESS_TOKEN_SECRET,
-  });
-  const result = await client.v2.tweet(text);
-  return result.data?.id;
-}
+// ── Twitter posting removed (free API tier cannot post tweets) ────────────────
+// Captions are still generated and surfaced in the daily report email and
+// the ?diagnose endpoint so a human can manually post if desired.
 
 // ── Post to LinkedIn ──────────────────────────────────────────────────────────
 
@@ -446,12 +439,12 @@ export default async function handler(req, res) {
       feed: { status: feedStatus, articleCount: feedArticles },
       lastPost: lastPostAgo,
       lastError: lastError || 'none recorded',
+      note: 'Twitter posting has been disabled — free API cannot post. Captions are still generated for manual posting / daily report.',
       fix: [
-        !hasTwitter  && 'Go to Vercel → Settings → Environment Variables → add TWITTER_API_KEY, TWITTER_API_SECRET, TWITTER_ACCESS_TOKEN, TWITTER_ACCESS_TOKEN_SECRET',
-        !hasLinkedIn && 'Go to Vercel → Settings → Environment Variables → add LINKEDIN_ACCESS_TOKEN, LINKEDIN_PERSON_URN',
-        !hasGnews    && 'Go to Vercel → Settings → Environment Variables → add GNEWS_API_KEY',
-        hasTwitter && twitterStatus.includes('Basic tier') && 'Twitter requires $100/mo Basic API plan to post. Consider using only LinkedIn + Buffer.',
-        hasLinkedIn && linkedinStatus.includes('EXPIRED') && 'LinkedIn token expired — go to linkedin.com/developers to generate a new access token',
+        !hasLinkedIn && 'CRITICAL — Add LINKEDIN_ACCESS_TOKEN + LINKEDIN_PERSON_URN in Vercel env vars',
+        !hasGnews    && 'CRITICAL — Add GNEWS_API_KEY in Vercel env vars',
+        hasLinkedIn && linkedinStatus.includes('EXPIRED') && 'LinkedIn token expired — refresh at linkedin.com/developers (expires every 60 days)',
+        !process.env.SLACK_WEBHOOK_URL && !process.env.DISCORD_OPS_WEBHOOK_URL && !process.env.DISCORD_WEBHOOK_URL && 'Optional: add SLACK_WEBHOOK_URL or DISCORD_OPS_WEBHOOK_URL for real-time ops alerts',
       ].filter(Boolean),
     });
   }
@@ -463,11 +456,12 @@ export default async function handler(req, res) {
 
   // CEO approval is fully automatic — no manual gate required
 
-  // ── Credential check ──────────────────────────────────────────────────────────
+  // ── Credential check (LinkedIn only — Twitter free API cannot post) ──────────
   const hasTwitter  = !!(process.env.TWITTER_API_KEY && process.env.TWITTER_API_SECRET && process.env.TWITTER_ACCESS_TOKEN && process.env.TWITTER_ACCESS_TOKEN_SECRET);
   const hasLinkedIn = !!(process.env.LINKEDIN_ACCESS_TOKEN && process.env.LINKEDIN_PERSON_URN);
-  if (!hasTwitter && !hasLinkedIn) {
-    return res.status(200).json({ ok: false, reason: 'No social media credentials configured. Set TWITTER_* and/or LINKEDIN_* env vars in Vercel.' });
+  if (!hasLinkedIn) {
+    await opsWarn('breaking-news', 'LinkedIn credentials not configured — cannot post');
+    return res.status(200).json({ ok: false, reason: 'No LinkedIn credentials. Set LINKEDIN_ACCESS_TOKEN + LINKEDIN_PERSON_URN in Vercel.' });
   }
 
   // ── Cooldown: don't post more than once per 2.5 hours ───────────────────────
@@ -521,35 +515,37 @@ export default async function handler(req, res) {
   const twitterCaption  = buildTwitterCaption(article, country);
   const linkedInCaption = buildLinkedInCaption(article, country);
 
-  const results = { article: article.title, score, country: country.name, twitter: null, linkedin: null, push: null, errors: [] };
+  const results = {
+    article:  article.title,
+    score,
+    country:  country.name,
+    twitter:  null,
+    linkedin: null,
+    push:     null,
+    errors:   [],
+    captions: { twitter: twitterCaption, linkedin: linkedInCaption }, // expose so report-agent can show drafts
+  };
 
-  // ── Post to Twitter ──────────────────────────────────────────────────────────
-  if (hasTwitter) {
-    try {
-      results.twitter = await postTweet(twitterCaption);
-    } catch (e) {
-      const errMsg = e.message || String(e);
-      results.errors.push({ platform: 'twitter', error: errMsg });
-      // Save error to Redis so admin panel can show it
-      await upstashCmd(['SET', 'breaking:last_error', `Twitter: ${errMsg.slice(0, 200)}`, 'EX', 86400]).catch(() => {});
-    }
-  } else {
-    results.errors.push({ platform: 'twitter', error: 'Credentials not configured' });
-  }
-
-  // ── Post to LinkedIn ─────────────────────────────────────────────────────────
+  // ── Post to LinkedIn (the only real social channel — Twitter free can't post) ─
   if (hasLinkedIn) {
     try {
       results.linkedin = await postLinkedIn(linkedInCaption);
+      await opsSuccess('breaking-news', `Posted to LinkedIn: ${article.title.slice(0, 80)}`, {
+        country: country.name, score, postId: results.linkedin,
+      });
     } catch (e) {
       const errMsg = e.message || String(e);
       results.errors.push({ platform: 'linkedin', error: errMsg });
-      // Save error to Redis so admin panel can show it
       await upstashCmd(['SET', 'breaking:last_error', `LinkedIn: ${errMsg.slice(0, 200)}`, 'EX', 86400]).catch(() => {});
+      await opsError('breaking-news', `LinkedIn post failed`, { error: errMsg, headline: article.title });
     }
   } else {
-    results.errors.push({ platform: 'linkedin', error: 'Credentials not configured' });
+    results.errors.push({ platform: 'linkedin', error: 'Credentials not configured (set LINKEDIN_ACCESS_TOKEN + LINKEDIN_PERSON_URN)' });
   }
+
+  // Twitter caption is generated and exposed via results.captions.twitter
+  // so the daily report and admin panel can show it for manual posting.
+  results.twitter = '(manual — free API cannot post)';
 
   // ── Push notification to all subscribers ─────────────────────────────────────
   try {

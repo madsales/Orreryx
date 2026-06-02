@@ -1,4 +1,7 @@
 // api/ai-council.js — Multi-AI Strategy Council
+
+import { opsError, opsSuccess, opsInfo } from './_ops-alert.js';
+
 // Convenes Claude (Anthropic), GPT-4 (OpenAI), and Gemini (Google) together.
 // Each AI analyzes the same OrreryX business problem independently.
 // A "Chief Judge" Claude run then synthesizes the best ideas into a final strategy.
@@ -436,11 +439,23 @@ export default async function handler(req, res) {
     emailSent = await sendEmail(adminEmail, subject, html);
   }
 
+  // ── Ops alert ─────────────────────────────────────────────────────────────────
+  const respondedAIs = Object.entries(responses).filter(([, v]) => v !== null).map(([k]) => k);
+  if (verdict && emailSent) {
+    await opsSuccess('ai-council', `Council convened: ${respondedAIs.join('+')} → ${verdict.topDecisions?.length || 0} decisions`, {
+      summary: verdict.executiveSummary?.slice(0, 200),
+    });
+  } else if (!verdict) {
+    await opsError('ai-council', 'Council failed — no verdict generated', { aisResponded: respondedAIs });
+  } else if (!emailSent && adminEmail) {
+    await opsError('ai-council', 'Council ran but email failed to send', { adminEmail });
+  }
+
   return res.status(200).json({
     ok:           true,
     date,
     aiCount:      availableCount,
-    aisResponded: Object.entries(responses).filter(([, v]) => v !== null).map(([k]) => k),
+    aisResponded: respondedAIs,
     verdictReady: !!verdict,
     emailSent,
     summary:      verdict?.executiveSummary || 'No verdict — add ANTHROPIC_API_KEY',

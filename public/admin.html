@@ -453,6 +453,7 @@ p.desc{font:400 12px/1.75 var(--sans);color:var(--txt3);margin-bottom:18px}
         </div>
         <div class="approval-actions">
           <button class="brief-btn" id="brief-btn" onclick="sendDailyBrief()">📧 Send Daily Brief to CEO</button>
+          <button class="brief-btn" onclick="testOpsAlert()" style="background:#1a2035;border:1px solid #3b82f6;color:#60a5fa">🔔 Test Slack/Discord Alert</button>
           <button class="approve-btn" id="approve-btn" onclick="approveToday()">✅ Approve Team for Today</button>
         </div>
       </div>
@@ -2406,6 +2407,16 @@ async function approveToday() {
     btn.textContent = '✅ Approve Team for Today';
     alert('Network error: ' + e.message);
   }
+}
+
+async function testOpsAlert() {
+  try {
+    const r = await fetch('/api/admin?action=test-ops-alert', { headers: { Authorization: 'Bearer ' + token } });
+    const d = await r.json();
+    alert(d.ok
+      ? 'Test alert sent! Check your Slack/Discord channel.\n\nSlack: ' + d.slack + '\nDiscord: ' + d.discord
+      : 'No webhook configured.\n\n' + d.tip);
+  } catch(e) { alert('Error: ' + e.message); }
 }
 
 async function sendDailyBrief() {
