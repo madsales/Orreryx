@@ -146,8 +146,18 @@ function emailTemplates(email) {
     day14: {
       subject: 'Are you a professional? OrreryX has a different offer for you.',
       html: wrap(`
-        <div style="font-size:20px;font-weight:800;margin-bottom:12px">OrreryX for Professionals & Teams</div>
-        <div style="font-size:13px;color:#a0a09a;margin-bottom:20px">You've been reading OrreryX Intel for 2 weeks. If you're a professional, there's a version built specifically for you.</div>
+        <div style="font-size:20px;font-weight:800;margin-bottom:12px">Two Weeks In — Here's Your Upgrade Path</div>
+        <div style="font-size:13px;color:#a0a09a;margin-bottom:20px">You've been reading OrreryX Intel for 2 weeks. Most analysts start with Command — then step up to Enterprise as their needs grow.</div>
+
+        <div style="background:rgba(58,184,96,.07);border:1px solid rgba(58,184,96,.2);border-radius:8px;padding:16px;margin-bottom:20px">
+          <div style="font-size:10px;font-weight:700;color:#3ab860;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px">✓ Most popular — individual analysts</div>
+          <div style="font-size:15px;font-weight:800;color:#f0f0ec;margin-bottom:6px">Command — $34.99/mo</div>
+          <div style="font-size:12px;color:#c0c0b8;line-height:1.65;margin-bottom:6px">340+ analysts track geopolitical risk live with the interactive map, market impact calculator, crypto war scores, and full API. The tool Bloomberg charges $2,400/mo for — at a fraction of the price.</div>
+          <div style="font-size:11px;color:#d4a843;margin-bottom:12px">⏰ Price increases to $44.99/mo next month for new subscribers — lock in $34.99 today.</div>
+          <a href="${HOST}/login?plan=c" style="display:block;background:#3ab860;color:#000;text-decoration:none;text-align:center;padding:11px;border-radius:4px;font-weight:800;font-size:12px">Upgrade to Command — Lock in $34.99/mo →</a>
+        </div>
+
+        <div style="font-size:13px;font-weight:700;color:#a0a09a;margin-bottom:14px;padding-top:4px">Running a team or firm? OrreryX Enterprise goes further:</div>
         <div style="margin-bottom:20px">
           <div style="font-size:12px;color:#9e9e9e;text-transform:uppercase;letter-spacing:1px;margin-bottom:12px">Who uses OrreryX Enterprise</div>
           ${[['🏦','Hedge Funds & Asset Managers','Systematic geopolitical risk overlays for quant strategies'],['🏢','Corporations & Multinationals','Country risk monitoring for operational and supply chain decisions'],['🏛️','Government & Think Tanks','Real-time conflict intelligence for policy and strategic analysis'],['📰','Media & Research','Background intelligence database for journalists and analysts']].map(([icon,title,desc])=>`<div style="display:flex;gap:12px;padding:12px 0;border-bottom:1px solid rgba(255,255,255,.06)"><span style="font-size:20px">${icon}</span><div><div style="font-size:13px;font-weight:600;color:#f0f0ec">${title}</div><div style="font-size:12px;color:#9e9e9e">${desc}</div></div></div>`).join('')}
@@ -175,9 +185,14 @@ function emailTemplates(email) {
             ⬆️ <strong style="color:#f0f0ec">Average risk score:</strong> +6 points across all 56 active conflicts
           </div>
         </div>
-        <div style="font-size:13px;color:#a0a09a;margin-bottom:24px">If you're not tracking this in real time, you're navigating with old maps. The world doesn't wait.</div>
-        <a href="${HOST}/login?plan=f" style="display:block;background:#e03836;color:#fff;text-decoration:none;text-align:center;padding:14px;border-radius:4px;font-weight:700;font-size:14px;margin-bottom:12px">Start Tracking Now — Still Free →</a>
-        <div style="font-size:12px;color:#484844;text-align:center">3-day free trial · No card · Full access</div>
+        <div style="font-size:13px;color:#a0a09a;margin-bottom:20px">If you're not tracking this in real time, you're navigating with old maps. The world doesn't wait.</div>
+        <div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:6px;padding:12px 16px;margin-bottom:16px;text-align:center">
+          <div style="font-size:12px;font-weight:700;color:#d4a843;margin-bottom:4px">⏰ Price increase — lock in before it happens</div>
+          <div style="font-size:11px;color:#a0a09a">Command is $34.99/mo now. Goes to $44.99/mo next month for new subscribers.</div>
+        </div>
+        <a href="${HOST}/login?plan=c" style="display:block;background:#3ab860;color:#000;text-decoration:none;text-align:center;padding:14px;border-radius:4px;font-weight:800;font-size:14px;margin-bottom:10px">Upgrade to Command — $34.99/mo →</a>
+        <a href="${HOST}/login?plan=f" style="display:block;background:rgba(255,255,255,.06);color:#f0f0ec;text-decoration:none;text-align:center;padding:12px;border-radius:4px;font-size:12px;border:1px solid rgba(255,255,255,.1)">Or start with free 3-day trial first →</a>
+        <div style="font-size:11px;color:#484844;text-align:center;margin-top:10px">340+ analysts already on Command · Cancel anytime</div>
       `)
     },
   };
@@ -396,9 +411,10 @@ export default async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
   if (req.method === 'OPTIONS') return res.status(200).end();
 
-  // ── GET: unsubscribe via magic link ─────────────────────────────────────
+  // ── GET: cron triggers + unsubscribe ────────────────────────────────────
   if (req.method === 'GET') {
-    const { action, email } = req.query || {};
+    const { action, email, token } = req.query || {};
+
     if (action === 'unsubscribe' && email) {
       try {
         const key = `newsletter:${email.toLowerCase().trim()}`;
@@ -408,7 +424,6 @@ export default async function handler(req, res) {
           await redis('SET', key, JSON.stringify({ ...sub, unsubscribed: true, unsubscribed_at: Date.now() }));
           await redis('DECR', 'newsletter:count');
         }
-        // Redirect to unsubscribe confirmation page
         res.setHeader('Location', '/unsubscribe?done=1');
         return res.status(302).end();
       } catch (e) {
@@ -416,7 +431,44 @@ export default async function handler(req, res) {
         return res.status(302).end();
       }
     }
-    return res.status(405).end();
+
+    const isVercelCron = req.headers['x-vercel-cron'] || req.headers['user-agent']?.includes('vercel-cron');
+    const isAuthed = token === CRON_SECRET || isVercelCron;
+
+    if (action === 'process_drip') {
+      if (!isAuthed) return res.status(401).json({ error: 'Unauthorized' });
+      const result = await processDrip();
+      return res.status(200).json({ ok: true, ...result });
+    }
+
+    if (action === 'daily_digest') {
+      if (!isAuthed) return res.status(401).json({ error: 'Unauthorized' });
+      const result = await broadcastDailyDigest();
+      return res.status(200).json({ ok: true, ...result });
+    }
+
+    if (action === 'push_broadcast') {
+      if (!isAuthed) return res.status(401).json({ error: 'Unauthorized' });
+      const result = await broadcastPush();
+      return res.status(200).json({ ok: true, ...result });
+    }
+
+    if (action === 'stats') {
+      if (!isAuthed) return res.status(401).json({ error: 'Unauthorized' });
+      const count = await redis('GET', 'newsletter:count') || '0';
+      const queueLen = await redis('ZCARD', 'drip:queue') || 0;
+      return res.status(200).json({ ok: true, subscribers: parseInt(count), drip_queue: queueLen });
+    }
+
+    if (!action) {
+      const isVercel = req.headers['x-vercel-cron'] || req.headers['user-agent']?.includes('vercel-cron');
+      if (isVercel) {
+        const result = await processDrip();
+        return res.status(200).json({ ok: true, cron: 'process_drip', ...result });
+      }
+    }
+
+    return res.status(405).json({ error: 'Unknown action. Use ?action=process_drip|daily_digest|push_broadcast|stats' });
   }
 
   if (req.method !== 'POST') return res.status(405).end();

@@ -77,6 +77,8 @@
     { "path": "/api/directory-agent",   "schedule": "0 8 * * 1"   },
     { "path": "/api/cro-agent",         "schedule": "0 9 * * 1"   },
     { "path": "/api/lead-magnet-agent", "schedule": "0 11 * * 1"  },
+    { "path": "/api/newsletter?action=process_drip", "schedule": "0 */6 * * *" },
+    { "path": "/api/newsletter?action=daily_digest", "schedule": "0 3 * * *"   },
     { "path": "/api/seo-sprint",        "schedule": "0 6 * * *"   },
     { "path": "/api/report-agent",      "schedule": "30 18 * * *" },
     { "path": "/api/ai-council",        "schedule": "30 1 * * 1"  }
@@ -92,7 +94,7 @@
     "api/magic.js":         { "maxDuration": 30 },
     "api/admin.js":         { "maxDuration": 300 },
     "api/webhook.js":       { "maxDuration": 30 },
-    "api/newsletter.js":    { "maxDuration": 30 },
+    "api/newsletter.js":    { "maxDuration": 60 },
     "api/buffer-post.js":   { "maxDuration": 30 },
     "api/social-post.js":   { "maxDuration": 120 },
     "api/news-post.js":     { "maxDuration": 60 },
