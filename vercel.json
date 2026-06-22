@@ -272,6 +272,8 @@
     { "src": "/black-swan-events-2026","dest": "/black-swan-events-2026.html" },
     { "src": "/trump-tariffs-2026",          "dest": "/trump-tariffs-2026.html" },
     { "src": "/monthly-geopolitical-risk-report", "dest": "/monthly-geopolitical-risk-report.html" },
+    { "src": "/iran-oil-sanctions",   "dest": "/iran-oil-sanctions.html" },
+    { "src": "/india-china-border",   "dest": "/india-china-border.html" },
     { "src": "/",                    "dest": "/index.html" }
   ]
 }

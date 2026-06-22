@@ -535,4 +535,19 @@
     <priority>0.93</priority>
   </url>
 
+
+  <url>
+    <loc>https://www.orreryx.io/iran-oil-sanctions</loc>
+    <lastmod>2026-06-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+
+  <url>
+    <loc>https://www.orreryx.io/india-china-border</loc>
+    <lastmod>2026-06-22</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.90</priority>
+  </url>
+
 </urlset>
