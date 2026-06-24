@@ -102,7 +102,18 @@ function emailTemplates(email) {
           <strong style="color:#f0f0ec">The edge is simple:</strong> markets price geopolitical risk slowly. Events happen, then analysts write about them, then traders react. OrreryX puts the events in your hands at 6:45am, not 9am.<br><br>
           The same applies to gold, defence stocks, emerging market currencies, and shipping rates. Every active conflict we track is a potential market signal.
         </div>
-        <a href="${HOST}/login?plan=f" style="display:block;background:#e03836;color:#fff;text-decoration:none;text-align:center;padding:14px;border-radius:4px;font-weight:700;font-size:14px">Get the Same Edge — Start Free Trial →</a>
+
+        <div style="background:rgba(58,184,96,.06);border:1px solid rgba(58,184,96,.2);border-radius:8px;padding:16px;margin-bottom:14px">
+          <div style="font-size:10px;font-weight:700;color:#3ab860;text-transform:uppercase;letter-spacing:1.2px;margin-bottom:8px">⚡ Command — The Professional Tool</div>
+          <div style="font-size:12px;color:#c0c0b8;line-height:1.7;margin-bottom:12px">
+            Interactive Risk Map · Market Impact Calculator · Crypto War Scores · Public API · 5Y Chart History<br>
+            <strong style="color:#f0f0ec">vs Stratfor $349/mo — you save $314/mo</strong>
+          </div>
+          <div style="font-size:11px;color:#d4a843;margin-bottom:12px">⏰ Introductory price: $34.99/mo. Increases to $44.99 next month for new subscribers.</div>
+          <a href="${HOST}/login?plan=c" style="display:block;background:#3ab860;color:#000;text-decoration:none;text-align:center;padding:11px;border-radius:4px;font-weight:800;font-size:12px">🗺️ Upgrade to Command — $34.99/mo →</a>
+        </div>
+
+        <a href="${HOST}/login?plan=f" style="display:block;background:rgba(255,255,255,.06);color:#f0f0ec;text-decoration:none;text-align:center;padding:12px;border-radius:4px;font-size:13px;border:1px solid rgba(255,255,255,.1)">Or start with the free 3-day trial first →</a>
       `)
     },
 
