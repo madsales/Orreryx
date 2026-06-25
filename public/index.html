@@ -906,7 +906,7 @@ footer{border-top:1px solid var(--brd);padding:32px 60px;display:flex;align-item
 
 <!-- ── TICKER ─────────────────────────────────── -->
 <div class="marquee-wrap">
-  <div class="marquee-live">● LIVE</div>
+  <div class="marquee-live" title="Illustrative sample data. Live market feeds run inside the app for paying subscribers.">SAMPLE · LIVE IN APP</div>
   <div class="marquee-scroll"><div class="marquee-inner" id="ticker-inner"></div></div>
 </div>
 
@@ -919,7 +919,7 @@ footer{border-top:1px solid var(--brd);padding:32px 60px;display:flex;align-item
       <div class="db-dot" style="background:#28c840"></div>
       <div class="db-url">app.orreryx.io — Geopolitical Market Intelligence</div>
       <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
-        <div class="db-livepill"><div class="hero-dot" style="width:5px;height:5px"></div>LIVE</div>
+        <div class="db-livepill" title="Illustrative preview of the in-app dashboard. Real data shown after sign-in.">PREVIEW</div>
         <div style="font-size:8px;color:var(--txt4);font-family:var(--mono)">🔔</div>
         <div style="font-size:8px;color:var(--txt4);font-family:var(--mono)">👤</div>
       </div>
@@ -1764,14 +1764,10 @@ function renderWarStocks() {
   }).join('');
 }
 
+// Prices are illustrative sample data — no live drift on the marketing page.
+// Real-time feeds run inside /app for paying subscribers.
 renderTicker();
 renderWarStocks();
-setInterval(function() {
-  drift(MKTDATA, false);
-  drift(WARSTOCKS, true);
-  renderTicker();
-  renderWarStocks();
-}, 2500);
 
 // ── VIDEO DEMO ────────────────────────────────────────────────────
 var VIDEO_ID = '';
