@@ -269,6 +269,19 @@ nav{position:fixed;top:0;left:0;right:0;z-index:200;height:56px;padding:0 40px;d
 .hud-cat.con{background:rgba(58,184,96,.15);color:var(--grn)}
 .hud-time{font-family:var(--mono);font-size:7px;color:rgba(255,255,255,.2);margin-left:auto}
 .hud-text{font-size:11px;color:rgba(255,255,255,.65);line-height:1.4}
+.hud-figs{display:flex;align-items:center;gap:4px;flex-wrap:wrap;margin-top:5px}
+.hud-chip{display:inline-flex;align-items:center;gap:3px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:1px 7px;font-size:9px;color:rgba(255,255,255,.7);text-decoration:none}
+.hud-chip:hover{border-color:var(--red);color:#fff}
+.hud-rx-link{display:inline-block;margin-top:6px;font-family:var(--mono);font-size:8px;letter-spacing:.06em;color:var(--red);cursor:pointer;text-decoration:none}
+.hud-rx-link:hover{text-decoration:underline}
+.hud-rx-panel{margin-top:6px;padding:8px 9px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.07);border-radius:6px}
+.hud-rx-head{display:block;font-family:var(--mono);font-size:8px;color:rgba(255,255,255,.55);text-decoration:none;margin-bottom:6px;letter-spacing:.04em}
+.hud-rx-item{padding:5px 0;border-top:1px solid rgba(255,255,255,.06)}
+.hud-rx-item:first-of-type{border-top:none;padding-top:0}
+.hud-rx-auth{font-family:var(--mono);font-size:8px;color:rgba(255,255,255,.5);margin-bottom:2px}
+.hud-rx-body{font-size:10px;line-height:1.45;color:rgba(255,255,255,.72)}
+.hud-rx-status{font-size:10px;color:rgba(255,255,255,.4)}
+.hud-rx-src{margin-top:6px;font-family:var(--mono);font-size:8px;color:rgba(255,255,255,.3)}
 .hud-ticker{font-family:var(--mono);font-size:9px;font-weight:700}
 .hud-ticker.up{color:var(--grn)}
 .hud-ticker.dn{color:var(--red)}
@@ -847,7 +860,7 @@ footer{border-top:1px solid var(--brd);padding:32px 60px;display:flex;align-item
   <div class="hero-hud">
     <div class="hud-header">
       <div class="hud-dot"></div>
-      <div class="hud-title">Intelligence Feed</div>
+      <div class="hud-title">Breaking Feed</div>
       <div class="hud-count" id="hud-count">● LIVE</div>
     </div>
     <div id="hud-feed">
@@ -1724,7 +1737,7 @@ function renderWarStocks() {
 renderTicker();
 renderWarStocks();
 
-// ── LIVE INTELLIGENCE FEED — real news, same /api/events source as the app ──
+// ── LIVE BREAKING FEED — real news, figure chips, click-to-expand reactions ──
 (function() {
   var feed = document.getElementById('hud-feed');
   if (!feed) return;
@@ -1735,6 +1748,7 @@ renderWarStocks();
     eco:'mkt', fin:'mkt', biz:'mkt', nrg:'mkt', pol:'pol', dip:'pol',
     env:'con', hlt:'con', tech:'con' };
   function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function escAttr(s){ return esc(s).replace(/"/g,'&quot;'); }
   function rel(t){
     var d = (Date.now() - new Date(t).getTime()) / 1000;
     if (d < 90) return 'now';
@@ -1742,6 +1756,55 @@ renderWarStocks();
     if (d < 86400) return Math.floor(d/3600) + 'h ago';
     return Math.floor(d/86400) + 'd ago';
   }
+
+  // ── Figures in headlines → verified handles (chips) ──
+  var FIGURES = [
+    {n:'Vladimir Putin',a:['Putin'],f:'🇷🇺',x:'KremlinRussia_E'},
+    {n:'Volodymyr Zelensky',a:['Zelensky','Zelenskyy','Zelenskiy'],f:'🇺🇦',x:'ZelenskyyUa'},
+    {n:'Donald Trump',a:['Trump'],f:'🇺🇸',x:'realDonaldTrump'},
+    {n:'Xi Jinping',a:['Xi Jinping','President Xi'],f:'🇨🇳',x:null},
+    {n:'Narendra Modi',a:['Modi'],f:'🇮🇳',x:'narendramodi'},
+    {n:'Benjamin Netanyahu',a:['Netanyahu'],f:'🇮🇱',x:'netanyahu'},
+    {n:'Ali Khamenei',a:['Khamenei','Ayatollah'],f:'🇮🇷',x:'khamenei_ir'},
+    {n:'Masoud Pezeshkian',a:['Pezeshkian'],f:'🇮🇷',x:'drpezeshkian'},
+    {n:'Kim Jong Un',a:['Kim Jong Un','Kim Jong-un'],f:'🇰🇵',x:null},
+    {n:'Recep Tayyip Erdogan',a:['Erdogan','Erdoğan'],f:'🇹🇷',x:'RTErdogan'},
+    {n:'Emmanuel Macron',a:['Macron'],f:'🇫🇷',x:'EmmanuelMacron'},
+    {n:'Keir Starmer',a:['Starmer'],f:'🇬🇧',x:'Keir_Starmer'},
+    {n:'Friedrich Merz',a:['Merz'],f:'🇩🇪',x:'_FriedrichMerz'},
+    {n:'Giorgia Meloni',a:['Meloni'],f:'🇮🇹',x:'GiorgiaMeloni'},
+    {n:'Shehbaz Sharif',a:['Shehbaz','Sharif'],f:'🇵🇰',x:'CMShehbaz'},
+    {n:'Lai Ching-te',a:['Lai Ching-te','William Lai'],f:'🇹🇼',x:'ChingteLai'},
+    {n:'Mohammed bin Salman',a:['bin Salman','MBS'],f:'🇸🇦',x:null},
+    {n:'Viktor Orban',a:['Orban','Orbán'],f:'🇭🇺',x:'PM_ViktorOrban'},
+    {n:'Javier Milei',a:['Milei'],f:'🇦🇷',x:'JMilei'},
+    {n:'Nicolas Maduro',a:['Maduro'],f:'🇻🇪',x:'NicolasMaduro'},
+    {n:'Luiz Inacio Lula',a:['Lula'],f:'🇧🇷',x:'LulaOficial'},
+    {n:'Elon Musk',a:['Musk'],f:'🇺🇸',x:'elonmusk'},
+    {n:'Marco Rubio',a:['Rubio'],f:'🇺🇸',x:'SecRubio'},
+    {n:'Sergey Lavrov',a:['Lavrov'],f:'🇷🇺',x:null},
+    {n:'S. Jaishankar',a:['Jaishankar'],f:'🇮🇳',x:'DrSJaishankar'},
+    {n:'Antonio Guterres',a:['Guterres'],f:'🇺🇳',x:'antonioguterres'},
+    {n:'Mark Rutte',a:['Rutte'],f:'🌐',x:'SecGenNATO'},
+    {n:'Ursula von der Leyen',a:['von der Leyen'],f:'🇪🇺',x:'vonderleyen'},
+    {n:'Jerome Powell',a:['Powell'],f:'🇺🇸',x:null},
+    {n:'Christine Lagarde',a:['Lagarde'],f:'🇪🇺',x:'Lagarde'}
+  ];
+  FIGURES.forEach(function(f){
+    var terms = [f.n].concat(f.a||[]).map(function(t){ return t.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'); });
+    f._re = new RegExp('\\b(' + terms.join('|') + ')\\b','i');
+    f.short = (f.a && f.a.length) ? f.a[0] : f.n;
+  });
+  function figHref(f){ return f.x ? 'https://x.com/'+f.x : 'https://x.com/search?q='+encodeURIComponent('"'+f.n+'"')+'&f=live'; }
+  function buildChips(text){
+    var hits = [];
+    for (var i=0;i<FIGURES.length;i++){ if (FIGURES[i]._re.test(text)){ hits.push(FIGURES[i]); if (hits.length>=3) break; } }
+    if (!hits.length) return '';
+    return '<div class="hud-figs">' + hits.map(function(f){
+      return '<a class="hud-chip" href="'+figHref(f)+'" target="_blank" rel="noopener">'+(f.f||'')+' '+esc(f.short)+'</a>';
+    }).join('') + '</div>';
+  }
+
   // Relevance: surface geopolitically-meaningful headlines, push off-topic down.
   var HOT = ['war','military','missile','strike','airstrike','attack','troops','invasion',
     'offensive','ceasefire','sanction','nuclear','drone','border','conflict','killed',
@@ -1760,21 +1823,55 @@ renderWarStocks();
   function render(events, total) {
     var html = events.slice(0, 5).map(function(e) {
       var clr = CATCLR[e.cat] || 'con';
+      var txt = (e.txt || '').slice(0, 110);
       var src = e.source ? '<div class="hud-row" style="margin-top:3px"><span class="hud-ticker" style="color:var(--txt3);font-weight:600">' + esc(e.source) + '</span></div>' : '';
       return '<div class="hud-item"><div class="hud-row">'
         + '<span class="hud-cat ' + clr + '">' + esc(e.catLabel || 'NEWS') + '</span>'
         + '<span class="hud-time">' + rel(e.time) + '</span></div>'
-        + '<div class="hud-text">' + esc((e.txt || '').slice(0, 110)) + '</div>' + src + '</div>';
+        + '<div class="hud-text">' + esc(txt) + '</div>' + src
+        + buildChips(e.txt || '')
+        + '<a class="hud-rx-link" data-q="' + escAttr((e.txt||'').slice(0,200)) + '">💬 Reactions</a>'
+        + '<div class="hud-rx-panel" hidden></div>'
+        + '</div>';
     }).join('');
     if (html) feed.innerHTML = html;
     if (countEl && total) countEl.textContent = '● ' + total + ' LIVE';
     if (allLink && total) allLink.textContent = 'View all ' + total + ' alerts →';
   }
+
+  // Click-to-expand reactions (event delegation survives feed re-renders).
+  feed.addEventListener('click', function(ev){
+    var link = ev.target.closest && ev.target.closest('.hud-rx-link');
+    if (!link) return;
+    ev.preventDefault();
+    var item = link.closest('.hud-item');
+    var panel = item && item.querySelector('.hud-rx-panel');
+    if (!panel) return;
+    if (!panel.hidden) { panel.hidden = true; link.textContent = '💬 Reactions'; return; }
+    panel.hidden = false; link.textContent = '💬 Hide reactions';
+    if (panel.dataset.loaded === '1') return;
+    panel.innerHTML = '<div class="hud-rx-status">Loading…</div>';
+    fetch('/api/reactions?q=' + encodeURIComponent(link.getAttribute('data-q') || ''))
+      .then(function(r){ return r.json(); })
+      .then(function(d){
+        panel.dataset.loaded = '1';
+        if (!d.ok || !d.comments || !d.comments.length) { panel.innerHTML = '<div class="hud-rx-status">No public discussion found yet.</div>'; return; }
+        var head = '<a class="hud-rx-head" href="' + d.thread.permalink + '" target="_blank" rel="noopener">💬 ' + esc(d.thread.label) + ' · ' + (d.thread.num_comments||0) + ' comments ↗</a>';
+        var items = d.comments.slice(0,3).map(function(c){
+          return '<div class="hud-rx-item"><div class="hud-rx-auth">' + esc(c.author) + '</div><div class="hud-rx-body">' + esc(c.body) + '</div></div>';
+        }).join('');
+        panel.innerHTML = head + items + '<div class="hud-rx-src">Source: ' + (d.source==='reddit'?'Reddit':'Hacker News') + ' · commenters’ own views</div>';
+      })
+      .catch(function(){ panel.dataset.loaded=''; panel.innerHTML = '<div class="hud-rx-status">Couldn’t load reactions.</div>'; });
+  });
+
   function load() {
     Promise.all([
       fetch('/api/gnews').then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }),
       fetch('/api/events').then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; })
     ]).then(function(res) {
+      // Don't yank the feed out from under someone reading an open reactions panel.
+      if (feed.querySelector('.hud-rx-panel:not([hidden])')) return;
       var all = []
         .concat((res[0] && res[0].articles) || [])
         .concat((res[1] && res[1].events) || [])
