@@ -590,21 +590,44 @@ const SYNONYMS={
 };
 const chanCache=new Map(); const vidCache=new Map();
 const CHAN_TTL=30*60*1000; const VID_TTL=10*60*1000;
-const STOP=new Set(['that','this','with','from','they','have','been','will','says','said','their','about','into','news']);
+const STOP=new Set(['that','this','with','from','they','have','been','will','says','said','their','about','into','news','after','over','amid','near','more','what','why','how','who','his','her','its','are','was','were','get','gets','set','day','top','new','latest','breaking','update','live','watch','video','full','than','then','also','could','would','should','may','dont','amid']);
 function kwds(q){return [...new Set(q.toLowerCase().replace(/[^a-z0-9\s]/g,' ').split(/\s+/).filter(w=>w.length>=3&&!STOP.has(w)))]}
 function expand(kws){const e=new Set(kws);for(const k of kws){const s=SYNONYMS[k];if(s)s.forEach(x=>e.add(x));}return[...e];}
 // Regional scoring: boost matching region channels, penalise off-region specialists
 function scoreVideo(v, kws, exp, qReg){
-  let s=0; const tl=v.title.toLowerCase();
-  for(const k of kws) if(tl.includes(k)) s+=2;
-  for(const k of exp) if(!kws.includes(k)&&tl.includes(k)) s+=1;
-  if(s===0) return 0;
+  const tl=v.title.toLowerCase();
+  let hits=0;    for(const k of kws) if(tl.includes(k)) hits++;
+  let expHits=0; for(const k of exp) if(!kws.includes(k)&&tl.includes(k)) expHits++;
   const cReg=v.reg||'global';
-  if(qReg!=='global'&&cReg!=='global'){
-    if(cReg===qReg) s+=2;          // boost: right region channel
-    else            s=Math.max(0,s-3); // penalise: specialist in wrong region
-  }
+  const regMatch = qReg!=='global' && cReg===qReg;
+  // Require genuine topical overlap: 2+ headline keywords, OR 1 keyword + same region.
+  // (A single loose keyword match is what made unrelated clips show up.)
+  if(hits<2 && !(hits>=1 && regMatch)) return 0;
+  let s = hits*3 + expHits;
+  if(regMatch) s+=2;
+  else if(qReg!=='global'&&cReg!=='global'&&cReg!==qReg) s=Math.max(0,s-3);
   return s;
+}
+// Real YouTube search — genuinely relatable results. Needs YOUTUBE_API_KEY
+// (free: 100 searches/day; with the 10-min cache that covers a lot of traffic).
+async function ytSearch(q){
+  const key=process.env.YOUTUBE_API_KEY; if(!key) return null;
+  const url='https://www.googleapis.com/youtube/v3/search?part=snippet&type=video&order=relevance&maxResults=6&safeSearch=none&q='+encodeURIComponent(q)+'&key='+key;
+  const r=await fetch(url,{signal:AbortSignal.timeout(6000)});
+  if(!r.ok) throw new Error('yt '+r.status);
+  const j=await r.json();
+  return (j.items||[]).filter(it=>it.id&&it.id.videoId).slice(0,3).map(it=>{
+    const sn=it.snippet||{};
+    const th=(sn.thumbnails&&(sn.thumbnails.medium||sn.thumbnails.default))||{};
+    return {
+      id:it.id.videoId,
+      title:(sn.title||'').replace(/&amp;/g,'&').replace(/&#39;/g,"'").replace(/&quot;/g,'"'),
+      channel:sn.channelTitle||'YouTube',
+      date:(sn.publishedAt||'').substring(0,10),
+      thumb:th.url||('https://i.ytimg.com/vi/'+it.id.videoId+'/mqdefault.jpg'),
+      url:'https://www.youtube.com/watch?v='+it.id.videoId
+    };
+  });
 }
 function parseYt(xml,ch,reg){const e=[];const re=/<entry>([\s\S]*?)<\/entry>/g;let m;
   while((m=re.exec(xml))!==null){const b=m[1];const id=b.match(/<yt:videoId>([^<]+)/);const ti=b.match(/<media:title>([^<]*)/)||b.match(/<title>([^<]*)/);const dt=b.match(/<published>([^<]+)/);
@@ -616,23 +639,29 @@ async function handleVideos(req,res){
   if(!q)return res.status(400).json({error:'q param required'});
   const ck=q.toLowerCase().replace(/\s+/g,' ');const cached=vidCache.get(ck);
   if(cached&&Date.now()-cached.ts<VID_TTL)return res.status(200).json(cached.data);
-  const kws=kwds(q); const exp=expand(kws); const qReg=detectRegion(q);
-  const all=(await Promise.all(CHANNELS.map(fetchChan))).flat();
-  const scored=all.map(v=>({...v,score:scoreVideo(v,kws,exp,qReg)}));
-  scored.sort((a,b)=>b.score!==a.score?b.score-a.score:b.date.localeCompare(a.date));
 
-  // Deduplicate by video ID; max 1 clip per channel; score must be ≥ 2
-  const seenIds=new Set(); const seenChannels=new Set(); const clips=[];
-  for(const v of scored){
-    if(v.score<2) break;
-    if(seenIds.has(v.id)) continue;
-    if(seenChannels.has(v.channel)&&(clips.length>=2||v.score<5)) continue;
-    seenIds.add(v.id); seenChannels.add(v.channel);
-    clips.push(v);
-    if(clips.length>=3) break;
+  let clips=null;
+  // Primary: real YouTube search of the headline (truly relatable).
+  try { const yt=await ytSearch(q); if(yt&&yt.length) clips=yt; } catch(e){ clips=null; }
+
+  // Fallback: scan preset news channels' recent uploads, tightened keyword match.
+  if(!clips){
+    const kws=kwds(q); const exp=expand(kws); const qReg=detectRegion(q);
+    const all=(await Promise.all(CHANNELS.map(fetchChan))).flat();
+    const scored=all.map(v=>({...v,score:scoreVideo(v,kws,exp,qReg)}));
+    scored.sort((a,b)=>b.score!==a.score?b.score-a.score:b.date.localeCompare(a.date));
+    const seenIds=new Set(); const seenChannels=new Set(); clips=[];
+    for(const v of scored){
+      if(v.score<5) break; // eligible matches now score ≥5; below that = not relatable
+      if(seenIds.has(v.id)) continue;
+      if(seenChannels.has(v.channel)&&clips.length>=2) continue;
+      seenIds.add(v.id); seenChannels.add(v.channel);
+      clips.push(v);
+      if(clips.length>=3) break;
+    }
   }
 
-  const data={clips};
+  const data={clips:clips||[]};
   vidCache.set(ck,{data,ts:Date.now()});if(vidCache.size>400)vidCache.delete(vidCache.keys().next().value);
   res.setHeader('Cache-Control','public, max-age=600');
   return res.status(200).json(data);
