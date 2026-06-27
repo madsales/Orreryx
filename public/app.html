@@ -234,6 +234,12 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
 .ev-loc{font:500 7.5px/1 var(--mono);color:var(--txt4)}
 .ev-ts{font:500 7.5px/1 var(--mono);color:var(--txt4);margin-left:auto}
 .ev-txt{font:400 12.5px/1.65 var(--sans);color:var(--txt);margin-bottom:8px}
+.ev-figs{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin:0 0 9px}
+.ev-figs-lbl{font:600 8px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--txt4);flex-shrink:0}
+.fig-chip{display:inline-flex;align-items:center;gap:5px;background:var(--bg4);border:1px solid var(--brd2);border-radius:20px;padding:3px 9px 3px 7px;font:500 10.5px/1 var(--sans);color:var(--txt2);text-decoration:none;transition:border-color .15s,background .15s,color .15s}
+.fig-chip:hover{border-color:var(--red);color:var(--txt);background:var(--red2)}
+.fig-chip .fig-flag{font-size:11px;line-height:1}
+.fig-chip .fig-at{color:var(--txt4);font-size:9.5px}
 .ev-foot{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
 .ev-src-link{text-decoration:none;color:var(--txt4)!important;background:var(--bg4);}
 .ev-share-btn{background:var(--bg4);border:1px solid var(--brd);color:var(--txt3);font:600 8px/1 var(--mono);padding:2px 7px;border-radius:3px;cursor:pointer;transition:all .12s}
@@ -2715,6 +2721,83 @@ function buildVideoQuery(e) {
   return (place + ' ' + topic).trim().substring(0, 100);
 }
 
+// ── "IN THIS STORY" — figures in headlines → verified handles ──────────────
+// Curated, editable. n=name, a=aliases, t=title, f=flag, x=X/Twitter handle
+// (null = no personal account → chip links to an X search for the name).
+const FIGURES = [
+  { n:'Vladimir Putin',       a:['Putin'],                t:'President of Russia',           f:'🇷🇺', x:'KremlinRussia_E' },
+  { n:'Volodymyr Zelensky',   a:['Zelensky','Zelenskyy','Zelenskiy'], t:'President of Ukraine', f:'🇺🇦', x:'ZelenskyyUa' },
+  { n:'Donald Trump',         a:['Trump'],                t:'President of the United States', f:'🇺🇸', x:'realDonaldTrump' },
+  { n:'Xi Jinping',           a:['Xi Jinping','President Xi'], t:'President of China',        f:'🇨🇳', x:null },
+  { n:'Narendra Modi',        a:['Modi'],                 t:'Prime Minister of India',       f:'🇮🇳', x:'narendramodi' },
+  { n:'Benjamin Netanyahu',   a:['Netanyahu'],            t:'Prime Minister of Israel',      f:'🇮🇱', x:'netanyahu' },
+  { n:'Ali Khamenei',         a:['Khamenei','Ayatollah'], t:'Supreme Leader of Iran',        f:'🇮🇷', x:'khamenei_ir' },
+  { n:'Masoud Pezeshkian',    a:['Pezeshkian'],           t:'President of Iran',             f:'🇮🇷', x:'drpezeshkian' },
+  { n:'Kim Jong Un',          a:['Kim Jong Un','Kim Jong-un'], t:'Supreme Leader of North Korea', f:'🇰🇵', x:null },
+  { n:'Recep Tayyip Erdogan', a:['Erdogan','Erdoğan'],    t:'President of Turkey',           f:'🇹🇷', x:'RTErdogan' },
+  { n:'Emmanuel Macron',      a:['Macron'],               t:'President of France',           f:'🇫🇷', x:'EmmanuelMacron' },
+  { n:'Keir Starmer',         a:['Starmer'],              t:'Prime Minister of the UK',      f:'🇬🇧', x:'Keir_Starmer' },
+  { n:'Friedrich Merz',       a:['Merz'],                 t:'Chancellor of Germany',         f:'🇩🇪', x:'_FriedrichMerz' },
+  { n:'Giorgia Meloni',       a:['Meloni'],               t:'Prime Minister of Italy',       f:'🇮🇹', x:'GiorgiaMeloni' },
+  { n:'Shehbaz Sharif',       a:['Shehbaz','Sharif'],     t:'Prime Minister of Pakistan',    f:'🇵🇰', x:'CMShehbaz' },
+  { n:'Lai Ching-te',         a:['Lai Ching-te','William Lai'], t:'President of Taiwan',     f:'🇹🇼', x:'ChingteLai' },
+  { n:'Mohammed bin Salman',  a:['bin Salman','MBS','Crown Prince'], t:'Crown Prince of Saudi Arabia', f:'🇸🇦', x:null },
+  { n:'Viktor Orban',         a:['Orban','Orbán'],        t:'Prime Minister of Hungary',     f:'🇭🇺', x:'PM_ViktorOrban' },
+  { n:'Javier Milei',         a:['Milei'],                t:'President of Argentina',        f:'🇦🇷', x:'JMilei' },
+  { n:'Nicolas Maduro',       a:['Maduro'],               t:'President of Venezuela',        f:'🇻🇪', x:'NicolasMaduro' },
+  { n:'Luiz Inacio Lula',     a:['Lula'],                 t:'President of Brazil',           f:'🇧🇷', x:'LulaOficial' },
+  { n:'Elon Musk',            a:['Musk'],                 t:'CEO, Tesla / SpaceX / X',       f:'🇺🇸', x:'elonmusk' },
+  { n:'Marco Rubio',          a:['Rubio'],                t:'US Secretary of State',         f:'🇺🇸', x:'SecRubio' },
+  { n:'Sergey Lavrov',        a:['Lavrov'],               t:'Foreign Minister of Russia',    f:'🇷🇺', x:null },
+  { n:'S. Jaishankar',        a:['Jaishankar'],           t:'Foreign Minister of India',     f:'🇮🇳', x:'DrSJaishankar' },
+  { n:'Antonio Guterres',     a:['Guterres'],             t:'UN Secretary-General',          f:'🇺🇳', x:'antonioguterres' },
+  { n:'Mark Rutte',           a:['Rutte'],                t:'NATO Secretary-General',        f:'🌐', x:'SecGenNATO' },
+  { n:'Ursula von der Leyen', a:['von der Leyen'],        t:'President, European Commission', f:'🇪🇺', x:'vonderleyen' },
+  { n:'Jerome Powell',        a:['Powell'],               t:'Chair, US Federal Reserve',     f:'🇺🇸', x:null },
+  { n:'Christine Lagarde',    a:['Lagarde'],              t:'President, ECB',                f:'🇪🇺', x:'Lagarde' },
+  { n:'Anthony Albanese',     a:['Albanese'],             t:'Prime Minister of Australia',   f:'🇦🇺', x:'AlboMP' },
+  { n:'Prabowo Subianto',     a:['Prabowo'],              t:'President of Indonesia',        f:'🇮🇩', x:'prabowo' },
+  { n:'Abdel Fattah el-Sisi', a:['el-Sisi','Sisi'],       t:'President of Egypt',            f:'🇪🇬', x:'AlsisiOfficial' },
+  { n:'Cyril Ramaphosa',      a:['Ramaphosa'],            t:'President of South Africa',     f:'🇿🇦', x:'CyrilRamaphosa' },
+].filter(f => !f._skip);
+
+// Precompile a word-boundary regex per figure (built once).
+FIGURES.forEach(f => {
+  const terms = [f.n, ...(f.a || [])]
+    .filter(Boolean)
+    .map(t => t.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  f._re = new RegExp('\\b(' + terms.join('|') + ')\\b', 'i');
+});
+
+function matchFigures(text) {
+  if (!text) return [];
+  const hits = [];
+  for (const f of FIGURES) {
+    if (f._re.test(text)) { hits.push(f); if (hits.length >= 3) break; }
+  }
+  return hits;
+}
+
+function figHref(f) {
+  return f.x
+    ? 'https://x.com/' + f.x
+    : 'https://x.com/search?q=' + encodeURIComponent('"' + f.n + '"') + '&f=live';
+}
+
+function buildFiguresRow(text) {
+  const figs = matchFigures(text);
+  if (figs.length === 0) return '';
+  const chips = figs.map(f => {
+    const at = f.x ? '<span class="fig-at">@' + f.x + '</span>' : '<span class="fig-at">🔍</span>';
+    const flag = f.f ? '<span class="fig-flag">' + f.f + '</span>' : '';
+    const tip = (f.t ? f.t + (f.x ? ' · @' + f.x : ' · search X') : '');
+    return '<a class="fig-chip" href="' + figHref(f) + '" target="_blank" rel="noopener" '
+      + 'onclick="event.stopPropagation()" title="' + tip.replace(/"/g, '') + '">'
+      + flag + '<span>' + f.n + '</span>' + at + '</a>';
+  }).join('');
+  return '<div class="ev-figs"><span class="ev-figs-lbl">In this story</span>' + chips + '</div>';
+}
+
 function buildEventCard(e) {
   const timeStr = e.time ? e.time.toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' }) : '';
   const tags = (e.tags || []).map(t => `<span class="tag ${t.up ? 'tag-up' : 'tag-dn'}">${t.t}</span>`).join('');
@@ -2730,6 +2813,7 @@ function buildEventCard(e) {
       <span class="ev-ts">${timeStr}</span>
     </div>
     <div class="ev-txt">${e.txt}</div>
+    ${buildFiguresRow(e.txt)}
     <div class="ev-foot">${tags}${langBadge}<span class="tag" style="background:var(--bg4);color:var(--txt3);cursor:pointer" onclick="event.stopPropagation();handleEvStockClick(this)">🤖 AI Brief →</span><a class="tag ev-src-link" href="${srcUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Read original source">🔗 ${srcLabel} →</a><button class="tag ev-share-btn" onclick="event.stopPropagation();shareEvent('tw','${e.txt.substring(0,120).replace(/'/g,"\\'").replace(/`/g,'')}')" title="Share on X/Twitter">𝕏 Share</button><button class="tag ev-share-btn" onclick="event.stopPropagation();shareEvent('wa','${e.txt.substring(0,120).replace(/'/g,"\\'").replace(/`/g,'')}')" title="Share on WhatsApp">💬 WA</button></div>
   </div>`;
 }
