@@ -848,58 +848,13 @@ footer{border-top:1px solid var(--brd);padding:32px 60px;display:flex;align-item
     <div class="hud-header">
       <div class="hud-dot"></div>
       <div class="hud-title">Intelligence Feed</div>
-      <div class="hud-count">47 ACTIVE</div>
+      <div class="hud-count" id="hud-count">● LIVE</div>
     </div>
-    <div class="hud-item">
-      <div class="hud-row">
-        <span class="hud-cat mil">Military</span>
-        <span class="hud-time">14:32 UTC</span>
-      </div>
-      <div class="hud-text">NATO activates rapid response forces along eastern flank</div>
-      <div class="hud-row" style="margin-top:3px">
-        <span class="hud-ticker up">LMT +4.2%</span>&nbsp;
-        <span class="hud-ticker up">RTX +3.8%</span>&nbsp;
-        <span class="hud-ticker up">GOLD +2.1%</span>
-      </div>
-    </div>
-    <div class="hud-item">
-      <div class="hud-row">
-        <span class="hud-cat mkt">Market</span>
-        <span class="hud-time">13:15 UTC</span>
-      </div>
-      <div class="hud-text">Red Sea shipping disruption — crude oil spikes 3.2%</div>
-      <div class="hud-row" style="margin-top:3px">
-        <span class="hud-ticker up">OIL +3.2%</span>&nbsp;
-        <span class="hud-ticker dn">DAL −8.1%</span>&nbsp;
-        <span class="hud-ticker up">XOM +5.4%</span>
-      </div>
-    </div>
-    <div class="hud-item">
-      <div class="hud-row">
-        <span class="hud-cat pol">Policy</span>
-        <span class="hud-time">12:08 UTC</span>
-      </div>
-      <div class="hud-text">US expands chip export controls to China manufacturers</div>
-      <div class="hud-row" style="margin-top:3px">
-        <span class="hud-ticker dn">NVDA −2.8%</span>&nbsp;
-        <span class="hud-ticker dn">AMAT −1.9%</span>&nbsp;
-        <span class="hud-ticker up">USD +0.4%</span>
-      </div>
-    </div>
-    <div class="hud-item">
-      <div class="hud-row">
-        <span class="hud-cat con">Conflict</span>
-        <span class="hud-time">11:47 UTC</span>
-      </div>
-      <div class="hud-text">Ceasefire talks resume in Middle East — markets ease</div>
-      <div class="hud-row" style="margin-top:3px">
-        <span class="hud-ticker dn">GOLD −0.4%</span>&nbsp;
-        <span class="hud-ticker up">DAL +1.2%</span>&nbsp;
-        <span class="hud-ticker dn">OIL −1.1%</span>
-      </div>
+    <div id="hud-feed">
+      <div class="hud-item"><div class="hud-text" style="color:var(--txt3)">● Connecting to live intelligence feed…</div></div>
     </div>
     <div class="hud-footer">
-      <a href="/login?plan=f">View all 47 alerts →</a>
+      <a href="/login?plan=f" id="hud-alllink">View all alerts →</a>
     </div>
   </div>
 </section>
@@ -1768,6 +1723,75 @@ function renderWarStocks() {
 // Real-time feeds run inside /app for paying subscribers.
 renderTicker();
 renderWarStocks();
+
+// ── LIVE INTELLIGENCE FEED — real news, same /api/events source as the app ──
+(function() {
+  var feed = document.getElementById('hud-feed');
+  if (!feed) return;
+  var countEl = document.getElementById('hud-count');
+  var allLink = document.getElementById('hud-alllink');
+  // Map event category → HUD colour bucket (mil=red, mkt=gold, pol=blue, con=green)
+  var CATCLR = { mil:'mil', nuc:'mil', cyb:'mil', cri:'mil', dis:'mil',
+    eco:'mkt', fin:'mkt', biz:'mkt', nrg:'mkt', pol:'pol', dip:'pol',
+    env:'con', hlt:'con', tech:'con' };
+  function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  function rel(t){
+    var d = (Date.now() - new Date(t).getTime()) / 1000;
+    if (d < 90) return 'now';
+    if (d < 3600) return Math.floor(d/60) + 'm ago';
+    if (d < 86400) return Math.floor(d/3600) + 'h ago';
+    return Math.floor(d/86400) + 'd ago';
+  }
+  // Relevance: surface geopolitically-meaningful headlines, push off-topic down.
+  var HOT = ['war','military','missile','strike','airstrike','attack','troops','invasion',
+    'offensive','ceasefire','sanction','nuclear','drone','border','conflict','killed',
+    'frontline','navy','coup','terror','hostage','escalat','defen','weapon','nato','summit',
+    'tariff','opec','embargo','warship','blockade','rebel','militant','retaliat'];
+  var GEO = ['russia','ukraine','israel','iran','gaza','china','taiwan','korea','pakistan',
+    'india','syria','yemen','sudan','lebanon','venezuela','hezbollah','hamas','kremlin','moscow','beijing'];
+  var RELCAT = { mil:1, nuc:1, dip:1, nrg:1, eco:1, fin:1, cyb:1, cri:1 };
+  function score(e) {
+    var t = (e.txt || '').toLowerCase(); var s = 0;
+    for (var i=0;i<HOT.length;i++) if (t.indexOf(HOT[i]) > -1) s += 2;
+    for (var j=0;j<GEO.length;j++) if (t.indexOf(GEO[j]) > -1) s += 1;
+    if (RELCAT[e.cat]) s += 1;
+    return s;
+  }
+  function render(events, total) {
+    var html = events.slice(0, 5).map(function(e) {
+      var clr = CATCLR[e.cat] || 'con';
+      var src = e.source ? '<div class="hud-row" style="margin-top:3px"><span class="hud-ticker" style="color:var(--txt3);font-weight:600">' + esc(e.source) + '</span></div>' : '';
+      return '<div class="hud-item"><div class="hud-row">'
+        + '<span class="hud-cat ' + clr + '">' + esc(e.catLabel || 'NEWS') + '</span>'
+        + '<span class="hud-time">' + rel(e.time) + '</span></div>'
+        + '<div class="hud-text">' + esc((e.txt || '').slice(0, 110)) + '</div>' + src + '</div>';
+    }).join('');
+    if (html) feed.innerHTML = html;
+    if (countEl && total) countEl.textContent = '● ' + total + ' LIVE';
+    if (allLink && total) allLink.textContent = 'View all ' + total + ' alerts →';
+  }
+  function load() {
+    Promise.all([
+      fetch('/api/gnews').then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; }),
+      fetch('/api/events').then(function(r){ return r.ok ? r.json() : null; }).catch(function(){ return null; })
+    ]).then(function(res) {
+      var all = []
+        .concat((res[0] && res[0].articles) || [])
+        .concat((res[1] && res[1].events) || [])
+        .filter(function(e){ return e && !e.isDemo && e.txt; });
+      if (!all.length) return; // keep last good / loading state
+      // Dedupe by headline.
+      var seen = {}, uniq = [];
+      all.forEach(function(e){ var k=(e.txt||'').toLowerCase().slice(0,60); if(!seen[k]){ seen[k]=1; uniq.push(e); } });
+      // Sort by relevance, then recency.
+      uniq.sort(function(a,b){ return (score(b)-score(a)) || (new Date(b.time)-new Date(a.time)); });
+      var total = ((res[0] && res[0].count) || 0) + ((res[1] && res[1].count) || 0);
+      render(uniq, total || uniq.length);
+    });
+  }
+  load();
+  setInterval(load, 90000);
+})();
 
 // ── VIDEO DEMO ────────────────────────────────────────────────────
 var VIDEO_ID = '';
