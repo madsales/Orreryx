@@ -1,0 +1,75 @@
+# OrreryX
+
+> OrreryX is a real-time geopolitical risk intelligence platform. It tracks active conflicts, war probability, political instability, and nuclear risk across 180+ countries, and maps each event to its impact on markets — oil, gold, defence stocks, currencies, and crypto. Events are plotted on a live 3D globe and refreshed every 5 minutes from 45+ sources including BBC, Reuters, Al Jazeera, AP, and GDELT.
+
+OrreryX is built for retail investors, analysts, and researchers who need to see geopolitical risk before it moves their portfolio — a focused, affordable alternative to terminal-grade intelligence tools. Plans: a free 3-day trial, Starter ($0.99/mo), Analyst ($14.99/mo, adds the live 3D globe and real exchange data), and Command ($34.99/mo, adds unlimited live data and crypto war-risk scores).
+
+## Start here
+
+- [OrreryX home](https://www.orreryx.io/): What OrreryX is, the live breaking feed, and the 3D risk globe.
+- [Live app](https://www.orreryx.io/app): The interactive 3D globe with real-time conflict events and market impact (paid tiers).
+- [Pricing](https://www.orreryx.io/pricing): Plan tiers, features, and the free 3-day trial.
+- [Enterprise](https://www.orreryx.io/enterprise): API access and team/enterprise intelligence plans.
+- [Methodology](https://www.orreryx.io/methodology): How OrreryX sources data and calculates risk scores.
+- [What is geopolitical risk?](https://www.orreryx.io/what-is-geopolitics): Primer on geopolitical risk and why it moves markets.
+- [Risk dashboard](https://www.orreryx.io/risk-dashboard): Live country risk scores and global risk index.
+- [Interactive risk map](https://www.orreryx.io/map): Live global conflict and risk map.
+
+## Live conflict and war tracking
+
+- [Russia-Ukraine war](https://www.orreryx.io/russia-ukraine-war): Live tracking of the Russia-Ukraine war and its market impact.
+- [Russia-Ukraine ceasefire](https://www.orreryx.io/russia-ukraine-ceasefire): Ceasefire negotiations and developments.
+- [Israel-Gaza war](https://www.orreryx.io/israel-gaza): Live coverage of the Israel-Gaza conflict.
+- [Middle East war risk](https://www.orreryx.io/middle-east-war): Regional escalation risk across the Middle East.
+- [Iran-US conflict](https://www.orreryx.io/iran-us-conflict): Iran-US tensions and strike-risk analysis.
+- [China-Taiwan](https://www.orreryx.io/china-taiwan-war): China-Taiwan Strait crisis and invasion-risk tracking.
+- [India-Pakistan](https://www.orreryx.io/india-pakistan): India-Pakistan tensions and border conflict.
+- [South China Sea](https://www.orreryx.io/south-china-sea): South China Sea territorial disputes.
+- [Sudan civil war](https://www.orreryx.io/sudan-war): Sudan conflict and humanitarian crisis.
+- [War news](https://www.orreryx.io/war-news): Latest war and conflict headlines.
+
+## Nuclear and global risk
+
+- [Nuclear war risk](https://www.orreryx.io/nuclear-war-risk): Live nuclear escalation probability.
+- [WW3 probability](https://www.orreryx.io/ww3-probability): World War III risk index and scenario analysis.
+- [Doomsday Clock](https://www.orreryx.io/doomsday-clock): Current Doomsday Clock proximity to midnight.
+- [Iran nuclear crisis](https://www.orreryx.io/iran-nuclear): Iran enrichment, IAEA access, and strike-window analysis.
+- [North Korea](https://www.orreryx.io/north-korea): North Korea missile and nuclear program tracking.
+
+## Country risk profiles
+
+- [Russia risk](https://www.orreryx.io/russia-risk): Russia political, security, and economic risk scores.
+- [China risk](https://www.orreryx.io/china-risk): China risk profile and stability outlook.
+- [Iran risk](https://www.orreryx.io/iran-risk): Iran risk profile.
+- [Israel risk](https://www.orreryx.io/israel-risk): Israel risk profile.
+- [India risk](https://www.orreryx.io/india-risk): India risk profile.
+- [Pakistan risk](https://www.orreryx.io/pakistan-risk): Pakistan risk profile.
+- [North Korea risk](https://www.orreryx.io/north-korea-risk): North Korea risk profile.
+- [Taiwan risk](https://www.orreryx.io/taiwan-risk): Taiwan risk profile.
+- [Saudi Arabia risk](https://www.orreryx.io/saudi-arabia-risk): Saudi Arabia risk profile.
+- [Ukraine risk](https://www.orreryx.io/ukraine-risk): Ukraine risk profile.
+
+## Markets, commodities and safe havens
+
+- [Market impact](https://www.orreryx.io/market-impact): How geopolitical events move oil, gold, equities, and currencies.
+- [Safe haven assets](https://www.orreryx.io/safe-haven-assets): Gold, USD, JPY, CHF, and Treasuries during crises.
+- [Gold price](https://www.orreryx.io/gold-price): Gold price and geopolitical drivers.
+- [Oil price](https://www.orreryx.io/oil-price): Oil price and conflict-driven supply risk.
+- [Natural gas price](https://www.orreryx.io/natural-gas-price): Natural gas price and energy risk.
+- [Defense stocks](https://www.orreryx.io/defense-stocks): Defence stocks and war-premium analysis.
+- [Taiwan semiconductors](https://www.orreryx.io/taiwan-semiconductor): Semiconductor supply-chain risk from a Taiwan crisis.
+- [Europe energy crisis](https://www.orreryx.io/europe-energy-crisis): European energy security and gas dependency.
+
+## Analysis and guides
+
+- [Geopolitical risk investing](https://www.orreryx.io/geopolitical-risk-investing): How to invest around geopolitical risk.
+- [Top risks 2026](https://www.orreryx.io/top-risks-2026): The leading geopolitical risks of 2026.
+- [Black swan events 2026](https://www.orreryx.io/black-swan-events-2026): Low-probability, high-impact scenarios to watch.
+- [Global conflicts 2026](https://www.orreryx.io/global-conflicts-2026): Overview of active global conflicts.
+- [Monthly geopolitical risk report](https://www.orreryx.io/monthly-geopolitical-risk-report): OrreryX's monthly risk briefing.
+- [Geopolitics news](https://www.orreryx.io/geopolitics-news): Latest geopolitical news and analysis.
+
+## Contact
+
+- Email: madasales15@gmail.com
+- Website: https://www.orreryx.io

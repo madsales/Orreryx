@@ -20,3 +20,6 @@ Disallow: /callback
 Disallow: /smm
 
 Sitemap: https://www.orreryx.io/sitemap.xml
+
+# AI / LLM site guide (ChatGPT, Perplexity, Claude, Google AI Overviews)
+# https://www.orreryx.io/llms.txt
