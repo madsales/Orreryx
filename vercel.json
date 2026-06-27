@@ -173,6 +173,7 @@
     { "src": "/api/newsletter(.*)",   "dest": "/api/newsletter.js" },
     { "src": "/api/anthropic",        "dest": "/api/anthropic.js" },
     { "src": "/api/paypal(.*)",       "dest": "/api/paypal.js" },
+    { "src": "/api/reactions(.*)",    "dest": "/api/reactions.js" },
     { "src": "/api/events(.*)",       "dest": "/api/events.js" },
     { "src": "/api/gnews(.*)",        "dest": "/api/gnews.js" },
     { "src": "/api/coindesk(.*)",     "dest": "/api/coindesk.js" },

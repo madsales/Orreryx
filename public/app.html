@@ -241,6 +241,21 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
 .fig-chip .fig-flag{font-size:11px;line-height:1}
 .fig-chip .fig-at{color:var(--txt4);font-size:9.5px}
 .ev-foot{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+.ev-rx-btn{cursor:pointer}
+.ev-rx-btn.active{background:var(--red2);color:var(--red);border-color:var(--red)}
+.ev-reactions{margin:10px 0 2px;padding:11px 13px;background:var(--bg2);border:1px solid var(--brd);border-radius:8px}
+.rx-status{font:400 11px/1.5 var(--sans);color:var(--txt3)}
+.rx-head{display:inline-block;font:600 9.5px/1.2 var(--mono);color:var(--txt2);text-decoration:none;margin-bottom:9px;letter-spacing:.04em}
+.rx-head:hover{color:var(--red)}
+.rx-item{border-top:1px solid var(--brd);padding:8px 0}
+.rx-item:first-of-type{border-top:none;padding-top:0}
+.rx-meta{display:flex;gap:8px;align-items:center;margin-bottom:3px}
+.rx-author{font:600 10px/1 var(--mono);color:var(--txt2)}
+.rx-score{font:600 9px/1 var(--mono);color:var(--grn)}
+.rx-body{font:400 11.5px/1.55 var(--sans);color:var(--txt);word-break:break-word}
+.rx-link{font:500 9px/1 var(--mono);color:var(--txt4);text-decoration:none}
+.rx-link:hover{color:var(--red)}
+.rx-foot{margin-top:9px;font:400 8.5px/1.4 var(--mono);color:var(--txt4);letter-spacing:.03em}
 .ev-src-link{text-decoration:none;color:var(--txt4)!important;background:var(--bg4);}
 .ev-share-btn{background:var(--bg4);border:1px solid var(--brd);color:var(--txt3);font:600 8px/1 var(--mono);padding:2px 7px;border-radius:3px;cursor:pointer;transition:all .12s}
 .ev-share-btn:hover{border-color:var(--brd2);color:var(--txt2)}
@@ -2814,8 +2829,56 @@ function buildEventCard(e) {
     </div>
     <div class="ev-txt">${e.txt}</div>
     ${buildFiguresRow(e.txt)}
-    <div class="ev-foot">${tags}${langBadge}<span class="tag" style="background:var(--bg4);color:var(--txt3);cursor:pointer" onclick="event.stopPropagation();handleEvStockClick(this)">🤖 AI Brief →</span><a class="tag ev-src-link" href="${srcUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Read original source">🔗 ${srcLabel} →</a><button class="tag ev-share-btn" onclick="event.stopPropagation();shareEvent('tw','${e.txt.substring(0,120).replace(/'/g,"\\'").replace(/`/g,'')}')" title="Share on X/Twitter">𝕏 Share</button><button class="tag ev-share-btn" onclick="event.stopPropagation();shareEvent('wa','${e.txt.substring(0,120).replace(/'/g,"\\'").replace(/`/g,'')}')" title="Share on WhatsApp">💬 WA</button></div>
+    <div class="ev-foot">${tags}${langBadge}<span class="tag" style="background:var(--bg4);color:var(--txt3);cursor:pointer" onclick="event.stopPropagation();handleEvStockClick(this)">🤖 AI Brief →</span><a class="tag ev-src-link" href="${srcUrl}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="Read original source">🔗 ${srcLabel} →</a><button class="tag ev-share-btn" onclick="event.stopPropagation();shareEvent('tw','${e.txt.substring(0,120).replace(/'/g,"\\'").replace(/`/g,'')}')" title="Share on X/Twitter">𝕏 Share</button><button class="tag ev-share-btn" onclick="event.stopPropagation();shareEvent('wa','${e.txt.substring(0,120).replace(/'/g,"\\'").replace(/`/g,'')}')" title="Share on WhatsApp">💬 WA</button><button class="tag ev-rx-btn" onclick="event.stopPropagation();toggleReactions(this)" title="See what people are saying">💬 Reactions</button></div>
+    <div class="ev-reactions" id="rx-${e.id}" hidden onclick="event.stopPropagation()"></div>
   </div>`;
+}
+
+function rxEsc(s) {
+  return (s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+async function toggleReactions(btn) {
+  const card = btn.closest('.ev-card');
+  if (!card) return;
+  const id = parseInt(card.getAttribute('data-evid'));
+  const panel = document.getElementById('rx-' + id);
+  if (!panel) return;
+
+  // Toggle closed if already open.
+  if (!panel.hidden) { panel.hidden = true; btn.classList.remove('active'); return; }
+  panel.hidden = false;
+  btn.classList.add('active');
+  if (panel.dataset.loaded === '1') return; // fetched once, keep it
+
+  const ev = feedEvents.find(x => x.id === id) || WAR_EVENTS.find(x => x.id === id);
+  const q = ev ? ev.txt : '';
+  panel.innerHTML = '<div class="rx-status">Loading reactions…</div>';
+
+  try {
+    const r = await fetch('/api/reactions?q=' + encodeURIComponent(q.slice(0, 200)));
+    const d = await r.json();
+    panel.dataset.loaded = '1';
+    if (!d.ok || !d.comments || d.comments.length === 0) {
+      panel.innerHTML = '<div class="rx-status">No public discussion found for this story yet.</div>';
+      return;
+    }
+    const head = '<a class="rx-head" href="' + d.thread.permalink + '" target="_blank" rel="noopener">'
+      + '💬 ' + rxEsc(d.thread.label) + ' · ' + (d.thread.num_comments || 0) + ' comments ↗</a>';
+    const items = d.comments.map(c => {
+      const score = (c.score != null) ? '<span class="rx-score">▲ ' + c.score + '</span>' : '';
+      return '<div class="rx-item">'
+        + '<div class="rx-meta"><span class="rx-author">' + rxEsc(c.author) + '</span>' + score + '</div>'
+        + '<div class="rx-body">' + rxEsc(c.body) + '</div>'
+        + '<a class="rx-link" href="' + c.permalink + '" target="_blank" rel="noopener">view ↗</a>'
+        + '</div>';
+    }).join('');
+    const src = d.source === 'reddit' ? 'Reddit' : 'Hacker News';
+    panel.innerHTML = head + items + '<div class="rx-foot">Source: ' + src + ' · opinions are commenters’ own</div>';
+  } catch (e) {
+    panel.dataset.loaded = '';
+    panel.innerHTML = '<div class="rx-status">Couldn’t load reactions right now.</div>';
+  }
 }
 
 function shareEvent(platform, txt) {
