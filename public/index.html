@@ -22,7 +22,7 @@
 <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=()">
 <!-- ── PRIMARY SEO ── -->
 <title>OrreryX | Geopolitics News Today — Live War Monitoring & Global Intelligence</title>
-<meta name="description" content="OrreryX delivers geopolitics news today — live war monitoring, current global conflicts 2025, and real-time intelligence from 45+ sources including BBC, Reuters and Al Jazeera. Track geopolitical risk, market impact and breaking events on a live 3D world map. Free 3-day trial.">
+<meta name="description" content="Live geopolitical risk intelligence: war monitoring, global conflicts and market impact across 180+ countries, mapped on a live 3D globe. Free 3-day trial.">
 <meta name="keywords" content="geopolitics news today, geopolitical news today, war monitoring, war monitor, current global conflicts 2025, latest geopolitical news, geopolitical intelligence, global politics news, geopolitical risk, live world news map, geopolitical market intelligence, war stocks tracker, live crisis news, defence stocks, AI market analysis, crisis investing platform">
 <link rel="canonical" href="https://www.orreryx.io/">
 
@@ -837,7 +837,7 @@ footer{border-top:1px solid var(--brd);padding:32px 60px;display:flex;align-item
     <p class="hero-sub">Real-time geopolitics news, war monitoring and current global conflicts from 45+ sources — BBC, Reuters, Al Jazeera and more. AI briefings every 60 seconds. Events mapped live on a 3D globe.</p>
     <div class="hero-btns">
       <a href="/login?plan=f" class="btn-hero-p">Start Free — 3 Days, No Card →</a>
-      <a href="/demo" class="btn-hero-s">▶ Watch Demo</a>
+      <a href="/app" class="btn-hero-s">▶ Watch Demo</a>
       <button id="push-btn" onclick="subscribePush()" style="display:inline-flex;align-items:center;gap:7px;padding:14px 20px;border-radius:6px;font-size:13px;font-weight:500;background:rgba(255,255,255,.05);color:var(--txt2);border:1px solid var(--brd2);cursor:pointer;transition:all .18s;white-space:nowrap;font-family:var(--sans)" onmouseover="this.style.background='rgba(255,255,255,.09)';this.style.color='var(--txt)'" onmouseout="this.style.background='rgba(255,255,255,.05)';this.style.color='var(--txt2)'">🔔 Push Alerts</button>
     </div>
     <div class="hero-stats">
@@ -1895,17 +1895,13 @@ var VIDEO_ID = '';
 function loadVideo() {
   var wrap = document.getElementById('video-wrap');
   if (!wrap) return;
+  // No demo video configured → open the live app (the globe is the demo).
+  if (!VIDEO_ID) { window.location.href = '/app'; return; }
   var placeholder = document.getElementById('video-placeholder');
   var iframe = document.createElement('iframe');
-  if (VIDEO_ID) {
-    iframe.src = 'https://www.youtube.com/embed/' + VIDEO_ID + '?autoplay=1&rel=0';
-    iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
-    iframe.allowFullscreen = true;
-  } else {
-    iframe.src = '/demo';
-    iframe.allow = 'autoplay; speech; microphone';
-    iframe.allowFullscreen = true;
-  }
+  iframe.src = 'https://www.youtube.com/embed/' + VIDEO_ID + '?autoplay=1&rel=0';
+  iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+  iframe.allowFullscreen = true;
   iframe.style.cssText = 'position:absolute;inset:0;width:100%;height:100%;border:0';
   if (placeholder) placeholder.remove();
   wrap.appendChild(iframe);
