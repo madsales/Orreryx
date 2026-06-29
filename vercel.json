@@ -275,6 +275,8 @@
     { "src": "/monthly-geopolitical-risk-report", "dest": "/monthly-geopolitical-risk-report.html" },
     { "src": "/iran-oil-sanctions",   "dest": "/iran-oil-sanctions.html" },
     { "src": "/india-china-border",   "dest": "/india-china-border.html" },
+    { "src": "/nato-countries",          "dest": "/nato-countries.html" },
+    { "src": "/ukraine-reconstruction",  "dest": "/ukraine-reconstruction.html" },
     { "src": "/",                    "dest": "/index.html" }
   ]
 }
