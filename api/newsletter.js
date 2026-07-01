@@ -79,6 +79,10 @@ function emailTemplates(email) {
           <div style="font-size:12px;color:#c0c0b8;line-height:1.65;margin-bottom:12px">13 live conflict zones on an interactive world map. Click any hotspot → see risk score, market impact (oil, gold, defence, FX), and full country analysis. The kind of tool Bloomberg charges $2,400/mo for.</div>
           <a href="${HOST}/map" style="display:block;background:#3ab860;color:#000;text-decoration:none;text-align:center;padding:11px;border-radius:4px;font-weight:800;font-size:12px">🗺️ See the Risk Map — Command $34.99/mo →</a>
         </div>
+        <div style="background:rgba(212,168,67,.06);border:1px solid rgba(212,168,67,.2);border-radius:8px;padding:14px 16px;margin-bottom:16px;text-align:center">
+          <div style="font-size:12px;font-weight:700;color:#d4a843;margin-bottom:4px">⏰ Introductory pricing — lock in before the increase</div>
+          <div style="font-size:12px;color:#a0a09a">Command is $34.99/mo now. Price increases to $44.99/mo next month for new subscribers. Lock in the current rate today.</div>
+        </div>
         <a href="${HOST}/login?plan=f" style="display:block;background:#e03836;color:#fff;text-decoration:none;text-align:center;padding:14px;border-radius:4px;font-weight:700;font-size:14px">Track These Live — Free Trial →</a>
       `)
     },
