@@ -8,6 +8,16 @@
   window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
+  // GDPR / UK GDPR: deny all storage until the visitor consents (Consent Mode v2).
+  gtag('consent', 'default', {
+    ad_storage: 'denied', analytics_storage: 'denied',
+    ad_user_data: 'denied', ad_personalization: 'denied'
+  });
+  try {
+    if (localStorage.getItem('orrx_consent') === 'granted') {
+      gtag('consent','update',{ad_storage:'granted',analytics_storage:'granted',ad_user_data:'granted',ad_personalization:'granted'});
+    }
+  } catch(e){}
   gtag('config', 'AW-18101684972');
 </script>
 <!-- Google Search Console: Add verification meta tag here -->
@@ -985,6 +995,7 @@ footer{border-top:1px solid var(--brd);padding:32px 60px;display:flex;align-item
       </div>
     </div>
   </div>
+  <p style="text-align:center;font:400 11px/1.5 var(--mono);color:var(--txt4);margin-top:16px">Illustrative preview — sample data, not live prices. Real-time data runs inside the app for subscribers.</p>
 </div>
 
 <!-- ── FEATURES ───────────────────────────────── -->
@@ -996,8 +1007,8 @@ footer{border-top:1px solid var(--brd);padding:32px 60px;display:flex;align-item
     <div class="feat-grid">
       <div class="feat-card"><div class="feat-card-icon">🌍</div><div class="feat-card-title">Live World Map</div><div class="feat-card-body">150+ world cities plotted with real-time crisis event markers. Every event drops as a pulsing dot at its exact location. Click any event for instant AI analysis.</div></div>
       <div class="feat-card"><div class="feat-card-icon">⚔️</div><div class="feat-card-title">War Stocks Panel</div><div class="feat-card-body">40+ war-impacted equities across defense, energy, airlines and shipping. Live prices, sparklines, and war impact scores.</div></div>
-      <div class="feat-card"><div class="feat-card-icon">🤖</div><div class="feat-card-title">AI Intel Console</div><div class="feat-card-body">Claude AI briefs you on every real event. Ask anything — get sharp, specific, actionable intelligence instantly.</div></div>
-      <div class="feat-card"><div class="feat-card-icon">📡</div><div class="feat-card-title">Live Crisis Feed</div><div class="feat-card-body">Breaking news from BBC, Reuters, AP, Guardian and 100+ sources — delivered within minutes. 8 event categories.</div></div>
+      <div class="feat-card"><div class="feat-card-icon">🤖</div><div class="feat-card-title">AI Intel Console</div><div class="feat-card-body">AI-generated briefings summarise each event and its market context in seconds. Informational context only — not financial advice.</div></div>
+      <div class="feat-card"><div class="feat-card-icon">📡</div><div class="feat-card-title">Live Crisis Feed</div><div class="feat-card-body">Breaking news from BBC, Reuters, AP, Guardian and 45+ sources — delivered within minutes. 8 event categories.</div></div>
       <div class="feat-card"><div class="feat-card-icon">🌐</div><div class="feat-card-title">Global Indices</div><div class="feat-card-body">25+ global market indices live — S&amp;P 500, FTSE, DAX, Nikkei, Hang Seng. Crisis-correlated movement tracking.</div></div>
       <div class="feat-card"><div class="feat-card-icon">🔍</div><div class="feat-card-title">Stock Screener</div><div class="feat-card-body">Filter 40+ stocks by region, sector, P/E, yield, YTD, and debt. One-click AI deep-dive on any equity.</div></div>
       <div class="feat-card"><div class="feat-card-icon">🌐</div><div class="feat-card-title">Stocks by Country</div><div class="feat-card-body">Browse top equities from 13 nations — US, UK, Germany, Japan, China, India, UAE, Saudi Arabia, Nigeria, Australia, South Korea, France and Brazil.</div></div>
@@ -1176,7 +1187,8 @@ footer{border-top:1px solid var(--brd);padding:32px 60px;display:flex;align-item
   <div class="compare-inner">
     <div class="compare-hd">
       <div class="compare-label">Price comparison</div>
-      <h2 class="compare-title">99% cheaper than <em>the alternatives</em></h2>
+      <h2 class="compare-title">A fraction of the cost of <em>pro tools</em></h2>
+      <p style="font:400 12px/1.5 var(--sans);color:var(--txt3);max-width:560px;margin:10px auto 0">OrreryX is a focused retail intelligence app, not a full institutional terminal. The comparison below is on geopolitical-risk features and price only.</p>
     </div>
     <div style="border:1px solid var(--brd);border-radius:10px;overflow:hidden">
       <table class="cmp-table">
@@ -1366,7 +1378,7 @@ footer{border-top:1px solid var(--brd);padding:32px 60px;display:flex;align-item
     <div class="how-steps">
       <div class="how-step"><div class="how-n">01</div><div class="how-t">Choose a plan</div><div class="how-d">Pick Starter ($0.99), Analyst ($14.99), or Command ($34.99). Pay securely via PayPal — Visa, Mastercard, debit or PayPal balance.</div></div>
       <div class="how-step"><div class="how-n">02</div><div class="how-t">Instant access</div><div class="how-d">After payment you land directly on the platform. No downloads, no emails, no waiting — immediate access.</div></div>
-      <div class="how-step"><div class="how-n">03</div><div class="how-t">Live feed loads</div><div class="how-d">Breaking news from BBC, Reuters, AP and 100+ sources streams in within seconds. Indices and war stocks begin ticking. Globe lights up with real events.</div></div>
+      <div class="how-step"><div class="how-n">03</div><div class="how-t">Live feed loads</div><div class="how-d">Breaking news from BBC, Reuters, AP and 45+ sources streams in within seconds. Indices and war stocks begin ticking. Globe lights up with real events.</div></div>
       <div class="how-step"><div class="how-n">04</div><div class="how-t">AI briefs you</div><div class="how-d">Every 60 seconds an AI brief fires on the latest real-world event — affected sectors, market context, and scenario analysis for each development.</div></div>
     </div>
   </div>
@@ -1473,13 +1485,13 @@ footer{border-top:1px solid var(--brd);padding:32px 60px;display:flex;align-item
     <span style="font-family:var(--mono);font-size:9px;color:var(--txt3)">Geopolitical Market Intelligence</span>
   </div>
   <div class="foot-links">
-    <a href="#" onclick="openLegal('terms');return false" class="foot-a">Terms of Service</a>
-    <a href="#" onclick="openLegal('privacy');return false" class="foot-a">Privacy Policy</a>
-    <a href="#" onclick="openLegal('refund');return false" class="foot-a">Refund Policy</a>
+    <a href="/terms" class="foot-a">Terms of Service</a>
+    <a href="/privacy" class="foot-a">Privacy Policy</a>
+    <a href="/refund" class="foot-a">Refund Policy</a>
     <a href="mailto:orrerysupport@gmail.com" class="foot-a">Contact</a>
     <a href="/login" class="foot-a">Sign In →</a>
   </div>
-  <div class="foot-copy">© 2026 OrreryX. All rights reserved. Not financial advice.</div>
+  <div class="foot-copy">© 2026 OrreryX. Informational purposes only — not financial advice. OrreryX is not a registered investment adviser, broker-dealer, or financial services firm. Data on lower tiers and marketing previews may be simulated or delayed.</div>
 </footer>
 <div style="background:var(--bg2);border-top:1px solid var(--brd);padding:12px 48px;font:400 9px/1.6 var(--mono);color:var(--txt3);text-align:center">
   ⚠️ All content including AI analysis, scenario modelling, price data and market commentary is for informational purposes only and does not constitute financial advice, investment advice, or a solicitation to buy or sell any security. Past performance does not guarantee future results. Consult a licensed financial adviser before making investment decisions.
@@ -2252,6 +2264,22 @@ async function subscribePush() {
 <script>
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('/sw.js').catch(console.error);
+}
+</script>
+<!-- ── COOKIE CONSENT (GDPR / Consent Mode v2) ── -->
+<div id="ccBanner" style="display:none;position:fixed;left:16px;right:16px;bottom:16px;z-index:99999;max-width:720px;margin:0 auto;background:#0d0d12;border:1px solid rgba(255,255,255,.14);border-radius:12px;padding:16px 18px;box-shadow:0 20px 60px rgba(0,0,0,.6);font-family:'Inter',system-ui,sans-serif">
+  <div style="font-size:13px;line-height:1.6;color:#c8c8c2;margin-bottom:12px">We use cookies for analytics and advertising measurement. Non-essential cookies stay off until you accept. See our <a href="/privacy" style="color:#e03836;text-decoration:underline">Privacy Policy</a>.</div>
+  <div style="display:flex;gap:10px;flex-wrap:wrap">
+    <button onclick="ccChoose('granted')" style="background:#e03836;color:#fff;border:0;border-radius:6px;padding:9px 18px;font-size:12px;font-weight:600;cursor:pointer">Accept</button>
+    <button onclick="ccChoose('denied')" style="background:transparent;color:#c8c8c2;border:1px solid rgba(255,255,255,.2);border-radius:6px;padding:9px 18px;font-size:12px;font-weight:500;cursor:pointer">Decline</button>
+  </div>
+</div>
+<script>
+(function(){ var c=null; try{c=localStorage.getItem('orrx_consent');}catch(e){} if(!c){ var b=document.getElementById('ccBanner'); if(b) b.style.display='block'; } })();
+function ccChoose(v){
+  try{ localStorage.setItem('orrx_consent', v); }catch(e){}
+  if(typeof gtag==='function'){ gtag('consent','update',{ad_storage:v,analytics_storage:v,ad_user_data:v,ad_personalization:v}); }
+  var b=document.getElementById('ccBanner'); if(b) b.style.display='none';
 }
 </script>
 </body>
