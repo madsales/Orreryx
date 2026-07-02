@@ -23,14 +23,14 @@
 <link rel="canonical" href="https://www.orreryx.io/app">
 <meta property="og:type" content="website">
 <meta property="og:title" content="OrreryX — Live Geopolitical Risk & Market Intelligence">
-<meta property="og:description" content="Real-time conflict tracker covering 35 countries. See live war updates, nuclear alerts, sanctions and their direct market impact on stocks, oil, gold and crypto.">
+<meta property="og:description" content="Real-time conflict tracker covering 34 countries. See live war updates, nuclear alerts, sanctions and their direct market impact on stocks, oil, gold and crypto.">
 <meta property="og:url" content="https://www.orreryx.io/app">
 <meta property="og:image" content="https://www.orreryx.io/og-image.svg">
 <meta property="og:site_name" content="OrreryX">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:site" content="@orreryx">
 <meta name="twitter:title" content="OrreryX — Live Geopolitical Risk & Market Intelligence">
-<meta name="twitter:description" content="Real-time conflict tracker: 35 countries, live war feed, nuclear flashpoints, market impact. Free — no signup needed.">
+<meta name="twitter:description" content="Real-time conflict tracker: 34 countries, live war feed, nuclear flashpoints, market impact. Free — no signup needed.">
 <meta name="twitter:image" content="https://www.orreryx.io/og-image.svg">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1294,7 +1294,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
     </div>
     <div id="wz-s2" style="display:none"><!-- AI key step removed — AI is server-powered --></div>
     <div id="wz-s3" style="display:none">
-      <p class="modal-body">✓ <strong>Real-time prices are built in</strong> — your plan includes live market data for 22 symbols (war stocks, indices, crypto) refreshing every 15 seconds. No API key required.</p>
+      <p class="modal-body">✓ <strong>Real-time prices are built in</strong> — your plan includes live market data for 32 symbols (war stocks, indices, crypto) refreshing every 15 seconds. No API key required.</p>
       <button class="modal-go" onclick="wizSkip(3)">OPEN THE PLATFORM →</button>
     </div>
   </div>
@@ -1353,7 +1353,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
 <div class="modal-ov" id="feed-modal">
   <div class="modal" style="width:440px">
     <div class="modal-hd">
-      <div><div class="modal-title" id="feed-modal-title">Live Market Feed</div><div class="modal-sub" id="feed-modal-sub">22 symbols · 15s refresh · built-in</div></div>
+      <div><div class="modal-title" id="feed-modal-title">Live Market Feed</div><div class="modal-sub" id="feed-modal-sub">32 symbols · 15s refresh · built-in</div></div>
       <button class="modal-x" onclick="closeM('feed-modal')">✕</button>
     </div>
 
@@ -1374,7 +1374,7 @@ html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--txt);font
 
     <!-- CONNECT STATE -->
     <div id="feed-connect-view">
-      <p class="modal-body" id="feed-modal-desc">Your plan includes real-time market prices — 22 symbols refreshing every 15 seconds, built in. No API key or setup needed.</p>
+      <p class="modal-body" id="feed-modal-desc">Your plan includes real-time market prices — 32 symbols refreshing every 15 seconds, built in. No API key or setup needed.</p>
       <div style="background:var(--grn2);border:1px solid rgba(58,184,96,.2);border-radius:4px;padding:10px 13px;margin-bottom:14px;font:400 11px/1.5 var(--sans);color:var(--txt2)">
         <strong style="color:var(--grn);font-family:var(--mono);font-size:9px;letter-spacing:.06em">✓ INCLUDED IN YOUR PLAN</strong><br>
         Live prices are already enabled. Click below to activate.
@@ -2373,7 +2373,6 @@ function startPlatform() {
     if (db) db.style.display = 'block';
   }
   setInterval(tickClock, 1000);
-  setInterval(simulatePrices, 2500);
   setInterval(updateTopbarPrices, 2500);
   setInterval(rotateCrisisTxt, 5000);
   updateTopbarPrices();
@@ -2393,22 +2392,24 @@ function startPlatform() {
     fetchGNews(feedFetchController.signal);
   }, 90 * 1000);
 
-  // ── REAL-TIME QUOTES — all plans get polling every 15s (stocks via Yahoo Finance) ──
+  // ── MARKET DATA — real-time for paid tiers (Analyst/Command), simulated for free/Starter ──
   const _allQuoteSyms = [
     'LMT','NOC','RTX','GD','BA','XOM','CVX','OXY','SLB',
     'DAL','UAL','AAL','LUV','ZIM','FDX','GLD','SLV',
     'PPLT','PALL','CPER','GDX','GDXJ','NEM','GOLD','WPM','FNV',
     'BTC','ETH','SOL','BNB','XRP','AVAX',
   ];
-  setTimeout(() => startQuotesPoll(_allQuoteSyms), 1000);
-
-  // ── LIVE CRYPTO PRICES — CoinGecko free API, no key required (60s backup) ──
-  fetchCryptoPrices();
-  setInterval(fetchCryptoPrices, 60 * 1000); // every 60 seconds
-
-  // Auto-start live feed for Analyst / Command — no user action needed
   if (can('liveData')) {
-    setTimeout(() => startLiveFeed(), 300);
+    // Analyst / Command: real prices via Twelve Data (server-proxied /api/quotes), 15s refresh. No simulation.
+    const _lb = document.getElementById('live-btn'), _lt = document.getElementById('live-txt');
+    if (_lb) _lb.className = 'live-btn live';
+    if (_lt) _lt.textContent = 'LIVE';
+    setTimeout(() => startQuotesPoll(_allQuoteSyms), 800);
+    fetchCryptoPrices();
+    setInterval(fetchCryptoPrices, 60 * 1000);
+  } else {
+    // Free / Starter: indicative GBM simulation only — no live feed. Honest 'SIMULATED' label.
+    setInterval(simulatePrices, 2500);
   }
   // Seed AI briefs area — welcome card first, then auto-brief
   seedAIBriefs();
@@ -3944,7 +3945,7 @@ function renderAccount(email) {
 
   const feats = {
     s: ['Full crisis intel feed', 'AI Intel Console — unlimited queries', 'Real-time war stocks + global indices', 'Global screener + financial calculators', 'IPO tracker, brokers, learning hub'],
-    a: ['Everything in Starter', 'Live 3D world map — 150+ cities', 'Real-time prices — 22 symbols, 15s refresh', '7-day crisis history archive'],
+    a: ['Everything in Starter', 'Live 3D world map — 150+ cities', 'Real-time prices — 32 symbols, 15s refresh', '7-day crisis history archive'],
     c: ['Everything in Analyst', 'Live crypto — 12 assets with war scores', '30-day crisis history archive', 'Download history as CSV', 'Priority support']
   };
   const af = document.getElementById('acc-features');
