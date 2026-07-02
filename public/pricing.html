@@ -305,13 +305,6 @@ td:first-child{text-align:left;font-weight:500;color:var(--txt);font-size:12px}
   </div>
 </nav>
 
-<!-- URGENCY STRIP -->
-<div class="urgency-strip" id="urgencyStrip">
-  <span class="urgency-dot"></span>
-  Introductory pricing ends in <strong id="urgencyCountdown">7 days</strong> — lock in $34.99/mo before the increase
-  &nbsp;·&nbsp; <a href="/login?plan=c">Upgrade now →</a>
-</div>
-
 <!-- HERO -->
 <div class="hero">
   <div class="hero-eyebrow">Simple, transparent pricing</div>
@@ -406,7 +399,6 @@ td:first-child{text-align:left;font-weight:500;color:var(--txt);font-size:12px}
       <div class="plan-savings">vs Stratfor ($349/mo) — <strong>save $314/mo</strong></div>
       <div style="font-size:11px;color:var(--txt3);margin-bottom:12px;margin-top:-2px">= $1.17/day — less than a daily coffee</div>
       <div class="plan-desc">Every feature unlocked. The interactive map. Crypto. API. Nothing held back.</div>
-      <div class="plan-social">🔥 47 analysts upgraded this week</div>
       <div class="plan-div"></div>
       <ul class="plan-features">
         <li class="pf"><span class="pf-yes">✓</span><strong>Everything in Analyst</strong></li>
@@ -476,27 +468,6 @@ td:first-child{text-align:left;font-weight:500;color:var(--txt);font-size:12px}
   </table>
 </div>
 
-<!-- TESTIMONIALS -->
-<div class="testi-wrap">
-  <div class="testi-grid">
-    <div class="testi-card">
-      <div class="testi-stars">★★★★★</div>
-      <p class="testi-quote">"I had the Ukraine escalation on my screen at 5am before colleagues were awake. <em>Repositioned into defence stocks before London opened.</em> OrreryX paid for itself in the first week."</p>
-      <div class="testi-name">Marcus H.</div><div class="testi-role">Portfolio Manager · London</div>
-    </div>
-    <div class="testi-card">
-      <div class="testi-stars">★★★★★</div>
-      <p class="testi-quote">"Our team paid $349/mo for Stratfor reports that came out weekly. OrreryX gives us <em>live events, AI context, and market impact in real time</em> for less than a coffee a day."</p>
-      <div class="testi-name">Priya S.</div><div class="testi-role">Country Risk Analyst · Singapore</div>
-    </div>
-    <div class="testi-card">
-      <div class="testi-stars">★★★★★</div>
-      <p class="testi-quote">"The interactive risk map is extraordinary. <em>Clicking a conflict zone and seeing oil, gold, and defence exposure instantly</em> — that's a professional tool. Nothing at this price point comes close."</p>
-      <div class="testi-name">James O.</div><div class="testi-role">Independent Investor · Dubai</div>
-    </div>
-  </div>
-</div>
-
 <!-- FAQ -->
 <div class="faq-wrap">
   <div class="faq-title">Frequently asked</div>
@@ -551,37 +522,11 @@ td:first-child{text-align:left;font-weight:500;color:var(--txt);font-size:12px}
     Visa · Mastercard · Debit · No contracts
   </div>
   <div style="margin-top:14px;font-size:12px;color:var(--txt3);display:flex;align-items:center;justify-content:center;gap:16px;flex-wrap:wrap">
-    <span style="color:var(--grn);font-weight:700">✓ 340+ analysts already on Command</span>
-    <span>·</span>
     <span>🔒 7-day money-back guarantee — if it's not valuable, email us for a full refund</span>
   </div>
 </div>
 
 <script>
-// Urgency countdown — rolling 14-day window per visitor (never expires for new visitors)
-(function() {
-  const STORAGE_KEY = 'orrx_pricing_intro_end';
-  let endTs = parseInt(localStorage.getItem(STORAGE_KEY) || '0');
-  if (!endTs || endTs < Date.now()) {
-    endTs = Date.now() + 14 * 864e5;
-    try { localStorage.setItem(STORAGE_KEY, String(endTs)); } catch(_) {}
-  }
-  const el = document.getElementById('urgencyCountdown');
-  const strip = document.getElementById('urgencyStrip');
-  if (!el) return;
-  function tick() {
-    const diff = endTs - Date.now();
-    if (diff <= 0) { strip.style.display = 'none'; return; }
-    const d = Math.floor(diff / 864e5);
-    const h = Math.floor((diff % 864e5) / 36e5);
-    const m = Math.floor((diff % 36e5) / 6e4);
-    const s = Math.floor((diff % 6e4) / 1e3);
-    el.textContent = d > 0 ? d + 'd ' + h + 'h ' + m + 'm' : h + 'h ' + m + 'm ' + s + 's';
-  }
-  tick();
-  setInterval(tick, 1000);
-})();
-
 // FAQ accordion
 document.querySelectorAll('.faq-q').forEach(q => {
   q.addEventListener('click', () => {
