@@ -742,12 +742,25 @@ function dedupByTitle(events) {
   });
 }
 
+// Per-IP rate limit for the public risks API — protects against scraping / cost abuse.
+const _risksRL = new Map();
+function risksRateLimited(ip) {
+  const now = Date.now(), WINDOW = 60000, MAX = 60;
+  const r = _risksRL.get(ip) || { n: 0, t: now };
+  if (now - r.t > WINDOW) { r.n = 0; r.t = now; }
+  r.n++; _risksRL.set(ip, r);
+  if (_risksRL.size > 5000) _risksRL.delete(_risksRL.keys().next().value);
+  return r.n > MAX;
+}
+
 export default async function handler(req, res) {
   // Route risk API requests (check query param first — Vercel rewrites req.url for nested routes)
   const _isRisks = (req.query && req.query.__route === 'risks') || (req.url || '').includes('/v1/risks');
   if (_isRisks) {
+    const ip = (req.headers['x-forwarded-for'] || '').split(',')[0].trim() || 'unknown';
+    if (risksRateLimited(ip)) return res.status(429).json({ error: 'Rate limit: max 60 requests/minute' });
     try { return handleRisks(req, res); }
-    catch (e) { return res.status(500).json({ error: e.message, stack: e.stack }); }
+    catch (e) { console.error('[risks]', e); return res.status(500).json({ error: 'Internal error' }); }
   }
 
   res.setHeader('Access-Control-Allow-Origin', '*');
